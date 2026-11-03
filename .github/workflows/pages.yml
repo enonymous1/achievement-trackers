@@ -10,19 +10,7 @@ permissions:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Generated pages match the data
-        run: python3 tools/generate.py --check
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - name: Inline scripts pass node --check
-        run: python3 tools/check_js.py
+    uses: ./.github/workflows/check.yml
 
   deploy:
     needs: check
@@ -41,9 +29,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      # Stage only site files. Uploading the repo root would also
+      # deploy .github/, tools/ and data/ — nothing secret, but no
+      # visitor needs them, and a future accidental file would ship
+      # too. Game directories are derived from data slugs, so adding
+      # a game needs no workflow change.
+      - name: Stage site files
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp -r assets _site/
+          for d in data/*.json; do
+            case "$d" in
+              *schema.json) continue ;;
+            esac
+            slug=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['slug'])" "$d")
+            cp -r "$slug" _site/
+          done
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

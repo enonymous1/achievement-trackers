@@ -1,0 +1,9 @@
+# Tooling for this repo only. The site itself has no Python dependencies;
+# this file exists so `ruff check` has one agreed style instead of each
+# contributor guessing line length and target version.
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]

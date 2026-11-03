@@ -1,0 +1,27 @@
+name: Check
+
+# Reusable check job, called by ci.yml (push/PR) and pages.yml (deploy).
+# Keeping the steps here, in one place, is what stops the two workflows
+# from drifting apart when a check is added or a version is bumped.
+on:
+  workflow_call:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python tests
+        run: python3 -m unittest discover -s tools -v
+      - name: Lint Python tools
+        run: pip install ruff && ruff check tools/
+      - name: Generated pages match the data
+        run: python3 tools/generate.py --check
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Inline scripts pass node --check
+        run: python3 tools/check_js.py

@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>@@TITLE@@ — Achievement Tracker</title>
 <meta name="description" content="Achievement-first tracker for @@TITLE@@: achievements grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<meta property="og:title" content="@@TITLE@@ — Achievement Tracker">
+<meta property="og:description" content="Achievement-first tracker for @@TITLE@@: achievements grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="@@ASSET_PREFIX@@favicon.svg">
 <script>
   /* Theme before first paint: saved choice wins, otherwise follow the
      system. AdminLTE 4 / Bootstrap 5.3 read data-bs-theme. */
@@ -148,7 +152,7 @@
         <div class="card">
           <div class="card-body text-secondary">
             <p class="mb-1"><strong>Sources:</strong> achievement names, requirements and Gamerscore from the achievement list linked below; route notes are short paraphrases of the linked walkthrough — the full guide text is not reproduced here. @@SOURCES_HTML@@</p>
-            <p class="mb-0">Unofficial fan tracker, not affiliated with the achievement site, the walkthrough author, or the game's publisher. Shell: AdminLTE 4.10.0 + Bootstrap 5.3.8 + Bootstrap Icons 1.11.3, vendored under <code>assets/vendor/</code> (see <code>THIRD_PARTY_NOTICES.md</code>).</p>
+            <p class="mb-0">Unofficial fan tracker, not affiliated with the achievement site, the walkthrough author, or the game's publisher. Shell: @@SHELL_TEXT@@, vendored under <code>assets/vendor/</code> (see <code>THIRD_PARTY_NOTICES.md</code>).</p>
           </div>
         </div>
 
@@ -161,25 +165,10 @@
 </div>
 <script src="@@ASSET_PREFIX@@vendor/bootstrap.bundle.min.js"></script>
 <script src="@@ASSET_PREFIX@@vendor/adminlte.min.js"></script>
+<script src="@@ASSET_PREFIX@@js/theme-toggle.js"></script>
 <script>
-  /* Theme toggle, same key on hub and game pages. */
-  (function () {
-    var button = document.getElementById("theme-toggle");
-    if (!button) return;
-    function label() {
-      var dark = document.documentElement.getAttribute("data-bs-theme") === "dark";
-      button.textContent = dark ? "Light" : "Dark";
-    }
-    button.addEventListener("click", function () {
-      var next = document.documentElement.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
-      document.documentElement.setAttribute("data-bs-theme", next);
-      try { localStorage.setItem("at-theme", next); } catch (e) {}
-      label();
-    });
-    label();
-  })();
-</script>
-<script>
+/* Tracker progress. The hub never writes progress, only reads it;
+   this script is the single writer for a game page. */
 (function(){
   var KEY='@@STORAGE_KEY@@';
   var OLD='@@LEGACY_KEY@@';
@@ -195,6 +184,8 @@
   var overallTextNav=document.getElementById('overallTextNav');
   var overallBar=document.getElementById('overallBar');
 
+  /* Save dedupes shared counters: several achievements render an input
+     for the same group, but localStorage stores one value per group. */
   function save(){
     var data={checked:{},steps:{},counters:{},notes:notes.value};
     tasks.forEach(function(t){ if(t.checked) data.checked[t.id]=true; });
@@ -209,6 +200,9 @@
     counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(data.counters&&data.counters[g]!==undefined) c.value=data.counters[g]; });
     if(data.notes!==undefined) notes.value=data.notes;
   }
+  /* Migration runs ONLY when no new-format progress exists. If a player
+     already has new progress, legacy data must not overwrite it; the
+     old key is left alone rather than deleted. */
   function migrateLegacy(){
     var raw; try{ raw=localStorage.getItem(OLD); }catch(e){ return; }
     if(!raw||!MIGRATION) return;
@@ -260,6 +254,9 @@
       if(txt) txt.textContent=' '+val.toLocaleString('en-US')+' / '+target.toLocaleString('en-US')+' ('+pct+'%)';
     });
   }
+  /* applyFilters hides whole sections, not just cards: a section with
+     no visible cards after filtering must not leave an empty heading
+     and an empty bordered box behind. */
   function applyFilters(){
     var q=(search.value||'').toLowerCase().trim();
     var active=document.querySelector('.filter.active');

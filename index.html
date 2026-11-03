@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Achievement Trackers</title>
+<meta property="og:title" content="Achievement Trackers">
+<meta property="og:description" content="Interactive achievement trackers: every card is an achievement, grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
 <meta name="description" content="Interactive achievement trackers: every card is an achievement, grouped and ordered by how it typically unlocks, with Gamerscore progress saved in your browser.">
 <script>
   (function () {
@@ -98,24 +102,11 @@
 </div>
 <script src="./assets/vendor/bootstrap.bundle.min.js"></script>
 <script src="./assets/vendor/adminlte.min.js"></script>
+<script src="./assets/js/theme-toggle.js"></script>
 <script>
-  (function () {
-    var button = document.getElementById("theme-toggle");
-    if (!button) return;
-    function label() {
-      var dark = document.documentElement.getAttribute("data-bs-theme") === "dark";
-      button.textContent = dark ? "Light" : "Dark";
-    }
-    button.addEventListener("click", function () {
-      var next = document.documentElement.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
-      document.documentElement.setAttribute("data-bs-theme", next);
-      try { localStorage.setItem("at-theme", next); } catch (e) {}
-      label();
-    });
-    label();
-  })();
-</script>
-<script>
+/* Hub progress summary. Read-only: it reads each game's localStorage
+   entry and, for a missing or corrupt entry, leaves "Not started yet"
+   in place rather than failing. It never writes progress. */
 (function(){
   var GAMES=[{"slug": "minecraft-dungeons", "title": "Minecraft Dungeons", "storage_key": "md-dungeons-tracker-v2", "achievements": [{"id": "ach-happy", "gs": 10}, {"id": "ach-fancy", "gs": 10}, {"id": "ach-wooden", "gs": 10}, {"id": "ach-out", "gs": 10}, {"id": "ach-scrappy", "gs": 10}, {"id": "ach-plot", "gs": 20}, {"id": "ach-chaching", "gs": 30}, {"id": "ach-worked", "gs": 20}, {"id": "ach-built", "gs": 50}, {"id": "ach-highdry", "gs": 80}, {"id": "ach-saved", "gs": 100}, {"id": "ach-apprentice", "gs": 30}, {"id": "ach-more", "gs": 30}, {"id": "ach-passive", "gs": 10}, {"id": "ach-break", "gs": 30}, {"id": "ach-diamond", "gs": 30}, {"id": "ach-omnom", "gs": 10}, {"id": "ach-blast", "gs": 30}, {"id": "ach-friend", "gs": 30}, {"id": "ach-life", "gs": 50}, {"id": "ach-oooh", "gs": 100}, {"id": "ach-expert", "gs": 100}, {"id": "ach-treason", "gs": 100}, {"id": "ach-maxed", "gs": 100}, {"id": "ach-survival", "gs": 20}, {"id": "ach-abomination", "gs": 50}, {"id": "ach-pandamonium", "gs": 20}, {"id": "ach-leader", "gs": 10}, {"id": "ach-fungus", "gs": 30}, {"id": "ach-frozen", "gs": 30}, {"id": "ach-lone", "gs": 50}, {"id": "ach-lost", "gs": 20}, {"id": "ach-smooth", "gs": 10}, {"id": "ach-chill", "gs": 10}]}];
   var search=document.getElementById('search');

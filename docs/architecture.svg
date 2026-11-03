@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1020" height="300" viewBox="0 0 1020 300" font-family="system-ui, sans-serif" font-size="14">
+  <style>
+    .box { fill: #1d211a; stroke: #7bc950; stroke-width: 1.5; }
+    .box2 { fill: #242a20; stroke: #3a4433; stroke-width: 1.5; }
+    .txt { fill: #eef2e6; }
+    .sub { fill: #b8c2a8; font-size: 12px; }
+    .arrow { stroke: #e8b93c; stroke-width: 2; marker-end: url(#ah); }
+  </style>
+  <defs><marker id="ah" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#e8b93c"/></marker></defs>
+  <rect x="10" y="100" width="160" height="70" rx="10" class="box"/><text x="90" y="130" text-anchor="middle" class="txt">data/&lt;slug&gt;.json</text><text x="90" y="150" text-anchor="middle" class="sub">source of truth</text>
+  <line x1="170" y1="135" x2="210" y2="135" class="arrow"/>
+  <rect x="210" y="100" width="170" height="70" rx="10" class="box"/><text x="295" y="130" text-anchor="middle" class="txt">tools/generate.py</text><text x="295" y="150" text-anchor="middle" class="sub">validate → render</text>
+  <line x1="380" y1="135" x2="420" y2="135" class="arrow"/>
+  <rect x="420" y="100" width="170" height="70" rx="10" class="box"/><text x="505" y="130" text-anchor="middle" class="txt">Generated HTML</text><text x="505" y="150" text-anchor="middle" class="sub">committed to git</text>
+  <line x1="590" y1="135" x2="630" y2="135" class="arrow"/>
+  <rect x="630" y="100" width="160" height="70" rx="10" class="box"/><text x="710" y="130" text-anchor="middle" class="txt">GitHub Actions</text><text x="710" y="150" text-anchor="middle" class="sub">check → deploy</text>
+  <line x1="790" y1="135" x2="830" y2="135" class="arrow"/>
+  <rect x="830" y="100" width="160" height="70" rx="10" class="box"/><text x="910" y="130" text-anchor="middle" class="txt">GitHub Pages</text><text x="910" y="150" text-anchor="middle" class="sub">the live site</text>
+  <rect x="210" y="210" width="380" height="60" rx="10" class="box2"/><text x="400" y="235" text-anchor="middle" class="txt">tools/template.html + hub_template.html + fragments/</text><text x="400" y="255" text-anchor="middle" class="sub">shell: assets/vendor/ (AdminLTE + Bootstrap, no CDN)</text>
+  <line x1="295" y1="170" x2="295" y2="210" class="arrow"/>
+  <rect x="630" y="210" width="260" height="60" rx="10" class="box2"/><text x="760" y="235" text-anchor="middle" class="txt">Browser localStorage</text><text x="760" y="255" text-anchor="middle" class="sub">progress only — never uploaded</text>
+  <line x1="710" y1="170" x2="760" y2="210" class="arrow"/>
+  <text x="10" y="30" class="txt" font-size="18" font-weight="bold">achievement-trackers pipeline</text>
+  <text x="10" y="55" class="sub">JSON in → validated HTML out → Pages deploys it. No backend, no build on deploy.</text>
+</svg>

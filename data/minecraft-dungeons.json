@@ -48,6 +48,7 @@
   "sections": [
     {
       "id": "story",
+      "filter_label": "First run",
       "title": "Phase 1 · First run — Default difficulty",
       "subtitle": "11 achievements",
       "achievements": [
@@ -66,6 +67,7 @@
     },
     {
       "id": "steps",
+      "filter_label": "Secrets & runes",
       "title": "Secrets & runes — walkthrough steps, not achievements themselves",
       "subtitle": "These unlock missions and feed the achievements in later phases",
       "intro": "None of the five base secret missions has its own base-game achievement, and the runes do not either — but you need them for grinding (Creepy Crypt), for Jungle Fungus (#29, via ???), and for the DLC secret achievements (#27, #32). For efficiency, use speed gear and the lowest difficulty for unlock runs. Once you interact with a “New Location” scroll, you can return to camp without finishing that secret mission.",
@@ -80,6 +82,7 @@
     },
     {
       "id": "replay",
+      "filter_label": "Replays & mop-up",
       "title": "Phase 3 · Replays & mop-up — Adventure, Apocalypse, grinding",
       "subtitle": "13 achievements",
       "achievements": [
@@ -100,6 +103,7 @@
     },
     {
       "id": "jungle",
+      "filter_label": "Jungle",
       "title": "Phase 4 · Jungle Awakens DLC",
       "subtitle": "5 achievements, 130G",
       "achievements": [
@@ -112,6 +116,7 @@
     },
     {
       "id": "winter",
+      "filter_label": "Creeping Winter",
       "title": "Phase 5 · Creeping Winter DLC",
       "subtitle": "5 achievements, 120G",
       "achievements": [

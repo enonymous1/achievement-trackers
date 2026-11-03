@@ -15,6 +15,10 @@ Usage, from the repo root:
     python3 tools/generate.py --check    # exit 1 if any output would change
     python3 tools/generate.py --game minecraft-dungeons
 
+Note on --game: it regenerates the hub plus one game page only, leaving
+other game pages untouched. Always run the full generator before
+committing; --game is a preview shortcut, not a commit step.
+
 Adding a game: copy data/minecraft-dungeons.json to data/<slug>.json,
 fill it in (see that file for the schema), run the generator, preview
 with `python3 -m http.server 8000`, then commit the JSON *and* the
@@ -24,18 +28,22 @@ exists to catch exactly that drift in CI).
 """
 
 import argparse
-import html as html_lib
+import html
 import json
 import re
 import sys
 from pathlib import Path
 
+from config import REPO_URL, SHELL_TEXT, VENDOR_FILES
+
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 TOOLS_DIR = ROOT / "tools"
 
-# Short filter labels for section ids. Unknown ids fall back to the
-# section title up to the first "·" (or the id itself).
+# Short filter labels for section ids. These are a fallback only: a
+# section may carry its own "filter_label" in the JSON, and that wins.
+# New section types should get a filter_label in data, not a new entry
+# here — adding a game is supposed to be data-only.
 FILTER_LABELS = {
     "story": "First run",
     "steps": "Secrets & runes",
@@ -45,13 +53,27 @@ FILTER_LABELS = {
 }
 
 
+def _is_positive_int(value):
+    # type(value) is int, not isinstance: bool is a subclass of int in
+    # Python, so isinstance(True, int) is True and "gs": true would
+    # otherwise sum as 1G and pass validation.
+    return type(value) is int and value > 0
+
+
 def fail(message):
     print(f"generate: error: {message}", file=sys.stderr)
     raise SystemExit(1)
 
 
 def load_games():
-    files = sorted(DATA_DIR.glob("*.json"))
+    """Load and validate every game JSON, in filename order.
+
+    data/schema.json is the human-readable schema, not a game, so it
+    is skipped here — otherwise it would be validated as a game and
+    fail for missing game fields.
+    """
+    files = [p for p in sorted(DATA_DIR.glob("*.json"))
+             if p.name != "schema.json"]
     if not files:
         fail("no data/*.json files found")
     games = []
@@ -60,16 +82,28 @@ def load_games():
             game = json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
             fail(f"{path.name}: invalid JSON: {exc}")
+        except OSError as exc:
+            fail(f"{path.name}: cannot be read: {exc}")
         validate_game(path.name, game)
         games.append(game)
     return games
 
 
 def validate_game(filename, game):
+    """Validate one game dict, failing loudly on the first problem.
+
+    Shape is checked before indexing: a malformed file must produce a
+    one-line ``generate: error:`` message, not a KeyError traceback.
+    On success the computed totals are stored on the dict under
+    underscore-prefixed keys, so renderers never recompute them from
+    the declared (possibly wrong) totals.
+    """
     def check(condition, message):
         if not condition:
             fail(f"{filename}: {message}")
 
+    check(isinstance(game, dict),
+          f"top level must be a JSON object, not {type(game).__name__}")
     for field in ("slug", "title", "tagline", "order_note", "scope_note",
                   "storage_key", "sections", "sources"):
         check(game.get(field), f"missing/empty field {field!r}")
@@ -77,40 +111,61 @@ def validate_game(filename, game):
           f"slug {game['slug']!r} does not match filename {filename!r}")
     check(re.fullmatch(r"[a-z0-9][a-z0-9-]*", game["slug"]),
           f"slug {game['slug']!r} is not URL-safe")
-    check(game["sources"], "sources must list at least one source")
+    check(isinstance(game["sources"], list) and game["sources"],
+          "sources must list at least one source")
     for source in game["sources"]:
-        check(source.get("label") and source.get("url", "").startswith("https://"),
+        check(isinstance(source, dict)
+              and source.get("label")
+              and source.get("url", "").startswith("https://"),
               f"bad source entry: {source!r}")
 
-    task_ids, step_ids, counter_groups = set(), set(), {}
-    achievements, total_gs, number = [], 0, 0
+    task_ids, step_ids = set(), set()
+    achievements, total_gs = [], 0
     for section in game["sections"]:
-        check(section.get("id") and section.get("title"),
+        check(isinstance(section, dict)
+              and section.get("id") and section.get("title"),
               f"section missing id/title: {section!r}")
+        if "filter_label" not in section:
+            # Warning, not failure: existing files predate filter_label
+            # and fall back to FILTER_LABELS, but new sections should
+            # carry their own label so adding a game stays data-only.
+            print(f"{filename}: section {section['id']!r} has no "
+                  f"filter_label; add one to the JSON", file=sys.stderr)
         for ach in section.get("achievements", []):
-            number += 1
+            check(isinstance(ach, dict) and ach.get("id"),
+                  f"achievement missing 'id': {ach!r}")
             achievements.append(ach)
             check(ach["id"] not in task_ids, f"duplicate achievement id {ach['id']!r}")
             task_ids.add(ach["id"])
-            check(isinstance(ach.get("gs"), int) and ach["gs"] > 0,
+            check(_is_positive_int(ach.get("gs")),
                   f"{ach['id']}: gs must be a positive integer")
             total_gs += ach["gs"]
             for field in ("name", "req", "how"):
                 check(ach.get(field), f"{ach['id']}: missing/empty {field!r}")
             for step in ach.get("steps", []):
+                check(isinstance(step, dict) and step.get("id"),
+                      f"{ach['id']}: step missing 'id': {step!r}")
                 check(step["id"] not in step_ids, f"duplicate step id {step['id']!r}")
                 step_ids.add(step["id"])
                 check(step.get("label"), f"{ach['id']}: step missing label")
             for counter in ach.get("counters", []):
-                group = counter.get("group")
-                check(group and isinstance(counter.get("target"), int)
-                      and counter["target"] > 0,
+                # Counter groups deliberately allow different targets
+                # per achievement: one shared value (e.g. mobs defeated)
+                # feeds several thresholds (50 and 2,500). The JS syncs
+                # the value across inputs in the group and computes each
+                # bar against its own target, so do NOT add a
+                # "targets must match" check here.
+                check(isinstance(counter, dict)
+                      and counter.get("group")
+                      and _is_positive_int(counter.get("target")),
                       f"{ach['id']}: bad counter {counter!r}")
-                counter_groups.setdefault(group, set()).add(counter["target"])
         for card in section.get("step_cards", []):
-            check(card.get("title") and card.get("how") and card.get("steps"),
+            check(isinstance(card, dict)
+                  and card.get("title") and card.get("how") and card.get("steps"),
                   f"step card missing title/how/steps: {card!r}")
             for step in card["steps"]:
+                check(isinstance(step, dict) and step.get("id"),
+                      f"step card step missing 'id': {step!r}")
                 check(step["id"] not in step_ids, f"duplicate step id {step['id']!r}")
                 step_ids.add(step["id"])
                 check(step.get("label"), f"step card step missing label: {step!r}")
@@ -126,7 +181,6 @@ def validate_game(filename, game):
     game["_achievements"] = achievements
     game["_total_gs"] = total_gs
     game["_total_count"] = len(achievements)
-    game["_counter_groups"] = counter_groups
     # The hub and the header show the declared scope; the generator's
     # own total is the check, so a typo in a single GS value fails here
     # instead of silently shipping a wrong progress bar.
@@ -134,21 +188,51 @@ def validate_game(filename, game):
 
 
 def esc(text):
-    return html_lib.escape(str(text), quote=True)
+    """Escape a value for interpolation into HTML text or an attribute."""
+    return html.escape(str(text), quote=True)
+
+
+_FRAGMENTS = {}
+
+
+def _fragment(name):
+    """Load a card fragment, cached; card markup lives in HTML, not Python."""
+    if name not in _FRAGMENTS:
+        path = TOOLS_DIR / "fragments" / f"{name}.html"
+        if not path.exists():
+            fail(f"missing fragment: tools/fragments/{name}.html")
+        _FRAGMENTS[name] = path.read_text(encoding="utf-8").strip()
+    return _FRAGMENTS[name]
+
+
+def _fill(template, replacements):
+    """Fill @@PLACEHOLDER@@ values in a single pass.
+
+    Single-pass matters: values are inserted verbatim and are never
+    re-scanned, so a value that happens to look like a placeholder
+    (e.g. a route note mentioning @@TITLE@@) cannot be substituted a
+    second time. A placeholder with no value is a hard failure, not a
+    silently shipped "@@...@@" string.
+    """
+    def sub(match):
+        key = match.group(1)
+        if key not in replacements:
+            fail(f"template placeholder @@{key}@@ has no value")
+        return replacements[key]
+
+    return re.sub(r"@@([A-Z_]+)@@", sub, template)
 
 
 def render_counter(counter):
-    group, target = esc(counter["group"]), int(counter["target"])
-    return (
-        f'<div class="counter mt-2"><input type="number" class="count form-control d-inline-block" '
-        f'style="width:110px" '
-        f'data-counter="{group}" data-target="{target}" min="0" value="0"> '
-        f'<span class="count-text text-secondary"></span>'
-        f'<div class="progress mt-2" style="height:10px"><div class="progress-bar bg-success" style="width:0%"></div></div></div>'
-    )
+    """Render one shared-counter input for an achievement card."""
+    return _fill(_fragment("counter"), {
+        "GROUP": esc(counter["group"]),
+        "TARGET": str(int(counter["target"])),
+    })
 
 
 def render_steps(steps, parent_id=None):
+    """Render step checkboxes; steps with a parent auto-tick it in JS."""
     if not steps:
         return ""
     items = []
@@ -162,55 +246,68 @@ def render_steps(steps, parent_id=None):
 
 
 def render_achievement(ach, number):
-    parts = [
-        '<article class="ach item card col-12 col-md-6 col-xl-4" data-name="'
-        + esc(f"{ach['name']} {ach['req']} {ach['how']}") + '">',
-        '<div class="card-header ach-head d-flex gap-2 align-items-start">'
-        f'<input type="checkbox" class="task" id="{esc(ach["id"])}" data-gs="{ach["gs"]}">'
-        f'<div><span class="num text-secondary small fw-semibold">#{number}</span>'
-        f'<h3 class="fs-6 mb-0">{esc(ach["name"])}</h3></div>'
-        f'<span class="gs badge text-bg-warning ms-auto">{ach["gs"]}G</span></div>',
-        '<div class="card-body">',
-        f'<p class="req text-secondary">{esc(ach["req"])}</p>',
-        f'<p class="how">{esc(ach["how"])}</p>',
-        render_steps(ach.get("steps", []), parent_id=ach["id"]),
-    ]
-    for counter in ach.get("counters", []):
-        parts.append(render_counter(counter))
-    parts.append("</div></article>")
-    return "".join(parts)
+    """Render one achievement card.
+
+    ``number`` is the running 1-based position in typical unlock order
+    across all sections, not the position within this section. Steps
+    carry ``data-parent`` so the tracker JS can auto-tick the
+    achievement when every step is ticked; counters are rendered once
+    per achievement that uses them, and the JS syncs all inputs that
+    share a ``data-counter`` group to one value.
+    """
+    counters = "".join(render_counter(c) for c in ach.get("counters", []))
+    return _fill(_fragment("achievement"), {
+        "DATA_NAME": esc(f"{ach['name']} {ach['req']} {ach['how']}"),
+        "ID": esc(ach["id"]),
+        "GS": str(ach["gs"]),
+        "NUMBER": str(number),
+        "NAME": esc(ach["name"]),
+        "REQ": esc(ach["req"]),
+        "HOW": esc(ach["how"]),
+        "STEPS": render_steps(ach.get("steps", []), parent_id=ach["id"]),
+        "COUNTERS": counters,
+    })
 
 
 def render_step_card(card):
-    return (
-        '<article class="ach item card col-12 col-md-6 col-xl-4" data-name="'
-        + esc(f"{card['title']} {card['how']}") + '">'
-        f'<div class="card-header"><h3 class="fs-6 mb-0">{esc(card["title"])}</h3></div>'
-        '<div class="card-body">'
-        f'<p class="how">{esc(card["how"])}</p>'
-        + render_steps(card["steps"])
-        + "</div></article>"
-    )
+    """Render a walkthrough step card (not an achievement itself)."""
+    return _fill(_fragment("step_card"), {
+        "DATA_NAME": esc(f"{card['title']} {card['how']}"),
+        "TITLE": esc(card["title"]),
+        "HOW": esc(card["how"]),
+        "STEPS": render_steps(card["steps"]),
+    })
 
 
 def render_sections(game):
+    """Render all sections, in JSON order.
+
+    Only the first section is open by default. That is a UX choice,
+    not an accident: the first run is where a new player starts, and
+    collapsed later sections keep the page scannable. Section titles
+    are escaped like every other data value — titles come from data,
+    not code, so a title containing ``&`` or ``<`` must not break the
+    page or inject markup.
+    """
     number = 0
     out = []
-    for section in game["sections"]:
+    for index, section in enumerate(game["sections"]):
         achievements = section.get("achievements", [])
         cards = section.get("step_cards", [])
-        is_first = section is game["sections"][0]
-        open_attr = " open" if is_first else ""
+        open_attr = " open" if index == 0 else ""
+        title = esc(section["title"])
         if achievements:
             sec_gs = sum(a["gs"] for a in achievements)
             subtitle = f"{len(achievements)} achievements, {sec_gs}G"
             if section.get("subtitle"):
                 subtitle = section["subtitle"]
-            summary = (f'{section["title"]} <small>{esc(subtitle)} · '
-                       f'<span class="sec-progress" data-section="{esc(section["id"])}"></span></small>')
+            section_id = esc(section["id"])
+            summary = (f'{title} <small>{esc(subtitle)} · '
+                       f'<span class="sec-progress" '
+                       f'data-section="{section_id}"></span></small>')
         else:
-            summary = (f'{section["title"]} <small>{esc(section.get("subtitle", ""))}</small>'
-                       if section.get("subtitle") else section["title"])
+            summary = (f'{title} <small>{esc(section.get("subtitle", ""))}</small>'
+                       if section.get("subtitle") else title)
         out.append(f'<details{open_attr} data-cat="{esc(section["id"])}">')
         out.append(f"<summary>{summary}</summary>")
         out.append('<div class="section-body">')
@@ -238,44 +335,44 @@ def games_nav(all_games, current_slug=None, prefix="../"):
 
 
 def render_game(game, all_games):
+    """Render one game page from template.html plus its fragments."""
     template = (TOOLS_DIR / "template.html").read_text(encoding="utf-8")
     filters = []
     for section in game["sections"]:
-        label = FILTER_LABELS.get(section["id"])
+        label = (section.get("filter_label")
+                 or FILTER_LABELS.get(section["id"]))
         if not label:
             label = section["title"].split("·")[0].strip() or section["id"]
         filters.append(
-            f'      <button type="button" class="filter btn btn-outline-success" data-filter="{esc(section["id"])}">'
+            f'      <button type="button" class="filter '
+            f'btn btn-outline-success" data-filter="{esc(section["id"])}">'
             f"{esc(label)}</button>"
         )
     sources = " · ".join(
         f'<a href="{esc(s["url"])}">{esc(s["label"])}</a>' for s in game["sources"]
     )
     replacements = {
-        "@@ASSET_PREFIX@@": "../assets/",
-        "@@GAMES_NAV@@": games_nav(all_games, current_slug=game["slug"]),
-        "@@TITLE@@": esc(game["title"]),
-        "@@TAGLINE@@": esc(game["tagline"]),
-        "@@ORDER_NOTE@@": esc(game["order_note"]),
-        "@@SCOPE_NOTE@@": esc(game["scope_note"]),
-        "@@SLUG@@": esc(game["slug"]),
-        "@@STORAGE_KEY@@": esc(game["storage_key"]),
-        "@@LEGACY_KEY@@": esc(game.get("legacy_key", "")),
-        "@@LEGACY_MIGRATION_JSON@@": json.dumps(game.get("legacy_migration") or {}),
-        "@@TOTAL_GS@@": str(game["_total_gs"]),
-        "@@TOTAL_COUNT@@": str(game["_total_count"]),
-        "@@FILTER_BUTTONS@@": "\n".join(filters),
-        "@@SECTIONS_HTML@@": render_sections(game),
-        "@@SOURCES_HTML@@": sources,
+        "ASSET_PREFIX": "../assets/",
+        "GAMES_NAV": games_nav(all_games, current_slug=game["slug"]),
+        "TITLE": esc(game["title"]),
+        "TAGLINE": esc(game["tagline"]),
+        "ORDER_NOTE": esc(game["order_note"]),
+        "SCOPE_NOTE": esc(game["scope_note"]),
+        "SLUG": esc(game["slug"]),
+        "STORAGE_KEY": esc(game["storage_key"]),
+        "LEGACY_KEY": esc(game.get("legacy_key", "")),
+        "LEGACY_MIGRATION_JSON": json.dumps(game.get("legacy_migration") or {}),
+        "TOTAL_GS": str(game["_total_gs"]),
+        "TOTAL_COUNT": str(game["_total_count"]),
+        "FILTER_BUTTONS": "\n".join(filters),
+        "SECTIONS_HTML": render_sections(game),
+        "SOURCES_HTML": sources,
+        "SHELL_TEXT": SHELL_TEXT,
     }
-    out = template
-    for key, value in replacements.items():
-        if key not in out:
-            fail(f"template.html is missing placeholder {key}")
-        out = out.replace(key, value)
-    leftovers = re.findall(r"@@[A-Z_]+@@", out)
-    if leftovers:
-        fail(f"unreplaced placeholders in {game['slug']}: {sorted(set(leftovers))}")
+    for key in replacements:
+        if f"@@{key}@@" not in template:
+            fail(f"template.html is missing placeholder @@{key}@@")
+    out = _fill(template, replacements)
     if re.search(r'(?:src|href)="/', out):
         fail(f"{game['slug']}: absolute path found in generated page")
     return out
@@ -295,14 +392,19 @@ def render_hub(games):
                 {"id": a["id"], "gs": a["gs"]} for a in game["_achievements"]
             ],
         })
+        slug = esc(game["slug"])
         cards.append(
-            f'<div class="game item card col-12 col-md-6" data-name="{esc(game["title"])}">'
-            f'<div class="card-header"><h3 class="fs-5 mb-0"><a href="{esc(game["slug"])}/">{esc(game["title"])}</a></h3></div>'
+            f'<div class="game item card col-12 col-md-6" '
+            f'data-name="{esc(game["title"])}">'
+            f'<div class="card-header"><h3 class="fs-5 mb-0">'
+            f'<a href="{slug}/">{esc(game["title"])}</a></h3></div>'
             f'<div class="card-body">'
             f'<p class="text-secondary">{esc(game["scope_note"])}</p>'
             f'<p><strong>{total_count} achievements · {total_gs:,}G</strong> · '
-            f'<span class="game-progress" data-slug="{esc(game["slug"])}">Not started yet</span></p>'
-            f'<p class="mb-0"><a class="btn btn-success" href="{esc(game["slug"])}/">Open tracker →</a></p>'
+            f'<span class="game-progress" data-slug="{slug}">'
+            f'Not started yet</span></p>'
+            f'<p class="mb-0"><a class="btn btn-success" '
+            f'href="{slug}/">Open tracker →</a></p>'
             f'</div></div>'
         )
     total_games = len(games)
@@ -310,24 +412,20 @@ def render_hub(games):
     total_gs = sum(g["_total_gs"] for g in games)
     game_word = "game" if total_games == 1 else "games"
     replacements = {
-        "@@ASSET_PREFIX@@": "./assets/",
-        "@@GAMES_NAV@@": games_nav(games, prefix="./"),
-        "@@GAMES_CARDS@@": chr(10).join(cards),
-        "@@HUB_DATA@@": json.dumps(hub_data),
-        "@@FOOTER_TOTALS@@": (
+        "ASSET_PREFIX": "./assets/",
+        "GAMES_NAV": games_nav(games, prefix="./"),
+        "GAMES_CARDS": chr(10).join(cards),
+        "HUB_DATA": json.dumps(hub_data),
+        "FOOTER_TOTALS": (
             f"{total_games} {game_word} · {total_count} achievements · "
             f"{total_gs:,}G"
         ),
+        "REPO_URL": REPO_URL,
     }
-    out = template
-    for key, value in replacements.items():
-        if key not in out:
-            fail(f"hub_template.html is missing placeholder {key}")
-        out = out.replace(key, value)
-    leftovers = re.findall(r"@@[A-Z_]+@@", out)
-    if leftovers:
-        fail(f"unreplaced placeholders in hub: {sorted(set(leftovers))}")
-    return out
+    for key in replacements:
+        if f"@@{key}@@" not in template:
+            fail(f"hub_template.html is missing placeholder @@{key}@@")
+    return _fill(template, replacements)
 
 
 def main():
@@ -343,13 +441,14 @@ def main():
         games = [g for g in all_games if g["slug"] == args.game]
         if not games:
             fail(f"no game with slug {args.game!r}")
+        print("generate: warning: --game regenerates only one game page; "
+              "run the full generator before committing.",
+              file=sys.stderr)
 
     # The AdminLTE shell is vendored, not CDN-loaded. If the vendor
     # set is missing, every generated page would ship broken links,
     # so fail here instead of generating them.
-    for vendor_file in ("bootstrap.min.css", "bootstrap-icons.min.css",
-                        "adminlte.min.css", "bootstrap.bundle.min.js",
-                        "adminlte.min.js"):
+    for vendor_file in VENDOR_FILES:
         if not (ROOT / "assets" / "vendor" / vendor_file).exists():
             fail(f"missing vendored shell asset: assets/vendor/{vendor_file}")
 

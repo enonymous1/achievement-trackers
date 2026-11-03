@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Achievement Trackers</title>
+<meta property="og:title" content="Achievement Trackers">
+<meta property="og:description" content="Interactive achievement trackers: every card is an achievement, grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="@@ASSET_PREFIX@@favicon.svg">
 <meta name="description" content="Interactive achievement trackers: every card is an achievement, grouped and ordered by how it typically unlocks, with Gamerscore progress saved in your browser.">
 <script>
   (function () {
@@ -93,29 +97,16 @@
     </div>
   </main>
   <footer class="app-footer">
-    <strong>Achievement Trackers</strong> — @@FOOTER_TOTALS@@ · Unofficial fan trackers · progress saves in your browser only · <a href="https://github.com/enonymous1/achievement-trackers">Source on GitHub</a>
+    <strong>Achievement Trackers</strong> — @@FOOTER_TOTALS@@ · Unofficial fan trackers · progress saves in your browser only · <a href="@@REPO_URL@@">Source on GitHub</a>
   </footer>
 </div>
 <script src="@@ASSET_PREFIX@@vendor/bootstrap.bundle.min.js"></script>
 <script src="@@ASSET_PREFIX@@vendor/adminlte.min.js"></script>
+<script src="@@ASSET_PREFIX@@js/theme-toggle.js"></script>
 <script>
-  (function () {
-    var button = document.getElementById("theme-toggle");
-    if (!button) return;
-    function label() {
-      var dark = document.documentElement.getAttribute("data-bs-theme") === "dark";
-      button.textContent = dark ? "Light" : "Dark";
-    }
-    button.addEventListener("click", function () {
-      var next = document.documentElement.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
-      document.documentElement.setAttribute("data-bs-theme", next);
-      try { localStorage.setItem("at-theme", next); } catch (e) {}
-      label();
-    });
-    label();
-  })();
-</script>
-<script>
+/* Hub progress summary. Read-only: it reads each game's localStorage
+   entry and, for a missing or corrupt entry, leaves "Not started yet"
+   in place rather than failing. It never writes progress. */
 (function(){
   var GAMES=@@HUB_DATA@@;
   var search=document.getElementById('search');
