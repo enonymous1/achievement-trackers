@@ -339,15 +339,40 @@ def render_sections(game):
     return "\n".join(out)
 
 
-def games_nav(all_games, current_slug=None, prefix="../"):
+def sidebar_menu(all_games, prefix, current, include_notes=False):
+    """Sidebar menu items: Home, a Games header, then the games flat
+    under it (no dropdown — the list is short for now, and the user
+    expects to revisit this when it grows), plus Notes on game pages.
+    ``current`` is 'home', 'how', or a game slug. ``prefix`` is the
+    relative path back to the site root from the page using it."""
     items = []
+    home_active = ' active' if current == 'home' else ''
+    items.append(
+        f'              <li class="nav-item"><a href="{prefix}" '
+        f'class="nav-link{home_active}"><i class="nav-icon bi bi-house"></i>'
+        f'<p>Home</p></a></li>'
+    )
+    items.append('              <li class="nav-header">Games</li>')
     for game in all_games:
-        active = ' active' if game["slug"] == current_slug else ""
+        active = ' active' if game["slug"] == current else ""
         items.append(
-            f'              <li><a class="dropdown-item{active}" '
-            f'href="{prefix}{esc(game["slug"])}/">{esc(game["title"])}</a></li>'
+            f'              <li class="nav-item"><a href="{prefix}{esc(game["slug"])}/" '
+            f'class="nav-link{active}"><i class="nav-icon bi bi-controller"></i>'
+            f'<p>{esc(game["title"])}</p></a></li>'
+        )
+    if include_notes:
+        items.append(
+            '              <li class="nav-item"><a href="#notes-section" '
+            'class="nav-link"><i class="nav-icon bi bi-journal-text"></i>'
+            '<p>Notes</p></a></li>'
         )
     return "\n".join(items)
+
+
+def sidebar_how_href(prefix, current):
+    """Href for the bottom-anchored How link: the How page links to
+    itself with './', every other page with its root prefix."""
+    return "./" if current == "how" else f"{prefix}how-it-works/"
 
 
 def render_game(game, all_games):
@@ -369,7 +394,11 @@ def render_game(game, all_games):
     )
     replacements = {
         "ASSET_PREFIX": "../assets/",
-        "GAMES_NAV": games_nav(all_games, current_slug=game["slug"]),
+        "SIDEBAR_MENU": sidebar_menu(all_games, "../", game["slug"],
+                                     include_notes=True),
+        "SIDEBAR_PREFIX": "../",
+        "HOW_HREF": sidebar_how_href("../", game["slug"]),
+        "HOW_ACTIVE": "",
         "TITLE": esc(game["title"]),
         "TAGLINE": esc(game["tagline"]),
         "ORDER_NOTE": esc(game["order_note"]),
@@ -429,7 +458,10 @@ def render_hub(games):
     game_word = "game" if total_games == 1 else "games"
     replacements = {
         "ASSET_PREFIX": "./assets/",
-        "GAMES_NAV": games_nav(games, prefix="./"),
+        "SIDEBAR_MENU": sidebar_menu(games, "./", "home"),
+        "SIDEBAR_PREFIX": "./",
+        "HOW_HREF": sidebar_how_href("./", "home"),
+        "HOW_ACTIVE": "",
         "GAMES_CARDS": chr(10).join(cards),
         "HUB_DATA": json.dumps(hub_data),
         "FOOTER_TOTALS": (
@@ -441,6 +473,23 @@ def render_hub(games):
     for key in replacements:
         if f"@@{key}@@" not in template:
             fail(f"hub_template.html is missing placeholder @@{key}@@")
+    return _fill(template, replacements)
+
+
+def render_how(all_games):
+    """Render the standalone How it works page (no game data)."""
+    template = (TOOLS_DIR / "how_template.html").read_text(encoding="utf-8")
+    replacements = {
+        "ASSET_PREFIX": "../assets/",
+        "SIDEBAR_MENU": sidebar_menu(all_games, "../", "how"),
+        "SIDEBAR_PREFIX": "../",
+        "HOW_HREF": sidebar_how_href("../", "how"),
+        "HOW_ACTIVE": " active",
+        "REPO_URL": REPO_URL,
+    }
+    for key in replacements:
+        if f"@@{key}@@" not in template:
+            fail(f"how_template.html is missing placeholder @@{key}@@")
     return _fill(template, replacements)
 
 
@@ -473,6 +522,7 @@ def main():
         out_dir = ROOT / game["slug"]
         outputs[out_dir / "index.html"] = render_game(game, all_games)
     outputs[ROOT / "index.html"] = render_hub(all_games)
+    outputs[ROOT / "how-it-works" / "index.html"] = render_how(all_games)
 
     changed = []
     for path, content in outputs.items():

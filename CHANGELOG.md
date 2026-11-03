@@ -4,6 +4,36 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-03 — Left sidebar, How page
+
+### Changed
+
+- The top nav is gone: navigation is now a collapsible left sidebar
+  (AdminLTE `layout-fixed sidebar-expand-lg`). It holds the
+  "Achievement Trackers" brand, Home, a Games header with the games
+  listed flat underneath it — no dropdown while the list is short —
+  and Notes on game pages. The hamburger in the top bar collapses
+  the sidebar, and that state persists across pages on its own
+  localStorage key (`at-sidebar`), restored before AdminLTE's own
+  init so the drawer does not flash open on navigation. On phones
+  the sidebar is a drawer over the content, as before with the
+  collapsed top nav.
+- "How it works" is its own page (`how-it-works/`), linked from the
+  bottom of the sidebar and from the hub welcome text, instead of a
+  card on the hub. It covers what a tracker is, ticking, sub-steps,
+  counters, search and filters, where progress lives, and how the
+  site is built.
+
+### Fixed
+
+- The Gamerscore progress card's sticky pin broke in the sidebar
+  layout: AdminLTE's `layout-fixed` sets `.app-main` to
+  `overflow:auto`, which made it the sticky element's scrolling
+  ancestor even though it never scrolls itself. The tracker
+  template now restores `overflow:visible` at the same specificity
+  (the first attempt, at lower specificity, was verified not to
+  take effect), and the bar pins to the top again.
+
 ## 2026-11-03 — Full-width headers, card gaps, steppers, header bars
 
 ### Fixed

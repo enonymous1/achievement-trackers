@@ -66,6 +66,12 @@ def main() -> int:
     for page in pages:
         blocks = SCRIPT_RE.findall(page.read_text(encoding="utf-8"))
         if not blocks:
+            # The How page deliberately has no inline script: its
+            # behaviour is the shared theme/sidebar files. Every other
+            # page must have inline scripts, or a template edit that
+            # deletes the tracker script would ship silently.
+            if page.relative_to(ROOT).parts[0] == "how-it-works":
+                continue
             failures.append((str(page.relative_to(ROOT)), None,
                              "no inline scripts found"))
             continue

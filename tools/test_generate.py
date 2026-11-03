@@ -9,7 +9,7 @@ dependencies, and this file must not become the first one.
 
 import unittest
 
-from generate import render_sections, validate_game
+from generate import render_sections, sidebar_how_href, sidebar_menu, validate_game
 
 
 def make_game(**overrides):
@@ -122,6 +122,16 @@ class TestRender(unittest.TestCase):
         self.assertIn('data-step="-1"', html)
         self.assertIn('data-step="1"', html)
         self.assertIn('data-counter="mobs"', html)
+
+    def test_sidebar_menu_and_how_href(self):
+        games = [make_game(), make_game(slug="other", title="Other")]
+        html = sidebar_menu(games, "../", "test", include_notes=True)
+        self.assertIn('href="../"', html)
+        self.assertIn('href="../other/"', html)
+        self.assertIn("Games</li>", html)
+        self.assertIn('href="#notes-section"', html)
+        self.assertEqual(sidebar_how_href("../", "test"), "../how-it-works/")
+        self.assertEqual(sidebar_how_href("../", "how"), "./")
 
     def test_achievement_header_is_a_toggle_button(self):
         # The whole header toggles via aria-pressed; there is no

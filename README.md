@@ -171,8 +171,11 @@ Schema, per game file:
 achievement-trackers/
   index.html                  # hub / landing page (generated)
   <slug>/index.html           # one tracker per game (generated)
+  how-it-works/index.html     # How it works page (generated)
   assets/vendor/              # AdminLTE shell, vendored — no CDN
+  assets/css/sidebar.css      # shared left-sidebar layout
   assets/js/theme-toggle.js   # shared theme toggle (see below)
+  assets/js/sidebar-state.js  # sidebar collapsed/open persistence
   assets/favicon.svg          # trophy favicon
   data/<slug>.json            # the game data — edit this
   data/schema.json            # human-readable schema for game data
@@ -185,6 +188,7 @@ achievement-trackers/
   tools/test_generate.py      # stdlib unit tests
   tools/template.html         # the tracker page template
   tools/hub_template.html     # the hub page template
+  tools/how_template.html     # the How it works page template
   .github/workflows/check.yml # shared checks, called by CI + Pages
   .github/workflows/ci.yml    # checks on push / PR
   .github/workflows/pages.yml # check, then deploy to Pages
@@ -212,19 +216,24 @@ One JSON file per game is validated and rendered by a single Python
 generator into committed HTML. The shell — AdminLTE 4.10.0 +
 Bootstrap 5.3.8 + Bootstrap Icons 1.11.3, vendored under
 `assets/vendor/` (see `THIRD_PARTY_NOTICES.md` there) — is shared by
-every page, in a top-nav layout: brand, Games dropdown, content cards,
-and a light/dark toggle on the shared `at-theme` localStorage key.
-The generator computes the relative asset prefix per page
-(`./assets/` from the hub, `../assets/` from a game page), and refuses
-to emit absolute paths.
+every page, in a left-sidebar layout: the sidebar holds the
+"Achievement Trackers" brand, Home, a Games header with the games
+listed flat under it, and a How it works link anchored to the
+bottom; the sidebar collapses with the hamburger in the top bar,
+and that state persists across pages on its own localStorage key.
+The top bar also carries the light/dark toggle, on the shared
+`at-theme` localStorage key. The generator computes the relative
+asset prefix per page (`./assets/` from the hub, `../assets/` from a
+game or How page), and refuses to emit absolute paths.
 
 Pages carry no backend and no tracking. The only state is localStorage:
 one key per game for ticks, steps, counters and notes, read by the hub
 to show per-game progress. Card markup lives in HTML fragments under
 `tools/fragments/` (not in Python strings), shell versions and the
 repo URL live in `tools/config.py`, and the tracker JS is inline in
-each generated page while the theme toggle is a shared file
-(`assets/js/theme-toggle.js`) loaded by both templates.
+each generated page while the theme toggle and sidebar-state
+persistence are shared files (`assets/js/theme-toggle.js`,
+`assets/js/sidebar-state.js`) loaded by all three templates.
 
 ## Deployment
 
