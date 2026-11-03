@@ -1,0 +1,126 @@
+{
+  "slug": "minecraft-dungeons",
+  "title": "Minecraft Dungeons",
+  "tagline": "Every card is an achievement. Tick it when it pops in-game; the sub-steps and counters underneath are just the route to that one achievement.",
+  "order_note": "Sections run in the order achievements typically unlock — first Default run, then secrets/runes (the steps that feed later achievements), then replay/mop-up, then Jungle Awakens, then Creeping Winter. Numbers are that typical order, not a strict rule: cumulative achievements pop whenever you hit the number.",
+  "scope_note": "The 34 achievements from the linked walkthrough — base game (24, 1,000G) + Jungle Awakens (5, 130G) + Creeping Winter (5, 120G) = 1,250G. The full game now has 104 achievements / 3,000G; later DLC is not in this tracker.",
+  "total_gs": 1250,
+  "total_count": 34,
+  "storage_key": "md-dungeons-tracker-v2",
+  "legacy_key": "md-dungeons-tracker-v1",
+  "legacy_migration": {
+    "checked_map": {
+      "story-squid-default": ["ach-happy", "ach-fancy"],
+      "story-creeper-default": ["ach-out"],
+      "story-obsidian-default": ["ach-saved"],
+      "story-obsidian-apocalypse": ["ach-treason"],
+      "secret-panda-done": ["ach-pandamonium"],
+      "secret-lost-done": ["ach-lost"],
+      "mopup-blast": ["ach-blast"],
+      "mopup-maxed": ["ach-maxed"],
+      "mopup-fancy": ["ach-fancy"]
+    },
+    "step_map": {
+      "story-pumpkin-default": "step-plot-pumpkin",
+      "story-soggy-default": "step-plot-soggy",
+      "story-redstone-default": "step-built-redstone",
+      "story-cacti-default": "step-built-cacti",
+      "story-desert-default": "step-highdry-desert",
+      "story-fiery-default": "step-highdry-fiery",
+      "story-highblock-default": "step-highdry-highblock",
+      "mopup-wolf": "step-friend-wolf",
+      "mopup-llama": "step-friend-llama",
+      "mopup-golem": "step-friend-golem"
+    },
+    "counter_map": {
+      "count-mobs": "mobs",
+      "count-chests": "chests",
+      "count-emeralds": "emeralds",
+      "count-food": "food",
+      "count-enchanted": "enchanted",
+      "count-revives": "revives"
+    }
+  },
+  "sources": [
+    {"label": "TrueAchievements — Achievements", "url": "https://www.trueachievements.com/game/Minecraft-Dungeons/achievements"},
+    {"label": "TrueAchievements — Walkthrough", "url": "https://www.trueachievements.com/game/Minecraft-Dungeons/walkthrough"}
+  ],
+  "sections": [
+    {
+      "id": "story",
+      "title": "Phase 1 · First run — Default difficulty",
+      "subtitle": "11 achievements",
+      "achievements": [
+        {"id": "ach-happy", "name": "Happy Camper", "gs": 10, "req": "Complete Squid Coast and set up camp.", "how": "Finish the tutorial mission. Camp unlocks after it — this is the first achievement most players pop."},
+        {"id": "ach-fancy", "name": "Fancy That!", "gs": 10, "req": "Find and open your first “fancy” treasure chest.", "how": "In Squid Coast, head south-east at the start, roll across the water gap, and follow the small island to a golden chest."},
+        {"id": "ach-wooden", "name": "Wooden Sword", "gs": 10, "req": "Defeat 50 mobs.", "how": "Comes naturally in the first couple of missions. This counter is shared with Diamond Sword below — update it once and both track.", "counters": [{"group": "mobs", "target": 50}]},
+        {"id": "ach-out", "name": "Out of the Woods", "gs": 10, "req": "Complete Creeper Woods.", "how": "Trigger Creepers, then roll away — their blast damages nearby mobs. Also the densest early run for passive mobs (see #14)."},
+        {"id": "ach-scrappy", "name": "Scrappy Scout", "gs": 10, "req": "Reach Level 10.", "how": "Level comes from XP for defeating enemies. This level box is shared with #12 and #22 — enter your current level once.", "counters": [{"group": "level", "target": 10}]},
+        {"id": "ach-plot", "name": "The Plot Thickens", "gs": 20, "req": "Complete Pumpkin Pastures and Soggy Swamp.", "how": "Pops when the second of the two is finished. Pumpkin: prioritise Geomancers, then Enchanters. Soggy: do not roll into the swamp; boss is the Corrupted Cauldron — fight at range, clear of its pink fire.", "steps": [{"id": "step-plot-pumpkin", "label": "Pumpkin Pastures"}, {"id": "step-plot-soggy", "label": "Soggy Swamp"}]},
+        {"id": "ach-chaching", "name": "Cha-ching!", "gs": 30, "req": "Collect a total of 1,000 emeralds.", "how": "Total collected, not held — spending counts. Shared counter with #21 (5,000).", "counters": [{"group": "emeralds", "target": 1000}]},
+        {"id": "ach-worked", "name": "Worked like a Charm", "gs": 20, "req": "Enchant an item and upgrade the enchantment to Tier 3.", "how": "Level up for enchantment points, then put all three tiers into one enchantment on one item. Salvaging an item refunds its points if you change your mind."},
+        {"id": "ach-built", "name": "Built On Sand, Set in Stone", "gs": 50, "req": "Complete Redstone Mines and Cacti Canyon.", "how": "Pops at Cacti Canyon — you will have played Fiery Forge in between, but it is not part of this achievement. Redstone boss: Redstone Golem, attack when immobile after its slam. Cacti: keys are colour-matched; taking damage can make you drop a key.", "steps": [{"id": "step-built-redstone", "label": "Redstone Mines"}, {"id": "step-built-cacti", "label": "Cacti Canyon"}]},
+        {"id": "ach-highdry", "name": "High and Dry", "gs": 80, "req": "Complete Desert Temple, Fiery Forge and Highblock Halls.", "how": "Pops at Highblock Halls. Desert boss: The Nameless One, use columns for cover. Fiery boss: Redstone Monstrosity, lure it into a core-explosion channel. Highblock: do not run past the final Arch-Illager raid — the exit only opens after it is cleared.", "steps": [{"id": "step-highdry-desert", "label": "Desert Temple"}, {"id": "step-highdry-fiery", "label": "Fiery Forge"}, {"id": "step-highdry-highblock", "label": "Highblock Halls"}]},
+        {"id": "ach-saved", "name": "Saved the Overworld", "gs": 100, "req": "Defeat the Arch-Illager at the Obsidian Pinnacle.", "how": "Two stages: Arch-Illager, then the Heart of Ender. Run with its rotating beams, staying close to the boss, and shoot it when the beams stop. This completes Default — next up are Adventure, then Apocalypse (#23)."}
+      ]
+    },
+    {
+      "id": "steps",
+      "title": "Secrets & runes — walkthrough steps, not achievements themselves",
+      "subtitle": "These unlock missions and feed the achievements in later phases",
+      "intro": "None of the five base secret missions has its own base-game achievement, and the runes do not either — but you need them for grinding (Creepy Crypt), for Jungle Fungus (#29, via ???), and for the DLC secret achievements (#27, #32). For efficiency, use speed gear and the lowest difficulty for unlock runs. Once you interact with a “New Location” scroll, you can return to camp without finishing that secret mission.",
+      "step_cards": [
+        {"title": "Creepy Crypt — secret mission", "how": "In Creeper Woods after rescuing the first villager: west path, stone structure, glowing red block / button, scroll on the plinth inside. Best emerald/chest farm in the guide.", "steps": [{"id": "step-secret-creepy-unlocked", "label": "Unlocked"}, {"id": "step-secret-creepy-done", "label": "Completed"}]},
+        {"title": "Soggy Cave — secret mission", "how": "RNG: reload Soggy Swamp until the map shows Secrets 0/1 (0/2 after Default completion / rune). Past the cave after destroying the brews, take the side route — switch, raid, bridge, scroll between two flames.", "steps": [{"id": "step-secret-soggy-unlocked", "label": "Unlocked"}, {"id": "step-secret-soggy-done", "label": "Completed"}]},
+        {"title": "Arch Haven — secret mission", "how": "RNG: in Pumpkin Pastures, look for a ship with an enterable door on its main deck (other ships are blocked). If you reach the two-switch drawbridge, restart and re-check the start.", "steps": [{"id": "step-secret-arch-unlocked", "label": "Unlocked"}, {"id": "step-secret-arch-done", "label": "Completed"}]},
+        {"title": "Underhalls — secret mission", "how": "In Highblock Halls' first area, interact with a shield beside the stairs; a door opens between the two wall shields.", "steps": [{"id": "step-secret-under-unlocked", "label": "Unlocked"}, {"id": "step-secret-under-done", "label": "Completed"}]},
+        {"title": "Lower Temple — secret mission", "how": "In Desert Temple, after the gold-key gate, turn left at the crossroads above water; activate the three switches in the four corners to raise the scroll platform.", "steps": [{"id": "step-secret-lower-unlocked", "label": "Unlocked"}, {"id": "step-secret-lower-done", "label": "Completed"}]},
+        {"title": "10 runes → ???", "how": "In each rune room, press the square's buttons, wait for the rune, interact with it, then you may leave. Camp rune first (after Default: pistons past the pig house, around the hill to the church, lower the bridge, wall button). Then: Creeper Woods (5-villager area, SW platform), Pumpkin Pastures (wall top, button behind boxes), Soggy Swamp (right of Cauldron exit, behind mushrooms), Redstone Mines (2nd rescue, behind glowing redstone), Fiery Forge (wall behind dead Redstone Golem), Cacti Canyon (behind palm SW of blue-key gate), Desert Temple (NW of gold key, behind palm), Highblock Halls (east courtyard wall, unlit torch), Obsidian Pinnacle (library bookshelf book). Then back to the church, press the button again, and use the map through the new door.", "steps": [{"id": "step-rune-camp", "label": "Camp"}, {"id": "step-rune-creeper", "label": "Creeper"}, {"id": "step-rune-pumpkin", "label": "Pumpkin"}, {"id": "step-rune-soggy", "label": "Soggy"}, {"id": "step-rune-redstone", "label": "Redstone"}, {"id": "step-rune-fiery", "label": "Fiery"}, {"id": "step-rune-cacti", "label": "Cacti"}, {"id": "step-rune-desert", "label": "Desert"}, {"id": "step-rune-highblock", "label": "Highblock"}, {"id": "step-rune-obsidian", "label": "Obsidian"}, {"id": "step-secret-qqq-done", "label": "??? completed"}]}
+      ]
+    },
+    {
+      "id": "replay",
+      "title": "Phase 3 · Replays & mop-up — Adventure, Apocalypse, grinding",
+      "subtitle": "13 achievements",
+      "achievements": [
+        {"id": "ach-apprentice", "name": "Apprentice Adventurer", "gs": 30, "req": "Reach Level 25.", "how": "Shared level box with #5 and #22. XP farm if needed: Redstone Mines spawner rooms — stand between spawners without destroying them and clear what spawns.", "counters": [{"group": "level", "target": 25}]},
+        {"id": "ach-more", "name": "More For Me", "gs": 30, "req": "Open 100 treasure chests.", "how": "Explore side routes before the waypoint, and run Creepy Crypt — dense with chests.", "counters": [{"group": "chests", "target": 100}]},
+        {"id": "ach-passive", "name": "Passive Aggressive", "gs": 10, "req": "Defeat 50 passive mobs.", "how": "Sheep, pigs and cows when you see them; Creeper Woods runs are the densest.", "counters": [{"group": "passive", "target": 50}]},
+        {"id": "ach-break", "name": "Break the Spell", "gs": 30, "req": "Defeat 50 enchanted mobs.", "how": "Look for the purple beam from an Enchanter to its target. Apocalypse can also roll enchanted enemies without an Enchanter present.", "counters": [{"group": "enchanted", "target": 50}]},
+        {"id": "ach-diamond", "name": "Diamond Sword", "gs": 30, "req": "Defeat 2,500 mobs.", "how": "Shared counter with #3 (Wooden Sword, 50). Redstone Mines spawner farming is the fastest route.", "counters": [{"group": "mobs", "target": 2500}]},
+        {"id": "ach-omnom", "name": "Om Nom Nom", "gs": 10, "req": "Eat 200 food items.", "how": "The guide notes tracking counts in batches of 20 per completed mission — eat 20+, then finish the mission. Pumpkin Pastures drops a lot of food; Highblock Halls table food also counts.", "counters": [{"group": "food", "target": 200}]},
+        {"id": "ach-blast", "name": "Blast Radius", "gs": 30, "req": "Kill any 10 mobs at once with TNT.", "how": "Creepy Crypt and ??? have tight rooms where enemies cluster. Hold TNT, throw with ranged attack, stay clear of the blast outline."},
+        {"id": "ach-friend", "name": "A Friend in Need", "gs": 30, "req": "Use artefacts to summon the Wolf, Llama and Iron Golem allies at least once each.", "how": "Not at the same time — once each across your playthrough counts. Check a mission's drop list above “Start Mission” before running it.", "steps": [{"id": "step-friend-wolf", "label": "Wolf — Tasty Bone (Creeper Woods / Creepy Crypt)"}, {"id": "step-friend-llama", "label": "Llama — Wonderful Wheat (Arch Haven / Cacti / Obsidian)"}, {"id": "step-friend-golem", "label": "Iron Golem — Golem Kit (Apocalypse; Pumpkin Pastures in guide)"}]},
+        {"id": "ach-life", "name": "Life of the Party", "gs": 50, "req": "Revive a downed friend 20 times.", "how": "The only co-op achievement in this scope. Guide method: second player stands on Redstone Mines tracks at the start, gets downed by a minecart, and is revived once the on-screen revive prompt appears — repeat 19 more times. Friends' kills do not count toward your kill achievements, but revives do.", "counters": [{"group": "revives", "target": 20}]},
+        {"id": "ach-oooh", "name": "Oooh! Shiny!", "gs": 100, "req": "Collect a total of 5,000 emeralds.", "how": "Shared counter with #7. Farm Creepy Crypt with a maxed Prospector weapon; salvage unwanted loot (undo is only immediate, before you click away).", "counters": [{"group": "emeralds", "target": 5000}]},
+        {"id": "ach-expert", "name": "Expert Explorer", "gs": 100, "req": "Reach Level 50.", "how": "Shared level box with #5 and #12. Redstone Mines spawner farming is the guide's XP route.", "counters": [{"group": "level", "target": 50}]},
+        {"id": "ach-treason", "name": "High Treason", "gs": 100, "req": "Defeat the Arch-Illager on Apocalypse difficulty.", "how": "Same two-stage fight as #11, at Apocalypse power. The guide author's loadout was an Exploding Crossbow, Totem of Regeneration, Deathcap Mushrooms and Potion Barrier — keep distance in stage two and chip away at range."},
+        {"id": "ach-maxed", "name": "Maxed Out and Geared Up", "gs": 100, "req": "Equip a gear set consisting of fully enchanted items (3 enchantment slots upgraded to Level 3).", "how": "Armour, melee and ranged each need 3 slots at level 3. Minimum character level 54 with Common enchantments only. Apocalypse drops the 3-slot gear; power level matters less than the slots here.", "steps": [{"id": "step-maxed-armor", "label": "Armour 3× Tier 3"}, {"id": "step-maxed-melee", "label": "Melee 3× Tier 3"}, {"id": "step-maxed-ranged", "label": "Ranged 3× Tier 3"}]}
+      ]
+    },
+    {
+      "id": "jungle",
+      "title": "Phase 4 · Jungle Awakens DLC",
+      "subtitle": "5 achievements, 130G",
+      "achievements": [
+        {"id": "ach-survival", "name": "Survival Skills", "gs": 20, "req": "Complete Dingy Jungle without using a healing potion or losing a life.", "how": "First Jungle mission, Default, lowest difficulty, speed-run it. Picking up healing items / artefact healing is the guide's allowance — just do not press the potion or die."},
+        {"id": "ach-abomination", "name": "Abomination Domination", "gs": 50, "req": "Complete Overgrown Temple on Adventure or Apocalypse difficulty.", "how": "If Adventure feels too hard, farm earlier missions for power level first and come back."},
+        {"id": "ach-pandamonium", "name": "Pandamonium", "gs": 20, "req": "Complete the Panda Plateau secret mission.", "how": "Unlock: in Dingy Jungle, before “Survive the Gauntlet”, explore the side alleys around “Cross the Canyon” for a doorway; in the lava area, activate the west, north-west and north-east switches to open the bamboo gates to the scroll.", "steps": [{"id": "step-panda-unlocked", "label": "Panda Plateau unlocked"}]},
+        {"id": "ach-leader", "name": "Leader of the Pack", "gs": 10, "req": "Wear the Ocelot Armour and complete any mission featuring Ocelots without killing any of them.", "how": "Dingy Jungle, Panda Plateau or Overgrown Temple. Do not unequip/swap the armour mid-mission, and avoid explosive / area-of-effect gear so a stray blast does not hit an Ocelot. Lowest difficulty, run past most enemies."},
+        {"id": "ach-fungus", "name": "Jungle Fungus", "gs": 30, "req": "Defeat the Mooshroom Monstrosity using only gear unique to the jungle.", "how": "In ???, on the lowest difficulty. Unequip your ranged weapon entirely or it will not count. Jungle-only gear in the guide: Ocelot / Shadow Walker armour, Battlestaff / Growing Staff, Whip / Vine Whip, Corrupted Seeds and Jungle Fungus artefacts.", "steps": [{"id": "step-fungus-gear", "label": "Full Jungle-only set farmed"}, {"id": "step-fungus-ranged", "label": "Ranged weapon unequipped"}]}
+      ]
+    },
+    {
+      "id": "winter",
+      "title": "Phase 5 · Creeping Winter DLC",
+      "subtitle": "5 achievements, 120G",
+      "achievements": [
+        {"id": "ach-frozen", "name": "Frozen Fists", "gs": 30, "req": "Complete Frosted Fjord without having a melee or ranged weapon equipped at any time.", "how": "Safe route from the guide: unequip both before starting, lowest difficulty, speed-run it. Artefacts do the damage."},
+        {"id": "ach-lone", "name": "Lone Champion", "gs": 50, "req": "Complete Lone Fortress on Adventure or Apocalypse difficulty.", "how": "The Winter equivalent of #26 — same “come back stronger if it feels too hard” rule applies."},
+        {"id": "ach-lost", "name": "Lost in the Snow", "gs": 20, "req": "Complete the Lost Settlement secret mission.", "how": "Unlock: in Frosted Fjord, after the three-button door, take the non-waypoint path at the pillared statue square, then waterfall opening → purple gate / water wheel → stone platform switch → bounce pads to the blue button → water drops → pirate ship door to the scroll. RNG-gated and not shown in the map Secrets count, so expect repeat runs to that point.", "steps": [{"id": "step-lost-unlocked", "label": "Lost Settlement unlocked"}]},
+        {"id": "ach-smooth", "name": "Smooth Operator", "gs": 10, "req": "Slide a total distance of 500 blocks on ice.", "how": "Usually comes naturally across Winter missions. To force it, find an open ice patch and run in circles for a couple of minutes.", "counters": [{"group": "ice", "target": 500}]},
+        {"id": "ach-chill", "name": "Chill Out", "gs": 10, "req": "Defeat 5 mobs with a single Ice Wand attack.", "how": "Ice Wand drops in Frosted Fjord and Lone Fortress. Play normally until one drops, then restart a mission on the lowest difficulty for a crowded group — ??? is the guide's pick for enemies huddled together."}
+      ]
+    }
+  ]
+}

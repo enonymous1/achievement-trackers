@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Achievement Trackers</title>
+<meta name="description" content="Interactive achievement trackers: every card is an achievement, grouped and ordered by how it typically unlocks, with Gamerscore progress saved in your browser.">
+<script>
+  (function () {
+    try {
+      var theme = localStorage.getItem("at-theme");
+      if (!theme) {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      document.documentElement.setAttribute("data-bs-theme", theme);
+    } catch (e) {}
+  })();
+</script>
+<link rel="stylesheet" href="./assets/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="./assets/vendor/bootstrap-icons.min.css">
+<link rel="stylesheet" href="./assets/vendor/adminlte.min.css">
+<style>
+  .hidden{display:none !important}
+  @media print{.app-header{display:none !important}}
+</style>
+</head>
+<body class="layout-top-nav">
+<div class="app-wrapper">
+  <nav class="app-header navbar navbar-expand-lg bg-body">
+    <div class="container-fluid">
+      <a href="./" class="navbar-brand"><i class="bi bi-trophy"></i> Achievement Trackers</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#atNavbar" aria-controls="atNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="atNavbar">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a href="./" class="nav-link active">Home</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Games</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="./minecraft-dungeons/">Minecraft Dungeons</a></li>
+            </ul>
+          </li>
+          <li class="nav-item"><a href="#how-it-works" class="nav-link">How it works</a></li>
+        </ul>
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><button type="button" id="theme-toggle" class="btn btn-sm btn-outline-secondary" aria-label="Toggle dark mode">Theme</button></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="app-main">
+    <div class="app-content-header">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-12">
+            <h3 class="mb-0">Achievement Trackers</h3>
+            <p class="text-secondary mb-0">Welcome — pick a game, tick achievements as they pop, and watch your Gamerscore add up. Progress saves in your browser only; nothing is uploaded.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="app-content">
+      <div class="container-fluid">
+
+        <div class="card" id="how-it-works">
+          <div class="card-header"><h3 class="card-title">How this works</h3></div>
+          <div class="card-body">
+            <p class="mb-1">Each tracker is built from a game guide, but it is not a copy of one. Every card <em>is</em> an achievement — its name, Gamerscore and requirement — with the short route to that achievement underneath it. Achievements are grouped and ordered by how they typically unlock, so you can work through a game in order instead of hunting through a flat list.</p>
+            <p class="mb-1">Behind the scenes, one JSON file per game is the source of truth. A generator validates it (Gamerscore must sum to the declared total, IDs must be unique) and renders a self-contained tracker page. Adding a game means writing a JSON file, not hand-editing HTML — see the README in the repo.</p>
+            <p class="mb-0">Because every tracker shares this site, this hub can show your saved progress across games.</p>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <input type="search" id="search" class="form-control" placeholder="Search games…" aria-label="Search games">
+        </div>
+
+        <div class="row g-3">
+<div class="game item card col-12 col-md-6" data-name="Minecraft Dungeons"><div class="card-header"><h3 class="fs-5 mb-0"><a href="minecraft-dungeons/">Minecraft Dungeons</a></h3></div><div class="card-body"><p class="text-secondary">The 34 achievements from the linked walkthrough — base game (24, 1,000G) + Jungle Awakens (5, 130G) + Creeping Winter (5, 120G) = 1,250G. The full game now has 104 achievements / 3,000G; later DLC is not in this tracker.</p><p><strong>34 achievements · 1,250G</strong> · <span class="game-progress" data-slug="minecraft-dungeons">Not started yet</span></p><p class="mb-0"><a class="btn btn-success" href="minecraft-dungeons/">Open tracker →</a></p></div></div>
+        </div>
+
+        <div class="card mt-3">
+          <div class="card-body text-secondary">
+            <p class="mb-0">Adding a game? See the README: write <code>data/&lt;slug&gt;.json</code>, run <code>python3 tools/generate.py</code>, preview, commit the JSON and the generated pages together. Shell: AdminLTE 4.10.0 + Bootstrap 5.3.8 + Bootstrap Icons 1.11.3, vendored under <code>assets/vendor/</code> (see <code>THIRD_PARTY_NOTICES.md</code>).</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+  <footer class="app-footer">
+    <strong>Achievement Trackers</strong> — interactive checklists built from achievement guides.
+  </footer>
+</div>
+<script src="./assets/vendor/bootstrap.bundle.min.js"></script>
+<script src="./assets/vendor/adminlte.min.js"></script>
+<script>
+  (function () {
+    var button = document.getElementById("theme-toggle");
+    if (!button) return;
+    function label() {
+      var dark = document.documentElement.getAttribute("data-bs-theme") === "dark";
+      button.textContent = dark ? "Light" : "Dark";
+    }
+    button.addEventListener("click", function () {
+      var next = document.documentElement.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-bs-theme", next);
+      try { localStorage.setItem("at-theme", next); } catch (e) {}
+      label();
+    });
+    label();
+  })();
+</script>
+<script>
+(function(){
+  var GAMES=[{"slug": "minecraft-dungeons", "title": "Minecraft Dungeons", "storage_key": "md-dungeons-tracker-v2", "achievements": [{"id": "ach-happy", "gs": 10}, {"id": "ach-fancy", "gs": 10}, {"id": "ach-wooden", "gs": 10}, {"id": "ach-out", "gs": 10}, {"id": "ach-scrappy", "gs": 10}, {"id": "ach-plot", "gs": 20}, {"id": "ach-chaching", "gs": 30}, {"id": "ach-worked", "gs": 20}, {"id": "ach-built", "gs": 50}, {"id": "ach-highdry", "gs": 80}, {"id": "ach-saved", "gs": 100}, {"id": "ach-apprentice", "gs": 30}, {"id": "ach-more", "gs": 30}, {"id": "ach-passive", "gs": 10}, {"id": "ach-break", "gs": 30}, {"id": "ach-diamond", "gs": 30}, {"id": "ach-omnom", "gs": 10}, {"id": "ach-blast", "gs": 30}, {"id": "ach-friend", "gs": 30}, {"id": "ach-life", "gs": 50}, {"id": "ach-oooh", "gs": 100}, {"id": "ach-expert", "gs": 100}, {"id": "ach-treason", "gs": 100}, {"id": "ach-maxed", "gs": 100}, {"id": "ach-survival", "gs": 20}, {"id": "ach-abomination", "gs": 50}, {"id": "ach-pandamonium", "gs": 20}, {"id": "ach-leader", "gs": 10}, {"id": "ach-fungus", "gs": 30}, {"id": "ach-frozen", "gs": 30}, {"id": "ach-lone", "gs": 50}, {"id": "ach-lost", "gs": 20}, {"id": "ach-smooth", "gs": 10}, {"id": "ach-chill", "gs": 10}]}];
+  var search=document.getElementById('search');
+  GAMES.forEach(function(game){
+    var el=document.querySelector('.game-progress[data-slug="'+game.slug+'"]');
+    if(!el) return;
+    var raw; try{ raw=localStorage.getItem(game.storage_key); }catch(e){ return; }
+    if(!raw) return;
+    try{
+      var data=JSON.parse(raw), done=0, gs=0;
+      game.achievements.forEach(function(a){
+        if(data.checked&&data.checked[a.id]){ done++; gs+=a.gs; }
+      });
+      if(done) el.textContent=done+' / '+game.achievements.length+' achievements · '+gs.toLocaleString('en-US')+'G';
+    }catch(e){}
+  });
+  search.addEventListener('input',function(){
+    var q=search.value.toLowerCase().trim();
+    document.querySelectorAll('.game').forEach(function(card){
+      var name=(card.getAttribute('data-name')||'')+' '+card.textContent.toLowerCase();
+      card.classList.toggle('hidden',!!q&&name.indexOf(q)===-1);
+    });
+  });
+})();
+</script>
+</body>
+</html>

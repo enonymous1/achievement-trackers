@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minecraft Dungeons — Achievement Tracker</title>
+<meta name="description" content="Achievement-first tracker for Minecraft Dungeons: achievements grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<script>
+  /* Theme before first paint: saved choice wins, otherwise follow the
+     system. AdminLTE 4 / Bootstrap 5.3 read data-bs-theme. */
+  (function () {
+    try {
+      var theme = localStorage.getItem("at-theme");
+      if (!theme) {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      document.documentElement.setAttribute("data-bs-theme", theme);
+    } catch (e) {}
+  })();
+</script>
+<link rel="stylesheet" href="../assets/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="../assets/vendor/bootstrap-icons.min.css">
+<link rel="stylesheet" href="../assets/vendor/adminlte.min.css">
+<style>
+  /* Tracker specifics on top of AdminLTE: keep the checkbox/step
+     affordances from the pre-AdminLTE design, nothing more. */
+  .ach:has(input.task:checked){border-color:var(--bs-success)}
+  .ach-head input.task{accent-color:var(--bs-success);width:20px;height:20px;margin-top:3px;flex:none;cursor:pointer}
+  .steps{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .steps label{display:flex;gap:6px;align-items:center;background:var(--bs-body-bg);border:1px solid var(--bs-border-color);border-radius:99px;padding:5px 10px;font-size:.88rem;cursor:pointer}
+  .steps label:has(input:checked){border-color:var(--bs-success)}
+  .steps input{accent-color:var(--bs-success)}
+  .counter input[type=number]{width:110px}
+  details{background:var(--bs-body-bg);border:1px solid var(--bs-border-color);border-radius:var(--bs-border-radius);margin-bottom:1rem;overflow:hidden}
+  details summary{cursor:pointer;padding:1rem;font-weight:600}
+  details summary::marker{color:var(--bs-secondary-color)}
+  details summary small{display:block;font-weight:400;color:var(--bs-secondary-color);font-size:.9rem}
+  .section-body{padding:0 1rem 1rem}
+  .hidden{display:none !important}
+  @media print{.app-header,.controls{display:none !important}details{break-inside:avoid}}
+</style>
+</head>
+<body class="layout-top-nav">
+<div class="app-wrapper">
+  <nav class="app-header navbar navbar-expand-lg bg-body">
+    <div class="container-fluid">
+      <a href="../" class="navbar-brand"><i class="bi bi-trophy"></i> Achievement Trackers</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#atNavbar" aria-controls="atNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="atNavbar">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a href="../" class="nav-link">Home</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Games</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item active" href="../minecraft-dungeons/">Minecraft Dungeons</a></li>
+            </ul>
+          </li>
+          <li class="nav-item"><a href="#notes-section" class="nav-link">Notes</a></li>
+        </ul>
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item"><span class="nav-link" id="overallTextNav">0 / 34 · 0G</span></li>
+          <li class="nav-item ms-2"><button type="button" id="theme-toggle" class="btn btn-sm btn-outline-secondary" aria-label="Toggle dark mode">Theme</button></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="app-main">
+    <div class="app-content-header">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-12">
+            <h3 class="mb-0">Minecraft Dungeons <small class="text-secondary">— Achievement Tracker</small></h3>
+            <p class="text-secondary mb-0">Every card is an achievement. Tick it when it pops in-game; the sub-steps and counters underneath are just the route to that one achievement.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="app-content">
+      <div class="container-fluid">
+
+        <div class="card">
+          <div class="card-header d-flex justify-content-between flex-wrap gap-2">
+            <h3 class="card-title">Gamerscore progress</h3>
+            <span id="overallText">0 / 34 achievements · 0 / 1250G</span>
+          </div>
+          <div class="card-body">
+            <div class="progress" role="progressbar" aria-label="Gamerscore progress">
+              <div class="progress-bar bg-success" id="overallBar" style="width:0%"></div>
+            </div>
+            <div class="controls d-flex flex-wrap gap-2 align-items-center mt-3">
+              <input type="search" id="search" class="form-control flex-grow-1" style="min-width:220px" placeholder="Search achievements, missions, gear…" aria-label="Search tracker">
+              <label class="form-check-label"><input type="checkbox" id="incompleteOnly" class="form-check-input me-1"> Incomplete only</label>
+              <button type="button" id="exportBtn" class="btn btn-outline-secondary btn-sm">Export progress</button>
+              <label class="btn btn-outline-secondary btn-sm mb-0" for="importFile">Import progress</label>
+              <input type="file" id="importFile" accept=".json,application/json" class="d-none">
+              <button type="button" id="resetBtn" class="btn btn-outline-danger btn-sm">Reset all</button>
+            </div>
+            <div class="controls btn-group flex-wrap mt-2" role="group" aria-label="Filter by phase">
+              <button type="button" class="filter btn btn-outline-success active" data-filter="all">All</button>
+      <button type="button" class="filter" data-filter="story">First run</button>
+      <button type="button" class="filter" data-filter="steps">Secrets &amp; runes</button>
+      <button type="button" class="filter" data-filter="replay">Replays &amp; mop-up</button>
+      <button type="button" class="filter" data-filter="jungle">Jungle</button>
+      <button type="button" class="filter" data-filter="winter">Creeping Winter</button>
+            </div>
+            <p class="text-secondary mt-3 mb-0"><strong>Order:</strong> Sections run in the order achievements typically unlock — first Default run, then secrets/runes (the steps that feed later achievements), then replay/mop-up, then Jungle Awakens, then Creeping Winter. Numbers are that typical order, not a strict rule: cumulative achievements pop whenever you hit the number.</p>
+            <p class="text-secondary mb-0"><strong>Scope:</strong> The 34 achievements from the linked walkthrough — base game (24, 1,000G) + Jungle Awakens (5, 130G) + Creeping Winter (5, 120G) = 1,250G. The full game now has 104 achievements / 3,000G; later DLC is not in this tracker.</p>
+          </div>
+        </div>
+
+<details open data-cat="story">
+<summary>Phase 1 · First run — Default difficulty <small>11 achievements · <span class="sec-progress" data-section="story"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Happy Camper Complete Squid Coast and set up camp. Finish the tutorial mission. Camp unlocks after it — this is the first achievement most players pop."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-happy" data-gs="10"><div><span class="num text-secondary small fw-semibold">#1</span><h3 class="fs-6 mb-0">Happy Camper</h3></div><span class="gs badge text-bg-warning ms-auto">10G</span></div><div class="card-body"><p class="req text-secondary">Complete Squid Coast and set up camp.</p><p class="how">Finish the tutorial mission. Camp unlocks after it — this is the first achievement most players pop.</p></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Fancy That! Find and open your first “fancy” treasure chest. In Squid Coast, head south-east at the start, roll across the water gap, and follow the small island to a golden chest."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-fancy" data-gs="10"><div><span class="num text-secondary small fw-semibold">#2</span><h3 class="fs-6 mb-0">Fancy That!</h3></div><span class="gs badge text-bg-warning ms-auto">10G</span></div><div class="card-body"><p class="req text-secondary">Find and open your first “fancy” treasure chest.</p><p class="how">In Squid Coast, head south-east at the start, roll across the water gap, and follow the small island to a golden chest.</p></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Wooden Sword Defeat 50 mobs. Comes naturally in the first couple of missions. This counter is shared with Diamond Sword below — update it once and both track."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-wooden" data-gs="10"><div><span class="num text-secondary small fw-semibold">#3</span><h3 class="fs-6 mb-0">Wooden Sword</h3></div><span class="gs badge text-bg-warning ms-auto">10G</span></div><div class="card-body"><p class="req text-secondary">Defeat 50 mobs.</p><p class="how">Comes naturally in the first couple of missions. This counter is shared with Diamond Sword below — update it once and both track.</p><div class="counter mt-2"><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="mobs" data-target="50" min="0" value="0"> <span class="count-text text-secondary"></span><div class="progress mt-2" style="height:10px"><div class="progress-bar bg-success" style="width:0%"></div></div></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Out of the Woods Complete Creeper Woods. Trigger Creepers, then roll away — their blast damages nearby mobs. Also the densest early run for passive mobs (see #14)."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-out" data-gs="10"><div><span class="num text-secondary small fw-semibold">#4</span><h3 class="fs-6 mb-0">Out of the Woods</h3></div><span class="gs badge text-bg-warning ms-auto">10G</span></div><div class="card-body"><p class="req text-secondary">Complete Creeper Woods.</p><p class="how">Trigger Creepers, then roll away — their blast damages nearby mobs. Also the densest early run for passive mobs (see #14).</p></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Scrappy Scout Reach Level 10. Level comes from XP for defeating enemies. This level box is shared with #12 and #22 — enter your current level once."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-scrappy" data-gs="10"><div><span class="num text-secondary small fw-semibold">#5</span><h3 class="fs-6 mb-0">Scrappy Scout</h3></div><span class="gs badge text-bg-warning ms-auto">10G</span></div><div class="card-body"><p class="req text-secondary">Reach Level 10.</p><p class="how">Level comes from XP for defeating enemies. This level box is shared with #12 and #22 — enter your current level once.</p><div class="counter mt-2"><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="level" data-target="10" min="0" value="0"> <span class="count-text text-secondary"></span><div class="progress mt-2" style="height:10px"><div class="progress-bar bg-success" style="width:0%"></div></div></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="The Plot Thickens Complete Pumpkin Pastures and Soggy Swamp. Pops when the second of the two is finished. Pumpkin: prioritise Geomancers, then Enchanters. Soggy: do not roll into the swamp; boss is the Corrupted Cauldron — fight at range, clear of its pink fire."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-plot" data-gs="20"><div><span class="num text-secondary small fw-semibold">#6</span><h3 class="fs-6 mb-0">The Plot Thickens</h3></div><span class="gs badge text-bg-warning ms-auto">20G</span></div><div class="card-body"><p class="req text-secondary">Complete Pumpkin Pastures and Soggy Swamp.</p><p class="how">Pops when the second of the two is finished. Pumpkin: prioritise Geomancers, then Enchanters. Soggy: do not roll into the swamp; boss is the Corrupted Cauldron — fight at range, clear of its pink fire.</p><div class="steps"><label><input type="checkbox" class="step" id="step-plot-pumpkin" data-parent="ach-plot"> Pumpkin Pastures</label><label><input type="checkbox" class="step" id="step-plot-soggy" data-parent="ach-plot"> Soggy Swamp</label></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Cha-ching! Collect a total of 1,000 emeralds. Total collected, not held — spending counts. Shared counter with #21 (5,000)."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-chaching" data-gs="30"><div><span class="num text-secondary small fw-semibold">#7</span><h3 class="fs-6 mb-0">Cha-ching!</h3></div><span class="gs badge text-bg-warning ms-auto">30G</span></div><div class="card-body"><p class="req text-secondary">Collect a total of 1,000 emeralds.</p><p class="how">Total collected, not held — spending counts. Shared counter with #21 (5,000).</p><div class="counter mt-2"><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="emeralds" data-target="1000" min="0" value="0"> <span class="count-text text-secondary"></span><div class="progress mt-2" style="height:10px"><div class="progress-bar bg-success" style="width:0%"></div></div></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Worked like a Charm Enchant an item and upgrade the enchantment to Tier 3. Level up for enchantment points, then put all three tiers into one enchantment on one item. Salvaging an item refunds its points if you change your mind."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-worked" data-gs="20"><div><span class="num text-secondary small fw-semibold">#8</span><h3 class="fs-6 mb-0">Worked like a Charm</h3></div><span class="gs badge text-bg-warning ms-auto">20G</span></div><div class="card-body"><p class="req text-secondary">Enchant an item and upgrade the enchantment to Tier 3.</p><p class="how">Level up for enchantment points, then put all three tiers into one enchantment on one item. Salvaging an item refunds its points if you change your mind.</p></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Built On Sand, Set in Stone Complete Redstone Mines and Cacti Canyon. Pops at Cacti Canyon — you will have played Fiery Forge in between, but it is not part of this achievement. Redstone boss: Redstone Golem, attack when immobile after its slam. Cacti: keys are colour-matched; taking damage can make you drop a key."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-built" data-gs="50"><div><span class="num text-secondary small fw-semibold">#9</span><h3 class="fs-6 mb-0">Built On Sand, Set in Stone</h3></div><span class="gs badge text-bg-warning ms-auto">50G</span></div><div class="card-body"><p class="req text-secondary">Complete Redstone Mines and Cacti Canyon.</p><p class="how">Pops at Cacti Canyon — you will have played Fiery Forge in between, but it is not part of this achievement. Redstone boss: Redstone Golem, attack when immobile after its slam. Cacti: keys are colour-matched; taking damage can make you drop a key.</p><div class="steps"><label><input type="checkbox" class="step" id="step-built-redstone" data-parent="ach-built"> Redstone Mines</label><label><input type="checkbox" class="step" id="step-built-cacti" data-parent="ach-built"> Cacti Canyon</label></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="High and Dry Complete Desert Temple, Fiery Forge and Highblock Halls. Pops at Highblock Halls. Desert boss: The Nameless One, use columns for cover. Fiery boss: Redstone Monstrosity, lure it into a core-explosion channel. Highblock: do not run past the final Arch-Illager raid — the exit only opens after it is cleared."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-highdry" data-gs="80"><div><span class="num text-secondary small fw-semibold">#10</span><h3 class="fs-6 mb-0">High and Dry</h3></div><span class="gs badge text-bg-warning ms-auto">80G</span></div><div class="card-body"><p class="req text-secondary">Complete Desert Temple, Fiery Forge and Highblock Halls.</p><p class="how">Pops at Highblock Halls. Desert boss: The Nameless One, use columns for cover. Fiery boss: Redstone Monstrosity, lure it into a core-explosion channel. Highblock: do not run past the final Arch-Illager raid — the exit only opens after it is cleared.</p><div class="steps"><label><input type="checkbox" class="step" id="step-highdry-desert" data-parent="ach-highdry"> Desert Temple</label><label><input type="checkbox" class="step" id="step-highdry-fiery" data-parent="ach-highdry"> Fiery Forge</label><label><input type="checkbox" class="step" id="step-highdry-highblock" data-parent="ach-highdry"> Highblock Halls</label></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Saved the Overworld Defeat the Arch-Illager at the Obsidian Pinnacle. Two stages: Arch-Illager, then the Heart of Ender. Run with its rotating beams, staying close to the boss, and shoot it when the beams stop. This completes Default — next up are Adventure, then Apocalypse (#23)."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-saved" data-gs="100"><div><span class="num text-secondary small fw-semibold">#11</span><h3 class="fs-6 mb-0">Saved the Overworld</h3></div><span class="gs badge text-bg-warning ms-auto">100G</span></div><div class="card-body"><p class="req text-secondary">Defeat the Arch-Illager at the Obsidian Pinnacle.</p><p class="how">Two stages: Arch-Illager, then the Heart of Ender. Run with its rotating beams, staying close to the boss, and shoot it when the beams stop. This completes Default — next up are Adventure, then Apocalypse (#23).</p></div></article>
+</div></div></details>
+<details data-cat="steps">
+<summary>Secrets & runes — walkthrough steps, not achievements themselves <small>These unlock missions and feed the achievements in later phases</small></summary>
+<div class="section-body">
+<p class="text-secondary">None of the five base secret missions has its own base-game achievement, and the runes do not either — but you need them for grinding (Creepy Crypt), for Jungle Fungus (#29, via ???), and for the DLC secret achievements (#27, #32). For efficiency, use speed gear and the lowest difficulty for unlock runs. Once you interact with a “New Location” scroll, you can return to camp without finishing that secret mission.</p>
+<div class="row g-3">
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Creepy Crypt — secret mission In Creeper Woods after rescuing the first villager: west path, stone structure, glowing red block / button, scroll on the plinth inside. Best emerald/chest farm in the guide."><div class="card-header"><h3 class="fs-6 mb-0">Creepy Crypt — secret mission</h3></div><div class="card-body"><p class="how">In Creeper Woods after rescuing the first villager: west path, stone structure, glowing red block / button, scroll on the plinth inside. Best emerald/chest farm in the guide.</p><div class="steps"><label><input type="checkbox" class="step" id="step-secret-creepy-unlocked"> Unlocked</label><label><input type="checkbox" class="step" id="step-secret-creepy-done"> Completed</label></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Soggy Cave — secret mission RNG: reload Soggy Swamp until the map shows Secrets 0/1 (0/2 after Default completion / rune). Past the cave after destroying the brews, take the side route — switch, raid, bridge, scroll between two flames."><div class="card-header"><h3 class="fs-6 mb-0">Soggy Cave — secret mission</h3></div><div class="card-body"><p class="how">RNG: reload Soggy Swamp until the map shows Secrets 0/1 (0/2 after Default completion / rune). Past the cave after destroying the brews, take the side route — switch, raid, bridge, scroll between two flames.</p><div class="steps"><label><input type="checkbox" class="step" id="step-secret-soggy-unlocked"> Unlocked</label><label><input type="checkbox" class="step" id="step-secret-soggy-done"> Completed</label></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Arch Haven — secret mission RNG: in Pumpkin Pastures, look for a ship with an enterable door on its main deck (other ships are blocked). If you reach the two-switch drawbridge, restart and re-check the start."><div class="card-header"><h3 class="fs-6 mb-0">Arch Haven — secret mission</h3></div><div class="card-body"><p class="how">RNG: in Pumpkin Pastures, look for a ship with an enterable door on its main deck (other ships are blocked). If you reach the two-switch drawbridge, restart and re-check the start.</p><div class="steps"><label><input type="checkbox" class="step" id="step-secret-arch-unlocked"> Unlocked</label><label><input type="checkbox" class="step" id="step-secret-arch-done"> Completed</label></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Underhalls — secret mission In Highblock Halls&#x27; first area, interact with a shield beside the stairs; a door opens between the two wall shields."><div class="card-header"><h3 class="fs-6 mb-0">Underhalls — secret mission</h3></div><div class="card-body"><p class="how">In Highblock Halls&#x27; first area, interact with a shield beside the stairs; a door opens between the two wall shields.</p><div class="steps"><label><input type="checkbox" class="step" id="step-secret-under-unlocked"> Unlocked</label><label><input type="checkbox" class="step" id="step-secret-under-done"> Completed</label></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Lower Temple — secret mission In Desert Temple, after the gold-key gate, turn left at the crossroads above water; activate the three switches in the four corners to raise the scroll platform."><div class="card-header"><h3 class="fs-6 mb-0">Lower Temple — secret mission</h3></div><div class="card-body"><p class="how">In Desert Temple, after the gold-key gate, turn left at the crossroads above water; activate the three switches in the four corners to raise the scroll platform.</p><div class="steps"><label><input type="checkbox" class="step" id="step-secret-lower-unlocked"> Unlocked</label><label><input type="checkbox" class="step" id="step-secret-lower-done"> Completed</label></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="10 runes → ??? In each rune room, press the square&#x27;s buttons, wait for the rune, interact with it, then you may leave. Camp rune first (after Default: pistons past the pig house, around the hill to the church, lower the bridge, wall button). Then: Creeper Woods (5-villager area, SW platform), Pumpkin Pastures (wall top, button behind boxes), Soggy Swamp (right of Cauldron exit, behind mushrooms), Redstone Mines (2nd rescue, behind glowing redstone), Fiery Forge (wall behind dead Redstone Golem), Cacti Canyon (behind palm SW of blue-key gate), Desert Temple (NW of gold key, behind palm), Highblock Halls (east courtyard wall, unlit torch), Obsidian Pinnacle (library bookshelf book). Then back to the church, press the button again, and use the map through the new door."><div class="card-header"><h3 class="fs-6 mb-0">10 runes → ???</h3></div><div class="card-body"><p class="how">In each rune room, press the square&#x27;s buttons, wait for the rune, interact with it, then you may leave. Camp rune first (after Default: pistons past the pig house, around the hill to the church, lower the bridge, wall button). Then: Creeper Woods (5-villager area, SW platform), Pumpkin Pastures (wall top, button behind boxes), Soggy Swamp (right of Cauldron exit, behind mushrooms), Redstone Mines (2nd rescue, behind glowing redstone), Fiery Forge (wall behind dead Redstone Golem), Cacti Canyon (behind palm SW of blue-key gate), Desert Temple (NW of gold key, behind palm), Highblock Halls (east courtyard wall, unlit torch), Obsidian Pinnacle (library bookshelf book). Then back to the church, press the button again, and use the map through the new door.</p><div class="steps"><label><input type="checkbox" class="step" id="step-rune-camp"> Camp</label><label><input type="checkbox" class="step" id="step-rune-creeper"> Creeper</label><label><input type="checkbox" class="step" id="step-rune-pumpkin"> Pumpkin</label><label><input type="checkbox" class="step" id="step-rune-soggy"> Soggy</label><label><input type="checkbox" class="step" id="step-rune-redstone"> Redstone</label><label><input type="checkbox" class="step" id="step-rune-fiery"> Fiery</label><label><input type="checkbox" class="step" id="step-rune-cacti"> Cacti</label><label><input type="checkbox" class="step" id="step-rune-desert"> Desert</label><label><input type="checkbox" class="step" id="step-rune-highblock"> Highblock</label><label><input type="checkbox" class="step" id="step-rune-obsidian"> Obsidian</label><label><input type="checkbox" class="step" id="step-secret-qqq-done"> ??? completed</label></div></div></article>
+</div></div></details>
+<details data-cat="replay">
+<summary>Phase 3 · Replays & mop-up — Adventure, Apocalypse, grinding <small>13 achievements · <span class="sec-progress" data-section="replay"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Apprentice Adventurer Reach Level 25. Shared level box with #5 and #22. XP farm if needed: Redstone Mines spawner rooms — stand between spawners without destroying them and clear what spawns."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-apprentice" data-gs="30"><div><span class="num text-secondary small fw-semibold">#12</span><h3 class="fs-6 mb-0">Apprentice Adventurer</h3></div><span class="gs badge text-bg-warning ms-auto">30G</span></div><div class="card-body"><p class="req text-secondary">Reach Level 25.</p><p class="how">Shared level box with #5 and #22. XP farm if needed: Redstone Mines spawner rooms — stand between spawners without destroying them and clear what spawns.</p><div class="counter mt-2"><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="level" data-target="25" min="0" value="0"> <span class="count-text text-secondary"></span><div class="progress mt-2" style="height:10px"><div class="progress-bar bg-success" style="width:0%"></div></div></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="More For Me Open 100 treasure chests. Explore side routes before the waypoint, and run Creepy Crypt — dense with chests."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-more" data-gs="30"><div><span class="num text-secondary small fw-semibold">#13</span><h3 class="fs-6 mb-0">More For Me</h3></div><span class="gs badge text-bg-warning ms-auto">30G</span></div><div class="card-body"><p class="req text-secondary">Open 100 treasure chests.</p><p class="how">Explore side routes before the waypoint, and run Creepy Crypt — dense with chests.</p><div class="counter mt-2"><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="chests" data-target="100" min="0" value="0"> <span class="count-text text-secondary"></span><div class="progress mt-2" style="height:10px"><div class="progress-bar bg-success" style="width:0%"></div></div></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Passive Aggressive Defeat 50 passive mobs. Sheep, pigs and cows when you see them; Creeper Woods runs are the densest."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-passive" data-gs="10"><div><span class="num text-secondary small fw-semibold">#14</span><h3 class="fs-6 mb-0">Passive Aggressive</h3></div><span class="gs badge text-bg-warning ms-auto">10G</span></div><div class="card-body"><p class="req text-secondary">Defeat 50 passive mobs.</p><p class="how">Sheep, pigs and cows when you see them; Creeper Woods runs are the densest.</p><div class="counter mt-2"><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="passive" data-target="50" min="0" value="0"> <span class="count-text text-secondary"></span><div class="progress mt-2" style="height:10px"><div class="progress-bar bg-success" style="width:0%"></div></div></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Break the Spell Defeat 50 enchanted mobs. Look for the purple beam from an Enchanter to its target. Apocalypse can also roll enchanted enemies without an Enchanter present."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-break" data-gs="30"><div><span class="num text-secondary small fw-semibold">#15</span><h3 class="fs-6 mb-0">Break the Spell</h3></div><span class="gs badge text-bg-warning ms-auto">30G</span></div><div class="card-body"><p class="req text-secondary">Defeat 50 enchanted mobs.</p><p class="how">Look for the purple beam from an Enchanter to its target. Apocalypse can also roll enchanted enemies without an Enchanter present.</p><div class="counter mt-2"><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="enchanted" data-target="50" min="0" value="0"> <span class="count-text text-secondary"></span><div class="progress mt-2" style="height:10px"><div class="progress-bar bg-success" style="width:0%"></div></div></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Diamond Sword Defeat 2,500 mobs. Shared counter with #3 (Wooden Sword, 50). Redstone Mines spawner farming is the fastest route."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-diamond" data-gs="30"><div><span class="num text-secondary small fw-semibold">#16</span><h3 class="fs-6 mb-0">Diamond Sword</h3></div><span class="gs badge text-bg-warning ms-auto">30G</span></div><div class="card-body"><p class="req text-secondary">Defeat 2,500 mobs.</p><p class="how">Shared counter with #3 (Wooden Sword, 50). Redstone Mines spawner farming is the fastest route.</p><div class="counter mt-2"><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="mobs" data-target="2500" min="0" value="0"> <span class="count-text text-secondary"></span><div class="progress mt-2" style="height:10px"><div class="progress-bar bg-success" style="width:0%"></div></div></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Om Nom Nom Eat 200 food items. The guide notes tracking counts in batches of 20 per completed mission — eat 20+, then finish the mission. Pumpkin Pastures drops a lot of food; Highblock Halls table food also counts."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-omnom" data-gs="10"><div><span class="num text-secondary small fw-semibold">#17</span><h3 class="fs-6 mb-0">Om Nom Nom</h3></div><span class="gs badge text-bg-warning ms-auto">10G</span></div><div class="card-body"><p class="req text-secondary">Eat 200 food items.</p><p class="how">The guide notes tracking counts in batches of 20 per completed mission — eat 20+, then finish the mission. Pumpkin Pastures drops a lot of food; Highblock Halls table food also counts.</p><div class="counter mt-2"><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="food" data-target="200" min="0" value="0"> <span class="count-text text-secondary"></span><div class="progress mt-2" style="height:10px"><div class="progress-bar bg-success" style="width:0%"></div></div></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Blast Radius Kill any 10 mobs at once with TNT. Creepy Crypt and ??? have tight rooms where enemies cluster. Hold TNT, throw with ranged attack, stay clear of the blast outline."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-blast" data-gs="30"><div><span class="num text-secondary small fw-semibold">#18</span><h3 class="fs-6 mb-0">Blast Radius</h3></div><span class="gs badge text-bg-warning ms-auto">30G</span></div><div class="card-body"><p class="req text-secondary">Kill any 10 mobs at once with TNT.</p><p class="how">Creepy Crypt and ??? have tight rooms where enemies cluster. Hold TNT, throw with ranged attack, stay clear of the blast outline.</p></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="A Friend in Need Use artefacts to summon the Wolf, Llama and Iron Golem allies at least once each. Not at the same time — once each across your playthrough counts. Check a mission&#x27;s drop list above “Start Mission” before running it."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-friend" data-gs="30"><div><span class="num text-secondary small fw-semibold">#19</span><h3 class="fs-6 mb-0">A Friend in Need</h3></div><span class="gs badge text-bg-warning ms-auto">30G</span></div><div class="card-body"><p class="req text-secondary">Use artefacts to summon the Wolf, Llama and Iron Golem allies at least once each.</p><p class="how">Not at the same time — once each across your playthrough counts. Check a mission&#x27;s drop list above “Start Mission” before running it.</p><div class="steps"><label><input type="checkbox" class="step" id="step-friend-wolf" data-parent="ach-friend"> Wolf — Tasty Bone (Creeper Woods / Creepy Crypt)</label><label><input type="checkbox" class="step" id="step-friend-llama" data-parent="ach-friend"> Llama — Wonderful Wheat (Arch Haven / Cacti / Obsidian)</label><label><input type="checkbox" class="step" id="step-friend-golem" data-parent="ach-friend"> Iron Golem — Golem Kit (Apocalypse; Pumpkin Pastures in guide)</label></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Life of the Party Revive a downed friend 20 times. The only co-op achievement in this scope. Guide method: second player stands on Redstone Mines tracks at the start, gets downed by a minecart, and is revived once the on-screen revive prompt appears — repeat 19 more times. Friends&#x27; kills do not count toward your kill achievements, but revives do."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-life" data-gs="50"><div><span class="num text-secondary small fw-semibold">#20</span><h3 class="fs-6 mb-0">Life of the Party</h3></div><span class="gs badge text-bg-warning ms-auto">50G</span></div><div class="card-body"><p class="req text-secondary">Revive a downed friend 20 times.</p><p class="how">The only co-op achievement in this scope. Guide method: second player stands on Redstone Mines tracks at the start, gets downed by a minecart, and is revived once the on-screen revive prompt appears — repeat 19 more times. Friends&#x27; kills do not count toward your kill achievements, but revives do.</p><div class="counter mt-2"><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="revives" data-target="20" min="0" value="0"> <span class="count-text text-secondary"></span><div class="progress mt-2" style="height:10px"><div class="progress-bar bg-success" style="width:0%"></div></div></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Oooh! Shiny! Collect a total of 5,000 emeralds. Shared counter with #7. Farm Creepy Crypt with a maxed Prospector weapon; salvage unwanted loot (undo is only immediate, before you click away)."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-oooh" data-gs="100"><div><span class="num text-secondary small fw-semibold">#21</span><h3 class="fs-6 mb-0">Oooh! Shiny!</h3></div><span class="gs badge text-bg-warning ms-auto">100G</span></div><div class="card-body"><p class="req text-secondary">Collect a total of 5,000 emeralds.</p><p class="how">Shared counter with #7. Farm Creepy Crypt with a maxed Prospector weapon; salvage unwanted loot (undo is only immediate, before you click away).</p><div class="counter mt-2"><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="emeralds" data-target="5000" min="0" value="0"> <span class="count-text text-secondary"></span><div class="progress mt-2" style="height:10px"><div class="progress-bar bg-success" style="width:0%"></div></div></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Expert Explorer Reach Level 50. Shared level box with #5 and #12. Redstone Mines spawner farming is the guide&#x27;s XP route."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-expert" data-gs="100"><div><span class="num text-secondary small fw-semibold">#22</span><h3 class="fs-6 mb-0">Expert Explorer</h3></div><span class="gs badge text-bg-warning ms-auto">100G</span></div><div class="card-body"><p class="req text-secondary">Reach Level 50.</p><p class="how">Shared level box with #5 and #12. Redstone Mines spawner farming is the guide&#x27;s XP route.</p><div class="counter mt-2"><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="level" data-target="50" min="0" value="0"> <span class="count-text text-secondary"></span><div class="progress mt-2" style="height:10px"><div class="progress-bar bg-success" style="width:0%"></div></div></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="High Treason Defeat the Arch-Illager on Apocalypse difficulty. Same two-stage fight as #11, at Apocalypse power. The guide author&#x27;s loadout was an Exploding Crossbow, Totem of Regeneration, Deathcap Mushrooms and Potion Barrier — keep distance in stage two and chip away at range."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-treason" data-gs="100"><div><span class="num text-secondary small fw-semibold">#23</span><h3 class="fs-6 mb-0">High Treason</h3></div><span class="gs badge text-bg-warning ms-auto">100G</span></div><div class="card-body"><p class="req text-secondary">Defeat the Arch-Illager on Apocalypse difficulty.</p><p class="how">Same two-stage fight as #11, at Apocalypse power. The guide author&#x27;s loadout was an Exploding Crossbow, Totem of Regeneration, Deathcap Mushrooms and Potion Barrier — keep distance in stage two and chip away at range.</p></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Maxed Out and Geared Up Equip a gear set consisting of fully enchanted items (3 enchantment slots upgraded to Level 3). Armour, melee and ranged each need 3 slots at level 3. Minimum character level 54 with Common enchantments only. Apocalypse drops the 3-slot gear; power level matters less than the slots here."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-maxed" data-gs="100"><div><span class="num text-secondary small fw-semibold">#24</span><h3 class="fs-6 mb-0">Maxed Out and Geared Up</h3></div><span class="gs badge text-bg-warning ms-auto">100G</span></div><div class="card-body"><p class="req text-secondary">Equip a gear set consisting of fully enchanted items (3 enchantment slots upgraded to Level 3).</p><p class="how">Armour, melee and ranged each need 3 slots at level 3. Minimum character level 54 with Common enchantments only. Apocalypse drops the 3-slot gear; power level matters less than the slots here.</p><div class="steps"><label><input type="checkbox" class="step" id="step-maxed-armor" data-parent="ach-maxed"> Armour 3× Tier 3</label><label><input type="checkbox" class="step" id="step-maxed-melee" data-parent="ach-maxed"> Melee 3× Tier 3</label><label><input type="checkbox" class="step" id="step-maxed-ranged" data-parent="ach-maxed"> Ranged 3× Tier 3</label></div></div></article>
+</div></div></details>
+<details data-cat="jungle">
+<summary>Phase 4 · Jungle Awakens DLC <small>5 achievements, 130G · <span class="sec-progress" data-section="jungle"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Survival Skills Complete Dingy Jungle without using a healing potion or losing a life. First Jungle mission, Default, lowest difficulty, speed-run it. Picking up healing items / artefact healing is the guide&#x27;s allowance — just do not press the potion or die."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-survival" data-gs="20"><div><span class="num text-secondary small fw-semibold">#25</span><h3 class="fs-6 mb-0">Survival Skills</h3></div><span class="gs badge text-bg-warning ms-auto">20G</span></div><div class="card-body"><p class="req text-secondary">Complete Dingy Jungle without using a healing potion or losing a life.</p><p class="how">First Jungle mission, Default, lowest difficulty, speed-run it. Picking up healing items / artefact healing is the guide&#x27;s allowance — just do not press the potion or die.</p></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Abomination Domination Complete Overgrown Temple on Adventure or Apocalypse difficulty. If Adventure feels too hard, farm earlier missions for power level first and come back."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-abomination" data-gs="50"><div><span class="num text-secondary small fw-semibold">#26</span><h3 class="fs-6 mb-0">Abomination Domination</h3></div><span class="gs badge text-bg-warning ms-auto">50G</span></div><div class="card-body"><p class="req text-secondary">Complete Overgrown Temple on Adventure or Apocalypse difficulty.</p><p class="how">If Adventure feels too hard, farm earlier missions for power level first and come back.</p></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Pandamonium Complete the Panda Plateau secret mission. Unlock: in Dingy Jungle, before “Survive the Gauntlet”, explore the side alleys around “Cross the Canyon” for a doorway; in the lava area, activate the west, north-west and north-east switches to open the bamboo gates to the scroll."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-pandamonium" data-gs="20"><div><span class="num text-secondary small fw-semibold">#27</span><h3 class="fs-6 mb-0">Pandamonium</h3></div><span class="gs badge text-bg-warning ms-auto">20G</span></div><div class="card-body"><p class="req text-secondary">Complete the Panda Plateau secret mission.</p><p class="how">Unlock: in Dingy Jungle, before “Survive the Gauntlet”, explore the side alleys around “Cross the Canyon” for a doorway; in the lava area, activate the west, north-west and north-east switches to open the bamboo gates to the scroll.</p><div class="steps"><label><input type="checkbox" class="step" id="step-panda-unlocked" data-parent="ach-pandamonium"> Panda Plateau unlocked</label></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Leader of the Pack Wear the Ocelot Armour and complete any mission featuring Ocelots without killing any of them. Dingy Jungle, Panda Plateau or Overgrown Temple. Do not unequip/swap the armour mid-mission, and avoid explosive / area-of-effect gear so a stray blast does not hit an Ocelot. Lowest difficulty, run past most enemies."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-leader" data-gs="10"><div><span class="num text-secondary small fw-semibold">#28</span><h3 class="fs-6 mb-0">Leader of the Pack</h3></div><span class="gs badge text-bg-warning ms-auto">10G</span></div><div class="card-body"><p class="req text-secondary">Wear the Ocelot Armour and complete any mission featuring Ocelots without killing any of them.</p><p class="how">Dingy Jungle, Panda Plateau or Overgrown Temple. Do not unequip/swap the armour mid-mission, and avoid explosive / area-of-effect gear so a stray blast does not hit an Ocelot. Lowest difficulty, run past most enemies.</p></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Jungle Fungus Defeat the Mooshroom Monstrosity using only gear unique to the jungle. In ???, on the lowest difficulty. Unequip your ranged weapon entirely or it will not count. Jungle-only gear in the guide: Ocelot / Shadow Walker armour, Battlestaff / Growing Staff, Whip / Vine Whip, Corrupted Seeds and Jungle Fungus artefacts."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-fungus" data-gs="30"><div><span class="num text-secondary small fw-semibold">#29</span><h3 class="fs-6 mb-0">Jungle Fungus</h3></div><span class="gs badge text-bg-warning ms-auto">30G</span></div><div class="card-body"><p class="req text-secondary">Defeat the Mooshroom Monstrosity using only gear unique to the jungle.</p><p class="how">In ???, on the lowest difficulty. Unequip your ranged weapon entirely or it will not count. Jungle-only gear in the guide: Ocelot / Shadow Walker armour, Battlestaff / Growing Staff, Whip / Vine Whip, Corrupted Seeds and Jungle Fungus artefacts.</p><div class="steps"><label><input type="checkbox" class="step" id="step-fungus-gear" data-parent="ach-fungus"> Full Jungle-only set farmed</label><label><input type="checkbox" class="step" id="step-fungus-ranged" data-parent="ach-fungus"> Ranged weapon unequipped</label></div></div></article>
+</div></div></details>
+<details data-cat="winter">
+<summary>Phase 5 · Creeping Winter DLC <small>5 achievements, 120G · <span class="sec-progress" data-section="winter"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Frozen Fists Complete Frosted Fjord without having a melee or ranged weapon equipped at any time. Safe route from the guide: unequip both before starting, lowest difficulty, speed-run it. Artefacts do the damage."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-frozen" data-gs="30"><div><span class="num text-secondary small fw-semibold">#30</span><h3 class="fs-6 mb-0">Frozen Fists</h3></div><span class="gs badge text-bg-warning ms-auto">30G</span></div><div class="card-body"><p class="req text-secondary">Complete Frosted Fjord without having a melee or ranged weapon equipped at any time.</p><p class="how">Safe route from the guide: unequip both before starting, lowest difficulty, speed-run it. Artefacts do the damage.</p></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Lone Champion Complete Lone Fortress on Adventure or Apocalypse difficulty. The Winter equivalent of #26 — same “come back stronger if it feels too hard” rule applies."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-lone" data-gs="50"><div><span class="num text-secondary small fw-semibold">#31</span><h3 class="fs-6 mb-0">Lone Champion</h3></div><span class="gs badge text-bg-warning ms-auto">50G</span></div><div class="card-body"><p class="req text-secondary">Complete Lone Fortress on Adventure or Apocalypse difficulty.</p><p class="how">The Winter equivalent of #26 — same “come back stronger if it feels too hard” rule applies.</p></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Lost in the Snow Complete the Lost Settlement secret mission. Unlock: in Frosted Fjord, after the three-button door, take the non-waypoint path at the pillared statue square, then waterfall opening → purple gate / water wheel → stone platform switch → bounce pads to the blue button → water drops → pirate ship door to the scroll. RNG-gated and not shown in the map Secrets count, so expect repeat runs to that point."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-lost" data-gs="20"><div><span class="num text-secondary small fw-semibold">#32</span><h3 class="fs-6 mb-0">Lost in the Snow</h3></div><span class="gs badge text-bg-warning ms-auto">20G</span></div><div class="card-body"><p class="req text-secondary">Complete the Lost Settlement secret mission.</p><p class="how">Unlock: in Frosted Fjord, after the three-button door, take the non-waypoint path at the pillared statue square, then waterfall opening → purple gate / water wheel → stone platform switch → bounce pads to the blue button → water drops → pirate ship door to the scroll. RNG-gated and not shown in the map Secrets count, so expect repeat runs to that point.</p><div class="steps"><label><input type="checkbox" class="step" id="step-lost-unlocked" data-parent="ach-lost"> Lost Settlement unlocked</label></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Smooth Operator Slide a total distance of 500 blocks on ice. Usually comes naturally across Winter missions. To force it, find an open ice patch and run in circles for a couple of minutes."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-smooth" data-gs="10"><div><span class="num text-secondary small fw-semibold">#33</span><h3 class="fs-6 mb-0">Smooth Operator</h3></div><span class="gs badge text-bg-warning ms-auto">10G</span></div><div class="card-body"><p class="req text-secondary">Slide a total distance of 500 blocks on ice.</p><p class="how">Usually comes naturally across Winter missions. To force it, find an open ice patch and run in circles for a couple of minutes.</p><div class="counter mt-2"><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="ice" data-target="500" min="0" value="0"> <span class="count-text text-secondary"></span><div class="progress mt-2" style="height:10px"><div class="progress-bar bg-success" style="width:0%"></div></div></div></div></article>
+<article class="ach item card col-12 col-md-6 col-xl-4" data-name="Chill Out Defeat 5 mobs with a single Ice Wand attack. Ice Wand drops in Frosted Fjord and Lone Fortress. Play normally until one drops, then restart a mission on the lowest difficulty for a crowded group — ??? is the guide&#x27;s pick for enemies huddled together."><div class="card-header ach-head d-flex gap-2 align-items-start"><input type="checkbox" class="task" id="ach-chill" data-gs="10"><div><span class="num text-secondary small fw-semibold">#34</span><h3 class="fs-6 mb-0">Chill Out</h3></div><span class="gs badge text-bg-warning ms-auto">10G</span></div><div class="card-body"><p class="req text-secondary">Defeat 5 mobs with a single Ice Wand attack.</p><p class="how">Ice Wand drops in Frosted Fjord and Lone Fortress. Play normally until one drops, then restart a mission on the lowest difficulty for a crowded group — ??? is the guide&#x27;s pick for enemies huddled together.</p></div></article>
+</div></div></details>
+
+        <div class="card" id="notes-section">
+          <div class="card-header"><h3 class="card-title">My notes</h3></div>
+          <div class="card-body">
+            <textarea id="notes" class="form-control" rows="4" placeholder="Current power level, gear to farm, co-op partner…"></textarea>
+            <p class="text-secondary mt-2 mb-0">Saved in this browser only.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body text-secondary">
+            <p class="mb-1"><strong>Sources:</strong> achievement names, requirements and Gamerscore from the achievement list linked below; route notes are short paraphrases of the linked walkthrough — the full guide text is not reproduced here. <a href="https://www.trueachievements.com/game/Minecraft-Dungeons/achievements">TrueAchievements — Achievements</a> · <a href="https://www.trueachievements.com/game/Minecraft-Dungeons/walkthrough">TrueAchievements — Walkthrough</a></p>
+            <p class="mb-0">Unofficial fan tracker, not affiliated with the achievement site, the walkthrough author, or the game's publisher. Shell: AdminLTE 4.10.0 + Bootstrap 5.3.8 + Bootstrap Icons 1.11.3, vendored under <code>assets/vendor/</code> (see <code>THIRD_PARTY_NOTICES.md</code>).</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+  <footer class="app-footer">
+    <strong>Achievement Trackers</strong> — <a href="../">back to all games</a>
+  </footer>
+</div>
+<script src="../assets/vendor/bootstrap.bundle.min.js"></script>
+<script src="../assets/vendor/adminlte.min.js"></script>
+<script>
+  /* Theme toggle, same key on hub and game pages. */
+  (function () {
+    var button = document.getElementById("theme-toggle");
+    if (!button) return;
+    function label() {
+      var dark = document.documentElement.getAttribute("data-bs-theme") === "dark";
+      button.textContent = dark ? "Light" : "Dark";
+    }
+    button.addEventListener("click", function () {
+      var next = document.documentElement.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-bs-theme", next);
+      try { localStorage.setItem("at-theme", next); } catch (e) {}
+      label();
+    });
+    label();
+  })();
+</script>
+<script>
+(function(){
+  var KEY='md-dungeons-tracker-v2';
+  var OLD='md-dungeons-tracker-v1';
+  var MIGRATION={"checked_map": {"story-squid-default": ["ach-happy", "ach-fancy"], "story-creeper-default": ["ach-out"], "story-obsidian-default": ["ach-saved"], "story-obsidian-apocalypse": ["ach-treason"], "secret-panda-done": ["ach-pandamonium"], "secret-lost-done": ["ach-lost"], "mopup-blast": ["ach-blast"], "mopup-maxed": ["ach-maxed"], "mopup-fancy": ["ach-fancy"]}, "step_map": {"story-pumpkin-default": "step-plot-pumpkin", "story-soggy-default": "step-plot-soggy", "story-redstone-default": "step-built-redstone", "story-cacti-default": "step-built-cacti", "story-desert-default": "step-highdry-desert", "story-fiery-default": "step-highdry-fiery", "story-highblock-default": "step-highdry-highblock", "mopup-wolf": "step-friend-wolf", "mopup-llama": "step-friend-llama", "mopup-golem": "step-friend-golem"}, "counter_map": {"count-mobs": "mobs", "count-chests": "chests", "count-emeralds": "emeralds", "count-food": "food", "count-enchanted": "enchanted", "count-revives": "revives"}};
+  var TOTAL_GS=1250;
+  var tasks=[].slice.call(document.querySelectorAll('input.task'));
+  var steps=[].slice.call(document.querySelectorAll('input.step'));
+  var counts=[].slice.call(document.querySelectorAll('input.count'));
+  var notes=document.getElementById('notes');
+  var search=document.getElementById('search');
+  var incompleteOnly=document.getElementById('incompleteOnly');
+  var overallText=document.getElementById('overallText');
+  var overallTextNav=document.getElementById('overallTextNav');
+  var overallBar=document.getElementById('overallBar');
+
+  function save(){
+    var data={checked:{},steps:{},counters:{},notes:notes.value};
+    tasks.forEach(function(t){ if(t.checked) data.checked[t.id]=true; });
+    steps.forEach(function(s){ if(s.checked) data.steps[s.id]=true; });
+    var seen={};
+    counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(!seen[g]){ data.counters[g]=c.value; seen[g]=true; } });
+    try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(e){}
+  }
+  function applyData(data){
+    tasks.forEach(function(t){ t.checked=!!(data.checked&&data.checked[t.id]); });
+    steps.forEach(function(s){ s.checked=!!(data.steps&&data.steps[s.id]); });
+    counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(data.counters&&data.counters[g]!==undefined) c.value=data.counters[g]; });
+    if(data.notes!==undefined) notes.value=data.notes;
+  }
+  function migrateLegacy(){
+    var raw; try{ raw=localStorage.getItem(OLD); }catch(e){ return; }
+    if(!raw||!MIGRATION) return;
+    try{
+      var d=JSON.parse(raw), checked=d.checked||{}, cnts=d.counts||{};
+      var out={checked:{},steps:{},counters:{},notes:''};
+      Object.keys(MIGRATION.checked_map||{}).forEach(function(k){ if(checked[k]) MIGRATION.checked_map[k].forEach(function(a){ out.checked[a]=true; }); });
+      Object.keys(MIGRATION.step_map||{}).forEach(function(k){ if(checked[k]) out.steps[MIGRATION.step_map[k]]=true; });
+      Object.keys(MIGRATION.counter_map||{}).forEach(function(k){ if(cnts[k]) out.counters[MIGRATION.counter_map[k]]=cnts[k]; });
+      if(Object.keys(out.checked).length||Object.keys(out.steps).length||Object.keys(out.counters).length){
+        try{ localStorage.setItem(KEY,JSON.stringify(out)); }catch(e){}
+        applyData(out);
+      }
+    }catch(e){}
+  }
+  function load(){
+    var raw; try{ raw=localStorage.getItem(KEY); }catch(e){ return; }
+    if(!raw){ migrateLegacy(); return; }
+    try{ applyData(JSON.parse(raw)); }catch(e){}
+  }
+  function syncCounters(source){
+    if(!source) return;
+    var g=source.getAttribute('data-counter');
+    counts.forEach(function(c){ if(c.getAttribute('data-counter')===g) c.value=source.value; });
+  }
+  function updateProgress(){
+    var done=tasks.filter(function(t){return t.checked;});
+    var gs=done.reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+    var text=done.length+' / '+tasks.length+' achievements · '+gs.toLocaleString('en-US')+' / '+TOTAL_GS.toLocaleString('en-US')+'G';
+    overallText.textContent=text;
+    if(overallTextNav) overallTextNav.textContent=done.length+' / '+tasks.length+' · '+gs.toLocaleString('en-US')+'G';
+    overallBar.style.width=Math.round(gs/TOTAL_GS*100)+'%';
+    document.querySelectorAll('details[data-cat]').forEach(function(sec){
+      var box=sec.querySelectorAll('input.task');
+      if(!box.length) return;
+      var d=[].slice.call(box).filter(function(t){return t.checked;}).length;
+      var g=[].slice.call(box).filter(function(t){return t.checked;}).reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+      var el=sec.querySelector('.sec-progress');
+      if(el) el.textContent=d+' / '+box.length+' · '+g+'G';
+    });
+    counts.forEach(function(c){
+      var target=parseInt(c.getAttribute('data-target'),10)||0;
+      var val=parseInt(c.value,10)||0;
+      var pct=target?Math.min(100,Math.round(val/target*100)):0;
+      var wrap=c.parentElement;
+      var bar=wrap.querySelector('.progress-bar');
+      var txt=wrap.querySelector('.count-text');
+      if(bar) bar.style.width=pct+'%';
+      if(txt) txt.textContent=' '+val.toLocaleString('en-US')+' / '+target.toLocaleString('en-US')+' ('+pct+'%)';
+    });
+  }
+  function applyFilters(){
+    var q=(search.value||'').toLowerCase().trim();
+    var active=document.querySelector('.filter.active');
+    var cat=active?active.getAttribute('data-filter'):'all';
+    var inc=incompleteOnly.checked;
+    document.querySelectorAll('details[data-cat]').forEach(function(sec){
+      var secCat=sec.getAttribute('data-cat');
+      var catMatch=(cat==='all'||cat===secCat);
+      var visibleItems=0;
+      sec.querySelectorAll('.item').forEach(function(item){
+        var name=(item.getAttribute('data-name')||'')+' '+item.textContent.toLowerCase();
+        var qMatch=!q||name.indexOf(q)>-1;
+        var task=item.querySelector('input.task');
+        var incMatch=!inc||!task||!task.checked;
+        var show=catMatch&&qMatch&&incMatch;
+        item.classList.toggle('hidden',!show);
+        if(show) visibleItems++;
+      });
+      var hasItems=sec.querySelectorAll('.item').length>0;
+      sec.classList.toggle('hidden',!catMatch||(hasItems&&visibleItems===0));
+    });
+  }
+  document.querySelectorAll('.filter').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.filter').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active'); applyFilters();
+    });
+  });
+  document.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.classList.contains('step')&&t.getAttribute('data-parent')){
+      var parent=document.getElementById(t.getAttribute('data-parent'));
+      if(parent){
+        var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+t.getAttribute('data-parent')+'"]'));
+        if(sibs.length&&sibs.every(function(s){return s.checked;})) parent.checked=true;
+      }
+    }
+    save(); updateProgress(); applyFilters();
+  });
+  document.addEventListener('input',function(e){
+    if(e.target===search){ applyFilters(); return; }
+    if(e.target===incompleteOnly){ applyFilters(); return; }
+    if(e.target.classList.contains('count')) syncCounters(e.target);
+    save(); updateProgress();
+  });
+  document.getElementById('resetBtn').addEventListener('click',function(){
+    if(!confirm('Reset all achievements, steps, counters and notes?')) return;
+    tasks.forEach(function(t){t.checked=false;});
+    steps.forEach(function(s){s.checked=false;});
+    counts.forEach(function(c){c.value=0;});
+    notes.value='';
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    updateProgress(); applyFilters();
+  });
+  document.getElementById('exportBtn').addEventListener('click',function(){
+    save();
+    var raw; try{ raw=localStorage.getItem(KEY)||'{}'; }catch(e){ raw='{}'; }
+    var blob=new Blob([raw],{type:'application/json'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='minecraft-dungeons-progress.json'; a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); },1000);
+  });
+  document.getElementById('importFile').addEventListener('change',function(e){
+    var f=e.target.files&&e.target.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{
+        var data=JSON.parse(r.result);
+        try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(err){}
+        applyData(data); updateProgress(); applyFilters();
+      }catch(err){ alert('That file did not look like a tracker export.'); }
+    };
+    r.readAsText(f);
+  });
+  load(); updateProgress(); applyFilters();
+})();
+</script>
+</body>
+</html>

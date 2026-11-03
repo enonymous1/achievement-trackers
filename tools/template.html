@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>@@TITLE@@ — Achievement Tracker</title>
+<meta name="description" content="Achievement-first tracker for @@TITLE@@: achievements grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<script>
+  /* Theme before first paint: saved choice wins, otherwise follow the
+     system. AdminLTE 4 / Bootstrap 5.3 read data-bs-theme. */
+  (function () {
+    try {
+      var theme = localStorage.getItem("at-theme");
+      if (!theme) {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      document.documentElement.setAttribute("data-bs-theme", theme);
+    } catch (e) {}
+  })();
+</script>
+<link rel="stylesheet" href="@@ASSET_PREFIX@@vendor/bootstrap.min.css">
+<link rel="stylesheet" href="@@ASSET_PREFIX@@vendor/bootstrap-icons.min.css">
+<link rel="stylesheet" href="@@ASSET_PREFIX@@vendor/adminlte.min.css">
+<style>
+  /* Tracker specifics on top of AdminLTE: keep the checkbox/step
+     affordances from the pre-AdminLTE design, nothing more. */
+  .ach:has(input.task:checked){border-color:var(--bs-success)}
+  .ach-head input.task{accent-color:var(--bs-success);width:20px;height:20px;margin-top:3px;flex:none;cursor:pointer}
+  .steps{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .steps label{display:flex;gap:6px;align-items:center;background:var(--bs-body-bg);border:1px solid var(--bs-border-color);border-radius:99px;padding:5px 10px;font-size:.88rem;cursor:pointer}
+  .steps label:has(input:checked){border-color:var(--bs-success)}
+  .steps input{accent-color:var(--bs-success)}
+  .counter input[type=number]{width:110px}
+  details{background:var(--bs-body-bg);border:1px solid var(--bs-border-color);border-radius:var(--bs-border-radius);margin-bottom:1rem;overflow:hidden}
+  details summary{cursor:pointer;padding:1rem;font-weight:600}
+  details summary::marker{color:var(--bs-secondary-color)}
+  details summary small{display:block;font-weight:400;color:var(--bs-secondary-color);font-size:.9rem}
+  .section-body{padding:0 1rem 1rem}
+  .hidden{display:none !important}
+  @media print{.app-header,.controls{display:none !important}details{break-inside:avoid}}
+</style>
+</head>
+<body class="layout-top-nav">
+<div class="app-wrapper">
+  <nav class="app-header navbar navbar-expand-lg bg-body">
+    <div class="container-fluid">
+      <a href="../" class="navbar-brand"><i class="bi bi-trophy"></i> Achievement Trackers</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#atNavbar" aria-controls="atNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="atNavbar">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a href="../" class="nav-link">Home</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Games</a>
+            <ul class="dropdown-menu">
+@@GAMES_NAV@@
+            </ul>
+          </li>
+          <li class="nav-item"><a href="#notes-section" class="nav-link">Notes</a></li>
+        </ul>
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item"><span class="nav-link" id="overallTextNav">0 / @@TOTAL_COUNT@@ · 0G</span></li>
+          <li class="nav-item ms-2"><button type="button" id="theme-toggle" class="btn btn-sm btn-outline-secondary" aria-label="Toggle dark mode">Theme</button></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="app-main">
+    <div class="app-content-header">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-12">
+            <h3 class="mb-0">@@TITLE@@ <small class="text-secondary">— Achievement Tracker</small></h3>
+            <p class="text-secondary mb-0">@@TAGLINE@@</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="app-content">
+      <div class="container-fluid">
+
+        <div class="card">
+          <div class="card-header d-flex justify-content-between flex-wrap gap-2">
+            <h3 class="card-title">Gamerscore progress</h3>
+            <span id="overallText">0 / @@TOTAL_COUNT@@ achievements · 0 / @@TOTAL_GS@@G</span>
+          </div>
+          <div class="card-body">
+            <div class="progress" role="progressbar" aria-label="Gamerscore progress">
+              <div class="progress-bar bg-success" id="overallBar" style="width:0%"></div>
+            </div>
+            <div class="controls d-flex flex-wrap gap-2 align-items-center mt-3">
+              <input type="search" id="search" class="form-control flex-grow-1" style="min-width:220px" placeholder="Search achievements, missions, gear…" aria-label="Search tracker">
+              <label class="form-check-label"><input type="checkbox" id="incompleteOnly" class="form-check-input me-1"> Incomplete only</label>
+              <button type="button" id="exportBtn" class="btn btn-outline-secondary btn-sm">Export progress</button>
+              <label class="btn btn-outline-secondary btn-sm mb-0" for="importFile">Import progress</label>
+              <input type="file" id="importFile" accept=".json,application/json" class="d-none">
+              <button type="button" id="resetBtn" class="btn btn-outline-danger btn-sm">Reset all</button>
+            </div>
+            <div class="controls btn-group flex-wrap mt-2" role="group" aria-label="Filter by phase">
+              <button type="button" class="filter btn btn-outline-success active" data-filter="all">All</button>
+@@FILTER_BUTTONS@@
+            </div>
+            <p class="text-secondary mt-3 mb-0"><strong>Order:</strong> @@ORDER_NOTE@@</p>
+            <p class="text-secondary mb-0"><strong>Scope:</strong> @@SCOPE_NOTE@@</p>
+          </div>
+        </div>
+
+@@SECTIONS_HTML@@
+
+        <div class="card" id="notes-section">
+          <div class="card-header"><h3 class="card-title">My notes</h3></div>
+          <div class="card-body">
+            <textarea id="notes" class="form-control" rows="4" placeholder="Current power level, gear to farm, co-op partner…"></textarea>
+            <p class="text-secondary mt-2 mb-0">Saved in this browser only.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body text-secondary">
+            <p class="mb-1"><strong>Sources:</strong> achievement names, requirements and Gamerscore from the achievement list linked below; route notes are short paraphrases of the linked walkthrough — the full guide text is not reproduced here. @@SOURCES_HTML@@</p>
+            <p class="mb-0">Unofficial fan tracker, not affiliated with the achievement site, the walkthrough author, or the game's publisher. Shell: AdminLTE 4.10.0 + Bootstrap 5.3.8 + Bootstrap Icons 1.11.3, vendored under <code>assets/vendor/</code> (see <code>THIRD_PARTY_NOTICES.md</code>).</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+  <footer class="app-footer">
+    <strong>Achievement Trackers</strong> — <a href="../">back to all games</a>
+  </footer>
+</div>
+<script src="@@ASSET_PREFIX@@vendor/bootstrap.bundle.min.js"></script>
+<script src="@@ASSET_PREFIX@@vendor/adminlte.min.js"></script>
+<script>
+  /* Theme toggle, same key on hub and game pages. */
+  (function () {
+    var button = document.getElementById("theme-toggle");
+    if (!button) return;
+    function label() {
+      var dark = document.documentElement.getAttribute("data-bs-theme") === "dark";
+      button.textContent = dark ? "Light" : "Dark";
+    }
+    button.addEventListener("click", function () {
+      var next = document.documentElement.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-bs-theme", next);
+      try { localStorage.setItem("at-theme", next); } catch (e) {}
+      label();
+    });
+    label();
+  })();
+</script>
+<script>
+(function(){
+  var KEY='@@STORAGE_KEY@@';
+  var OLD='@@LEGACY_KEY@@';
+  var MIGRATION=@@LEGACY_MIGRATION_JSON@@;
+  var TOTAL_GS=@@TOTAL_GS@@;
+  var tasks=[].slice.call(document.querySelectorAll('input.task'));
+  var steps=[].slice.call(document.querySelectorAll('input.step'));
+  var counts=[].slice.call(document.querySelectorAll('input.count'));
+  var notes=document.getElementById('notes');
+  var search=document.getElementById('search');
+  var incompleteOnly=document.getElementById('incompleteOnly');
+  var overallText=document.getElementById('overallText');
+  var overallTextNav=document.getElementById('overallTextNav');
+  var overallBar=document.getElementById('overallBar');
+
+  function save(){
+    var data={checked:{},steps:{},counters:{},notes:notes.value};
+    tasks.forEach(function(t){ if(t.checked) data.checked[t.id]=true; });
+    steps.forEach(function(s){ if(s.checked) data.steps[s.id]=true; });
+    var seen={};
+    counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(!seen[g]){ data.counters[g]=c.value; seen[g]=true; } });
+    try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(e){}
+  }
+  function applyData(data){
+    tasks.forEach(function(t){ t.checked=!!(data.checked&&data.checked[t.id]); });
+    steps.forEach(function(s){ s.checked=!!(data.steps&&data.steps[s.id]); });
+    counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(data.counters&&data.counters[g]!==undefined) c.value=data.counters[g]; });
+    if(data.notes!==undefined) notes.value=data.notes;
+  }
+  function migrateLegacy(){
+    var raw; try{ raw=localStorage.getItem(OLD); }catch(e){ return; }
+    if(!raw||!MIGRATION) return;
+    try{
+      var d=JSON.parse(raw), checked=d.checked||{}, cnts=d.counts||{};
+      var out={checked:{},steps:{},counters:{},notes:''};
+      Object.keys(MIGRATION.checked_map||{}).forEach(function(k){ if(checked[k]) MIGRATION.checked_map[k].forEach(function(a){ out.checked[a]=true; }); });
+      Object.keys(MIGRATION.step_map||{}).forEach(function(k){ if(checked[k]) out.steps[MIGRATION.step_map[k]]=true; });
+      Object.keys(MIGRATION.counter_map||{}).forEach(function(k){ if(cnts[k]) out.counters[MIGRATION.counter_map[k]]=cnts[k]; });
+      if(Object.keys(out.checked).length||Object.keys(out.steps).length||Object.keys(out.counters).length){
+        try{ localStorage.setItem(KEY,JSON.stringify(out)); }catch(e){}
+        applyData(out);
+      }
+    }catch(e){}
+  }
+  function load(){
+    var raw; try{ raw=localStorage.getItem(KEY); }catch(e){ return; }
+    if(!raw){ migrateLegacy(); return; }
+    try{ applyData(JSON.parse(raw)); }catch(e){}
+  }
+  function syncCounters(source){
+    if(!source) return;
+    var g=source.getAttribute('data-counter');
+    counts.forEach(function(c){ if(c.getAttribute('data-counter')===g) c.value=source.value; });
+  }
+  function updateProgress(){
+    var done=tasks.filter(function(t){return t.checked;});
+    var gs=done.reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+    var text=done.length+' / '+tasks.length+' achievements · '+gs.toLocaleString('en-US')+' / '+TOTAL_GS.toLocaleString('en-US')+'G';
+    overallText.textContent=text;
+    if(overallTextNav) overallTextNav.textContent=done.length+' / '+tasks.length+' · '+gs.toLocaleString('en-US')+'G';
+    overallBar.style.width=Math.round(gs/TOTAL_GS*100)+'%';
+    document.querySelectorAll('details[data-cat]').forEach(function(sec){
+      var box=sec.querySelectorAll('input.task');
+      if(!box.length) return;
+      var d=[].slice.call(box).filter(function(t){return t.checked;}).length;
+      var g=[].slice.call(box).filter(function(t){return t.checked;}).reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+      var el=sec.querySelector('.sec-progress');
+      if(el) el.textContent=d+' / '+box.length+' · '+g+'G';
+    });
+    counts.forEach(function(c){
+      var target=parseInt(c.getAttribute('data-target'),10)||0;
+      var val=parseInt(c.value,10)||0;
+      var pct=target?Math.min(100,Math.round(val/target*100)):0;
+      var wrap=c.parentElement;
+      var bar=wrap.querySelector('.progress-bar');
+      var txt=wrap.querySelector('.count-text');
+      if(bar) bar.style.width=pct+'%';
+      if(txt) txt.textContent=' '+val.toLocaleString('en-US')+' / '+target.toLocaleString('en-US')+' ('+pct+'%)';
+    });
+  }
+  function applyFilters(){
+    var q=(search.value||'').toLowerCase().trim();
+    var active=document.querySelector('.filter.active');
+    var cat=active?active.getAttribute('data-filter'):'all';
+    var inc=incompleteOnly.checked;
+    document.querySelectorAll('details[data-cat]').forEach(function(sec){
+      var secCat=sec.getAttribute('data-cat');
+      var catMatch=(cat==='all'||cat===secCat);
+      var visibleItems=0;
+      sec.querySelectorAll('.item').forEach(function(item){
+        var name=(item.getAttribute('data-name')||'')+' '+item.textContent.toLowerCase();
+        var qMatch=!q||name.indexOf(q)>-1;
+        var task=item.querySelector('input.task');
+        var incMatch=!inc||!task||!task.checked;
+        var show=catMatch&&qMatch&&incMatch;
+        item.classList.toggle('hidden',!show);
+        if(show) visibleItems++;
+      });
+      var hasItems=sec.querySelectorAll('.item').length>0;
+      sec.classList.toggle('hidden',!catMatch||(hasItems&&visibleItems===0));
+    });
+  }
+  document.querySelectorAll('.filter').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.filter').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active'); applyFilters();
+    });
+  });
+  document.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.classList.contains('step')&&t.getAttribute('data-parent')){
+      var parent=document.getElementById(t.getAttribute('data-parent'));
+      if(parent){
+        var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+t.getAttribute('data-parent')+'"]'));
+        if(sibs.length&&sibs.every(function(s){return s.checked;})) parent.checked=true;
+      }
+    }
+    save(); updateProgress(); applyFilters();
+  });
+  document.addEventListener('input',function(e){
+    if(e.target===search){ applyFilters(); return; }
+    if(e.target===incompleteOnly){ applyFilters(); return; }
+    if(e.target.classList.contains('count')) syncCounters(e.target);
+    save(); updateProgress();
+  });
+  document.getElementById('resetBtn').addEventListener('click',function(){
+    if(!confirm('Reset all achievements, steps, counters and notes?')) return;
+    tasks.forEach(function(t){t.checked=false;});
+    steps.forEach(function(s){s.checked=false;});
+    counts.forEach(function(c){c.value=0;});
+    notes.value='';
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    updateProgress(); applyFilters();
+  });
+  document.getElementById('exportBtn').addEventListener('click',function(){
+    save();
+    var raw; try{ raw=localStorage.getItem(KEY)||'{}'; }catch(e){ raw='{}'; }
+    var blob=new Blob([raw],{type:'application/json'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='@@SLUG@@-progress.json'; a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); },1000);
+  });
+  document.getElementById('importFile').addEventListener('change',function(e){
+    var f=e.target.files&&e.target.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{
+        var data=JSON.parse(r.result);
+        try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(err){}
+        applyData(data); updateProgress(); applyFilters();
+      }catch(err){ alert('That file did not look like a tracker export.'); }
+    };
+    r.readAsText(f);
+  });
+  load(); updateProgress(); applyFilters();
+})();
+</script>
+</body>
+</html>
