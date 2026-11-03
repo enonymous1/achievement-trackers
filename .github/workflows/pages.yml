@@ -46,7 +46,7 @@ jobs:
             slug=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['slug'])" "$d")
             cp -r "$slug" _site/
           done
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
       - name: Deploy to GitHub Pages
