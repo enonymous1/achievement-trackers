@@ -4,6 +4,21 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-03 — Slim sticky progress bar, colorized headers
+
+### Changed
+
+- Only the progress bar sticks now: the Gamerscore progress card was
+  split in two, so the slim card holding the title, counts and bar
+  pins to the top while scrolling, and search, filters and the
+  Order/Scope text scroll away normally. This supersedes the previous
+  whole-card sticky behaviour.
+- Achievement card headers are now colorized: a moss-green tint with
+  a green rule underneath, stronger when the achievement is done, so
+  the header stands out against the plain card body in both themes.
+- Header elements are vertically centered with each other: state
+  box, number, title and Gamerscore pill share one middle line.
+
 ## 2026-11-03 — Clickable card headers, sticky progress card
 
 ### Changed
