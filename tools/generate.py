@@ -4,8 +4,9 @@
 Source of truth is the JSON, not the HTML. The generator:
   * validates every game (Gamerscore sum, unique ids, counter groups,
     non-empty requirement/route text, declared sources),
-  * renders one self-contained index.html per game from tools/template.html
-    (CSS/JS are inlined, so each page works on its own at a Pages subpath),
+  * renders one index.html per game from tools/template.html, using the
+    shared vendored shell under assets/vendor/ (so a game page is not
+    portable on its own — the repo is the distribution unit),
   * renders the hub index.html from the same data, with per-game progress
     read from localStorage on the hub page itself.
 
@@ -244,7 +245,7 @@ def render_game(game, all_games):
         if not label:
             label = section["title"].split("·")[0].strip() or section["id"]
         filters.append(
-            f'      <button type="button" class="filter" data-filter="{esc(section["id"])}">'
+            f'      <button type="button" class="filter btn btn-outline-success" data-filter="{esc(section["id"])}">'
             f"{esc(label)}</button>"
         )
     sources = " · ".join(
