@@ -305,11 +305,19 @@ def render_hub(games):
             f'<p class="mb-0"><a class="btn btn-success" href="{esc(game["slug"])}/">Open tracker →</a></p>'
             f'</div></div>'
         )
+    total_games = len(games)
+    total_count = sum(g["_total_count"] for g in games)
+    total_gs = sum(g["_total_gs"] for g in games)
+    game_word = "game" if total_games == 1 else "games"
     replacements = {
         "@@ASSET_PREFIX@@": "./assets/",
         "@@GAMES_NAV@@": games_nav(games, prefix="./"),
         "@@GAMES_CARDS@@": chr(10).join(cards),
         "@@HUB_DATA@@": json.dumps(hub_data),
+        "@@FOOTER_TOTALS@@": (
+            f"{total_games} {game_word} · {total_count} achievements · "
+            f"{total_gs:,}G"
+        ),
     }
     out = template
     for key, value in replacements.items():

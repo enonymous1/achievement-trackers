@@ -20,6 +20,14 @@
 <link rel="stylesheet" href="@@ASSET_PREFIX@@vendor/bootstrap-icons.min.css">
 <link rel="stylesheet" href="@@ASSET_PREFIX@@vendor/adminlte.min.css">
 <style>
+  /* Same contained column as the game pages, not full-width fluid. */
+  .app-main .container-fluid{max-width:1100px;margin-left:auto;margin-right:auto}
+  /* Integrated card headers (no divider strip), as on game pages. */
+  .card-header{background:transparent;border-bottom:0;padding-bottom:0}
+  .card-body{padding-top:.5rem}
+  /* Game cards are grid columns: the row gap is the spacing, so the
+     cards themselves carry no bottom margin. */
+  .game{margin-bottom:0}
   .hidden{display:none !important}
   @media print{.app-header{display:none !important}}
 </style>
@@ -64,7 +72,7 @@
     <div class="app-content">
       <div class="container-fluid">
 
-        <div class="card" id="how-it-works">
+        <div class="card mb-3" id="how-it-works">
           <div class="card-header"><h3 class="card-title">How this works</h3></div>
           <div class="card-body">
             <p class="mb-1">Each tracker is built from a game guide, but it is not a copy of one. Every card <em>is</em> an achievement — its name, Gamerscore and requirement — with the short route to that achievement underneath it. Achievements are grouped and ordered by how they typically unlock, so you can work through a game in order instead of hunting through a flat list.</p>
@@ -77,21 +85,15 @@
           <input type="search" id="search" class="form-control" placeholder="Search games…" aria-label="Search games">
         </div>
 
-        <div class="row g-3">
+        <div class="row g-3 mb-3">
 @@GAMES_CARDS@@
-        </div>
-
-        <div class="card mt-3">
-          <div class="card-body text-secondary">
-            <p class="mb-0">Adding a game? See the README: write <code>data/&lt;slug&gt;.json</code>, run <code>python3 tools/generate.py</code>, preview, commit the JSON and the generated pages together. Shell: AdminLTE 4.10.0 + Bootstrap 5.3.8 + Bootstrap Icons 1.11.3, vendored under <code>assets/vendor/</code> (see <code>THIRD_PARTY_NOTICES.md</code>).</p>
-          </div>
         </div>
 
       </div>
     </div>
   </main>
   <footer class="app-footer">
-    <strong>Achievement Trackers</strong> — interactive checklists built from achievement guides.
+    <strong>Achievement Trackers</strong> — @@FOOTER_TOTALS@@ · Unofficial fan trackers · progress saves in your browser only · <a href="https://github.com/enonymous1/achievement-trackers">Source on GitHub</a>
   </footer>
 </div>
 <script src="@@ASSET_PREFIX@@vendor/bootstrap.bundle.min.js"></script>
