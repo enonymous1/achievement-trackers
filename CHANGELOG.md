@@ -4,6 +4,29 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-03 — Full-width headers, card gaps, steppers, header bars
+
+### Fixed
+
+- Achievement headers now fill the whole card: the card was also
+  acting as its own grid column, so Bootstrap's column padding inset
+  the tinted header by 9px on each side and left the card borders
+  touching with no horizontal gap. Cards are now a column wrapper
+  around an inner card, so headers run edge to edge (clipped to the
+  card's rounded corners) and there is a 16px gap between cards.
+  Filtering still hides the whole wrapper, so no empty column is
+  left behind.
+
+### Added
+
+- Counter inputs now have -/+ stepper buttons on either side for
+  easy tapping, clamped at 0 and synced across shared counters; the
+  tiny native number spinner is hidden so it does not duplicate them.
+- Each counter's progress bar now lives right under its card header
+  (matched by group and target, so shared counters with different
+  thresholds still show their own percentage), instead of under the
+  input at the bottom of the card.
+
 ## 2026-11-03 — Slim sticky progress bar, colorized headers
 
 ### Changed

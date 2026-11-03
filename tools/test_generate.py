@@ -109,6 +109,20 @@ class TestRender(unittest.TestCase):
         self.assertIn('<details open data-cat="story">', html)
         self.assertIn('<details data-cat="second">', html)
 
+    def test_counter_bar_and_steppers(self):
+        # The bar lives under the header (before the card body), the
+        # input gets -/+ steppers, and both are matched by group.
+        game = make_game()
+        game["sections"][0]["achievements"][0]["counters"] = [
+            {"group": "mobs", "target": 50}
+        ]
+        html = render_sections(game)
+        self.assertIn('class="progress counter-bar', html)
+        self.assertLess(html.index("counter-bar"), html.index("card-body"))
+        self.assertIn('data-step="-1"', html)
+        self.assertIn('data-step="1"', html)
+        self.assertIn('data-counter="mobs"', html)
+
     def test_achievement_header_is_a_toggle_button(self):
         # The whole header toggles via aria-pressed; there is no
         # checkbox, and the button's text content is its accessible

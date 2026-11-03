@@ -37,7 +37,9 @@
   /* Cards are grid columns: kill the card's own bottom margin so the
      row gutter is the only vertical spacing, and unify the header
      with the body (v2 had no divider strip inside a card). */
-  .ach{margin-bottom:0;border-radius:12px}
+  /* overflow:hidden clips the tinted header to the card's rounded
+     corners, instead of its square corners poking out at the top. */
+  .ach{margin-bottom:0;border-radius:12px;overflow:hidden}
   /* Colorized headers: a green-tinted header with a green rule stands
      out against the plain card body, instead of blending into it as
      the old transparent header did. Pressed cards get a stronger tint. */
@@ -72,6 +74,11 @@
   .steps label:has(input:checked){border-color:var(--at-green)}
   .steps input{accent-color:var(--at-green)}
   .counter input[type=number]{width:110px}
+  /* Stepper buttons replace the tiny native number spinner, which is
+     hard to tap and duplicates the new -/+ buttons. */
+  .counter input[type=number]{-moz-appearance:textfield;appearance:textfield}
+  .counter input[type=number]::-webkit-outer-spin-button,.counter input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .counter-btn{min-width:38px;font-weight:700}
   /* Sections read as a group again (v2's card background), not as a
      bare bordered box on the page background. */
   details{background:var(--bs-card-bg);border:1px solid var(--bs-border-color);border-radius:12px;margin-bottom:1rem;overflow:hidden}
@@ -278,11 +285,17 @@
       var target=parseInt(c.getAttribute('data-target'),10)||0;
       var val=parseInt(c.value,10)||0;
       var pct=target?Math.min(100,Math.round(val/target*100)):0;
-      var wrap=c.parentElement;
-      var bar=wrap.querySelector('.progress-bar');
-      var txt=wrap.querySelector('.count-text');
-      if(bar) bar.style.width=pct+'%';
+      var wrap=c.closest('.counter');
+      var txt=wrap?wrap.querySelector('.count-text'):null;
       if(txt) txt.textContent=' '+val.toLocaleString('en-US')+' / '+target.toLocaleString('en-US')+' ('+pct+'%)';
+      /* Bars live under the card header, not next to the input, and
+         are matched by group AND target: a shared group can feed
+         several thresholds, and each bar must show its own target. */
+      var g=c.getAttribute('data-counter');
+      document.querySelectorAll('.counter-bar[data-counter="'+g+'"][data-target="'+target+'"]').forEach(function(barEl){
+        var bar=barEl.querySelector('.progress-bar');
+        if(bar) bar.style.width=pct+'%';
+      });
     });
   }
   /* applyFilters hides whole sections, not just cards: a section with
@@ -324,6 +337,20 @@
       t.setAttribute('aria-pressed', t.getAttribute('aria-pressed')==='true' ? 'false' : 'true');
       save(); updateProgress(); applyFilters();
     });
+  });
+  /* Counter steppers: -/+ buttons beside the input, clamped at 0.
+     A programmatic value change fires no input event, so sync, save
+     and progress are called explicitly here. */
+  document.addEventListener('click',function(e){
+    var btn=e.target.closest ? e.target.closest('.counter-btn') : null;
+    if(!btn) return;
+    var wrap=btn.closest('.counter');
+    var input=wrap?wrap.querySelector('input.count'):null;
+    if(!input) return;
+    var val=parseInt(input.value,10)||0;
+    val=Math.max(0, val + (parseInt(btn.getAttribute('data-step'),10)||0));
+    input.value=val;
+    syncCounters(input); save(); updateProgress();
   });
   document.addEventListener('change',function(e){
     var t=e.target;

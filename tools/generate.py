@@ -231,6 +231,20 @@ def render_counter(counter):
     })
 
 
+def render_counter_bar(counter):
+    """Render the progress bar for one counter, placed under the header.
+
+    The bar lives outside the card body, directly under the header, so
+    progress is visible without scrolling the card. It is matched to
+    its input by both group and target in the tracker JS, because a
+    shared group can have different targets per achievement.
+    """
+    return _fill(_fragment("counter_bar"), {
+        "GROUP": esc(counter["group"]),
+        "TARGET": str(int(counter["target"])),
+    })
+
+
 def render_steps(steps, parent_id=None):
     """Render step checkboxes; steps with a parent auto-tick it in JS."""
     if not steps:
@@ -256,6 +270,7 @@ def render_achievement(ach, number):
     share a ``data-counter`` group to one value.
     """
     counters = "".join(render_counter(c) for c in ach.get("counters", []))
+    counter_bars = "".join(render_counter_bar(c) for c in ach.get("counters", []))
     return _fill(_fragment("achievement"), {
         "DATA_NAME": esc(f"{ach['name']} {ach['req']} {ach['how']}"),
         "ID": esc(ach["id"]),
@@ -266,6 +281,7 @@ def render_achievement(ach, number):
         "HOW": esc(ach["how"]),
         "STEPS": render_steps(ach.get("steps", []), parent_id=ach["id"]),
         "COUNTERS": counters,
+        "COUNTER_BARS": counter_bars,
     })
 
 
