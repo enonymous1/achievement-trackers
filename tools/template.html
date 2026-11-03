@@ -40,9 +40,22 @@
   .ach{margin-bottom:0;border-radius:12px}
   .ach .card-header{background:transparent;border-bottom:0;padding-bottom:0}
   .ach .card-body{padding-top:.5rem}
-  .ach:has(input.task:checked){border-color:var(--at-green)}
-  .ach-head input.task{accent-color:var(--at-green);width:20px;height:20px;margin-top:3px;flex:none;cursor:pointer}
-  .ach-head h3{font-size:1.05rem;line-height:1.3}
+  .ach:has(button.task[aria-pressed="true"]){border-color:var(--at-green)}
+  /* The whole achievement header is the toggle: a button, not a small
+     checkbox. The state box is only an indicator — the clickable area
+     is the full header (name + Gamerscore), and the button's text
+     content ("#1 Happy Camper 10G") is its accessible name. */
+  .ach-head{padding:0}
+  .ach-head button.task{display:flex;gap:.5rem;align-items:flex-start;width:100%;text-align:left;background:transparent;border:0;padding:.75rem 1rem 0;color:inherit;cursor:pointer}
+  .ach-head button.task:focus-visible{outline:2px solid var(--at-green);outline-offset:2px;border-radius:6px}
+  .task-state{width:20px;height:20px;flex:none;margin-top:3px;border:1px solid var(--bs-border-color);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;line-height:1}
+  button.task[aria-pressed="true"] .task-state{background:var(--at-green);border-color:var(--at-green);color:#12140f}
+  button.task[aria-pressed="true"] .task-state::after{content:"✓"}
+  .ach-name{font-size:1.05rem;line-height:1.3;font-weight:600;flex:1 1 auto}
+  /* Gamerscore progress card: pinned to the top of the viewport while
+     scrolling (the navbar scrolls away first, so top: 0 is right),
+     with a full 1rem gap before the first section. */
+  .progress-card{position:sticky;top:0;z-index:1030;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.15)}
   /* Gold outline pill, as in v2 — not Bootstrap's solid warning badge. */
   .ach .gs{background:transparent !important;color:var(--at-gold) !important;border:1px solid var(--at-gold);border-radius:99px;padding:2px 10px;font-weight:700;white-space:nowrap}
   .steps{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
@@ -69,7 +82,7 @@
   .filter.active{background:var(--at-green) !important;border-color:var(--at-green) !important;font-weight:700}
   [data-bs-theme="dark"] .filter.active{color:#12140f !important}
   .hidden{display:none !important}
-  @media print{.app-header,.controls{display:none !important}details{break-inside:avoid}}
+  @media print{.app-header,.controls{display:none !important}.progress-card{position:static}details{break-inside:avoid}}
 </style>
 </head>
 <body class="layout-top-nav">
@@ -113,7 +126,7 @@
     <div class="app-content">
       <div class="container-fluid">
 
-        <div class="card">
+        <div class="card progress-card">
           <div class="card-header d-flex justify-content-between flex-wrap gap-2">
             <h3 class="card-title">Gamerscore progress</h3>
             <span id="overallText">0 / @@TOTAL_COUNT@@ achievements · 0 / @@TOTAL_GS@@G</span>
@@ -174,7 +187,10 @@
   var OLD='@@LEGACY_KEY@@';
   var MIGRATION=@@LEGACY_MIGRATION_JSON@@;
   var TOTAL_GS=@@TOTAL_GS@@;
-  var tasks=[].slice.call(document.querySelectorAll('input.task'));
+  /* Tasks are now header toggle buttons, not checkboxes: the pressed
+     state lives in aria-pressed, and the id / data-gs contract with
+     save, export and the step auto-tick code is unchanged. */
+  var tasks=[].slice.call(document.querySelectorAll('button.task'));
   var steps=[].slice.call(document.querySelectorAll('input.step'));
   var counts=[].slice.call(document.querySelectorAll('input.count'));
   var notes=document.getElementById('notes');
@@ -188,14 +204,14 @@
      for the same group, but localStorage stores one value per group. */
   function save(){
     var data={checked:{},steps:{},counters:{},notes:notes.value};
-    tasks.forEach(function(t){ if(t.checked) data.checked[t.id]=true; });
+    tasks.forEach(function(t){ if(t.getAttribute('aria-pressed')==='true') data.checked[t.id]=true; });
     steps.forEach(function(s){ if(s.checked) data.steps[s.id]=true; });
     var seen={};
     counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(!seen[g]){ data.counters[g]=c.value; seen[g]=true; } });
     try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(e){}
   }
   function applyData(data){
-    tasks.forEach(function(t){ t.checked=!!(data.checked&&data.checked[t.id]); });
+    tasks.forEach(function(t){ t.setAttribute('aria-pressed', (data.checked&&data.checked[t.id]) ? 'true' : 'false'); });
     steps.forEach(function(s){ s.checked=!!(data.steps&&data.steps[s.id]); });
     counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(data.counters&&data.counters[g]!==undefined) c.value=data.counters[g]; });
     if(data.notes!==undefined) notes.value=data.notes;
@@ -229,17 +245,18 @@
     counts.forEach(function(c){ if(c.getAttribute('data-counter')===g) c.value=source.value; });
   }
   function updateProgress(){
-    var done=tasks.filter(function(t){return t.checked;});
+    var done=tasks.filter(function(t){return t.getAttribute('aria-pressed')==='true';});
     var gs=done.reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
     var text=done.length+' / '+tasks.length+' achievements · '+gs.toLocaleString('en-US')+' / '+TOTAL_GS.toLocaleString('en-US')+'G';
     overallText.textContent=text;
     if(overallTextNav) overallTextNav.textContent=done.length+' / '+tasks.length+' · '+gs.toLocaleString('en-US')+'G';
     overallBar.style.width=Math.round(gs/TOTAL_GS*100)+'%';
     document.querySelectorAll('details[data-cat]').forEach(function(sec){
-      var box=sec.querySelectorAll('input.task');
+      var box=sec.querySelectorAll('button.task');
       if(!box.length) return;
-      var d=[].slice.call(box).filter(function(t){return t.checked;}).length;
-      var g=[].slice.call(box).filter(function(t){return t.checked;}).reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+      var pressed=function(t){return t.getAttribute('aria-pressed')==='true';};
+      var d=[].slice.call(box).filter(pressed).length;
+      var g=[].slice.call(box).filter(pressed).reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
       var el=sec.querySelector('.sec-progress');
       if(el) el.textContent=d+' / '+box.length+' · '+g+'G';
     });
@@ -269,8 +286,8 @@
       sec.querySelectorAll('.item').forEach(function(item){
         var name=(item.getAttribute('data-name')||'')+' '+item.textContent.toLowerCase();
         var qMatch=!q||name.indexOf(q)>-1;
-        var task=item.querySelector('input.task');
-        var incMatch=!inc||!task||!task.checked;
+        var task=item.querySelector('button.task');
+        var incMatch=!inc||!task||task.getAttribute('aria-pressed')!=='true';
         var show=catMatch&&qMatch&&incMatch;
         item.classList.toggle('hidden',!show);
         if(show) visibleItems++;
@@ -285,13 +302,22 @@
       btn.classList.add('active'); applyFilters();
     });
   });
+  /* Header toggle: clicking anywhere in the header flips aria-pressed.
+     Steps still use the change handler below; a button does not fire
+     change, so this click handler is the task toggle. */
+  tasks.forEach(function(t){
+    t.addEventListener('click',function(){
+      t.setAttribute('aria-pressed', t.getAttribute('aria-pressed')==='true' ? 'false' : 'true');
+      save(); updateProgress(); applyFilters();
+    });
+  });
   document.addEventListener('change',function(e){
     var t=e.target;
     if(t.classList.contains('step')&&t.getAttribute('data-parent')){
       var parent=document.getElementById(t.getAttribute('data-parent'));
       if(parent){
         var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+t.getAttribute('data-parent')+'"]'));
-        if(sibs.length&&sibs.every(function(s){return s.checked;})) parent.checked=true;
+        if(sibs.length&&sibs.every(function(s){return s.checked;})) parent.setAttribute('aria-pressed','true');
       }
     }
     save(); updateProgress(); applyFilters();
@@ -304,7 +330,7 @@
   });
   document.getElementById('resetBtn').addEventListener('click',function(){
     if(!confirm('Reset all achievements, steps, counters and notes?')) return;
-    tasks.forEach(function(t){t.checked=false;});
+    tasks.forEach(function(t){t.setAttribute('aria-pressed','false');});
     steps.forEach(function(s){s.checked=false;});
     counts.forEach(function(c){c.value=0;});
     notes.value='';

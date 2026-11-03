@@ -4,6 +4,22 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-03 — Clickable card headers, sticky progress card
+
+### Changed
+
+- Each achievement card's header is now the toggle itself: a button
+  holding the number, name and Gamerscore pill, with its state in
+  `aria-pressed` and a small state box as the visual indicator. The
+  small checkbox is gone; clicking anywhere in the header toggles.
+  Save, export, import, step auto-tick and the "Incomplete only"
+  filter all use the same id / Gamerscore contract as before, so
+  existing saved progress carries over unchanged.
+- The Gamerscore progress card is now sticky: it pins to the top of
+  the viewport while scrolling (the navbar scrolls away first), so
+  search, filters and the progress bar stay reachable, and it now
+  has a full 1rem gap before the first section.
+
 ## 2026-11-03 — Review fixes
 
 ### Added

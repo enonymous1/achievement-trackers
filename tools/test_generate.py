@@ -109,9 +109,15 @@ class TestRender(unittest.TestCase):
         self.assertIn('<details open data-cat="story">', html)
         self.assertIn('<details data-cat="second">', html)
 
-    def test_achievement_card_has_accessible_name(self):
+    def test_achievement_header_is_a_toggle_button(self):
+        # The whole header toggles via aria-pressed; there is no
+        # checkbox, and the button's text content is its accessible
+        # name (number + achievement name + Gamerscore).
         html = render_sections(make_game())
-        self.assertIn('aria-label="A"', html)
+        self.assertIn('<button type="button" class="task"', html)
+        self.assertIn('aria-pressed="false"', html)
+        self.assertIn('<span class="ach-name">A</span>', html)
+        self.assertNotIn('input.task', html)
 
 
 if __name__ == "__main__":
