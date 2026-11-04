@@ -9,7 +9,7 @@
       <li>Extract the ZIP, then choose its JSON files here (or the whole extracted folder). If a file is not JSON, it is skipped and reported below.</li>
       <li>Review the analysis, then Confirm to apply. Confident matches are records the file attributes to this game; possible matches are records with no game shown — they are held back unless you tick the box.</li>
     </ol>
-    <p class="text-secondary">Microsoft does not document a filename or a field list for achievement records in the archive, and Xbox data may arrive through a separate Xbox export rather than the main archive. If the analysis finds no achievement records, the archive may simply not include them — the Xbox sync card above (once this game is mapped) is the alternative.</p>
+    <p class="text-secondary">Microsoft does not document a filename or a field list for achievement records in the archive, and Xbox data may arrive through a separate Xbox export rather than the main archive. If the analysis finds no achievement records, the archive may simply not include them — the Xbox sync card above (once this game is mapped) is the alternative. In particular, an archive of app and service usage alone (a file like <code>ProductAndServiceUsage.csv</code>) lists play sessions, not achievements: it shows which apps were opened and when, with no achievement names, unlocks, or Gamerscore, so it cannot fill anything in.</p>
     <div class="d-flex flex-wrap gap-2 align-items-center">
       <label class="btn btn-outline-success mb-0" for="privacy-files">Choose export files</label>
       <input type="file" id="privacy-files" accept=".json,.csv,application/json,text/csv" multiple webkitdirectory class="d-none">
