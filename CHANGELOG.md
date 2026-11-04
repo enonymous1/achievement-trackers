@@ -4,6 +4,35 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Notes move to per-card icons, slideshow stops jumping
+
+### Changed
+
+- The bottom "My notes" section and its sidebar link are
+  gone. Notes now live behind a note icon on every
+  achievement card and one on the filter card for
+  game-wide notes; tapping an icon opens a popup that
+  saves as you type, and the icon swaps to a check while
+  its note is set. Storage changed from one string to
+  one object (`game` + one key per card id); old saves
+  and exports holding a string migrate it to the game
+  key on load, and Reset clears the object. The Xbox
+  sync path still never touches notes.
+- Slideshow cards no longer change height as you step
+  through slides: slides now stack in one grid cell, so
+  the card renders at the tallest slide's height from
+  the start. Hidden slides are pulled out of tab order
+  by the nav script, since they are visibility-hidden
+  rather than gone.
+
+### Added
+
+- The How page demos gain the slideshow card type
+  (INSPEKTA, live, sandboxed like the rest), including
+  the image viewer for its slide images. Demo cards
+  have their note buttons stripped: the How page has no
+  notes popup for them to open.
+
 ## 2026-11-04 — Game #3: Barbie Horse Trails
 
 ### Added

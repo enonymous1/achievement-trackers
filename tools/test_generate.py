@@ -363,11 +363,13 @@ class TestRender(unittest.TestCase):
 
     def test_sidebar_menu_and_how_href(self):
         games = [make_game(), make_game(slug="other", title="Other")]
-        html = sidebar_menu(games, "../", "test", include_notes=True)
+        html = sidebar_menu(games, "../", "test")
         self.assertIn('href="../"', html)
         self.assertIn('href="../other/"', html)
         self.assertIn("Games</li>", html)
-        self.assertIn('href="#notes-section"', html)
+        # The old Notes section and its sidebar link are gone:
+        # notes live behind per-card icons now.
+        self.assertNotIn('#notes-section', html)
         self.assertEqual(sidebar_how_href("../", "test"), "../how-it-works/")
         self.assertEqual(sidebar_how_href("../", "how"), "./")
 
@@ -396,10 +398,16 @@ class TestRender(unittest.TestCase):
         self.assertNotIn("step-bar", render_sections(game2))
 
     def test_how_page_demos(self):
-        # Demos are rendered from the real Dungeons data, with
+        # Demos are rendered from the real game data, with
         # demo-prefixed ids, and a missing source game fails loudly
         # instead of shipping empty demo slots.
         game = make_game(slug="minecraft-dungeons")
+        grove = make_game(slug="great-god-grove")
+        grove["sections"][0]["achievements"][0] = {
+            "id": "ach-inspekta", "name": "INSPEKTA", "gs": 15,
+            "req": "R", "how": "H",
+            "slideshow": [{"src": "assets/media/s1.png", "caption": "Step one"}],
+        }
         ach = game["sections"][0]["achievements"][0]
         ach["id"] = "ach-happy"
         game["sections"][0]["achievements"].append({
@@ -420,16 +428,44 @@ class TestRender(unittest.TestCase):
                            "how": "How",
                            "steps": [{"id": "sc1", "label": "Go"}]}],
         })
-        html = render_demos([game])
+        html = render_demos([game, grove])
         self.assertIn('id="demo-ach-happy"', html)
         self.assertIn('data-step-parent="demo-ach-highdry"', html)
         self.assertIn('data-counter="mobs"', html)
         self.assertIn("Creepy Crypt", html)
         self.assertNotIn('id="ach-happy"', html)
+        # The slideshow demo renders, but demo cards carry no note
+        # buttons: the How page has no notes modal for them.
+        self.assertIn('id="demo-ach-inspekta"', html)
+        self.assertIn('class="slideshow mt-2"', html)
+        self.assertNotIn('note-btn', html)
         with self.assertRaises(SystemExit):
             render_demos([make_game()])
         with self.assertRaises(SystemExit):
             render_how([make_game()])
+
+    def test_notes_modal_and_icons(self):
+        # Game pages carry a notes popup and a note icon per card
+        # plus one on the filter card — and no bottom notes section.
+        html = render_game(validate_game("test.json", make_game()), [])
+        self.assertIn('id="notes-modal"', html)
+        self.assertIn('data-note-key="a1"', html)
+        self.assertIn('data-note-key="game"', html)
+        self.assertNotIn('notes-section', html)
+        self.assertNotIn('id="notes"', html)
+        template = (Path(__file__).parent / "template.html").read_text()
+        self.assertIn("refreshNoteIcons", template)
+        self.assertIn("notesData", template)
+
+    def test_slideshow_slides_stack_without_shifting(self):
+        # Slides share one grid cell so the card renders at the
+        # tallest slide's height: stepping never moves content
+        # below the card.
+        css = (Path(__file__).parent.parent
+               / "assets" / "css" / "tracker-cards.css").read_text()
+        self.assertIn(".slideshow-slides{display:grid}", css)
+        self.assertIn(".slideshow-slide{grid-area:1/1;visibility:hidden}", css)
+        self.assertIn(".slideshow-slide.active{visibility:visible}", css)
 
     def test_achievement_header_is_a_toggle_button(self):
         # The whole header toggles via aria-pressed; there is no

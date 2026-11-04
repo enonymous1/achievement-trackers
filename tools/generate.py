@@ -559,10 +559,10 @@ def render_xbox_sync_card(game):
 
 
 
-def sidebar_menu(all_games, prefix, current, include_notes=False):
+def sidebar_menu(all_games, prefix, current):
     """Sidebar menu items: Home, a Games header, then the games flat
     under it (no dropdown — the list is short for now, and the user
-    expects to revisit this when it grows), plus Notes on game pages.
+    expects to revisit this when it grows).
     ``current`` is 'home', 'how', or a game slug. ``prefix`` is the
     relative path back to the site root from the page using it."""
     items = []
@@ -579,12 +579,6 @@ def sidebar_menu(all_games, prefix, current, include_notes=False):
             f'              <li class="nav-item"><a href="{prefix}{esc(game["slug"])}/" '
             f'class="nav-link{active}"><i class="nav-icon bi bi-controller"></i>'
             f'<p>{esc(game["title"])}</p></a></li>'
-        )
-    if include_notes:
-        items.append(
-            '              <li class="nav-item"><a href="#notes-section" '
-            'class="nav-link"><i class="nav-icon bi bi-journal-text"></i>'
-            '<p>Notes</p></a></li>'
         )
     return "\n".join(items)
 
@@ -614,8 +608,7 @@ def render_game(game, all_games):
     )
     replacements = {
         "ASSET_PREFIX": "../assets/",
-        "SIDEBAR_MENU": sidebar_menu(all_games, "../", game["slug"],
-                                     include_notes=True),
+        "SIDEBAR_MENU": sidebar_menu(all_games, "../", game["slug"]),
         "SIDEBAR_PREFIX": "../",
         "HOW_HREF": sidebar_how_href("../", game["slug"]),
         "HOW_ACTIVE": "",
@@ -728,23 +721,33 @@ def _find_achievement(game, ach_id):
 
 def render_demos(all_games):
     """Live demo cards for the How page, rendered from the real
-    Minecraft Dungeons data through the same fragments as the
-    tracker itself. Failing loudly if that game (or a demo card)
-    is gone keeps the How page from shipping empty demo slots."""
+    game data through the same fragments as the tracker itself.
+    Failing loudly if a game (or a demo card) is gone keeps the
+    How page from shipping empty demo slots. Demo cards have
+    their note buttons stripped: the How page has no notes
+    modal, so a demo note button would do nothing."""
     dungeons = next(
         (g for g in all_games if g["slug"] == "minecraft-dungeons"), None
     )
     if dungeons is None:
         fail("How page demos need the minecraft-dungeons game")
+    grove = next(
+        (g for g in all_games if g["slug"] == "great-god-grove"), None
+    )
+    if grove is None:
+        fail("How page demos need the great-god-grove game")
 
     demos = []
 
-    def demo_ach(ach_id, caption):
-        ach, number = _find_achievement(dungeons, ach_id)
+    def demo_ach(ach_id, caption, game=None):
+        ach, number = _find_achievement(game or dungeons, ach_id)
         if ach is None:
             fail(f"How page demo achievement missing: {ach_id}")
         article = render_achievement(
             _demo_copy_achievement(ach), number, wrap=False
+        )
+        article = re.sub(
+            r'<button[^>]*class="note-btn"[^>]*>.*?</button>', "", article
         )
         demos.append(
             f'<div class="col-12 col-md-6 col-xl-4">'
@@ -792,6 +795,15 @@ def render_demos(all_games):
         "<strong>Step card, not an achievement.</strong> No "
         "Gamerscore, no header toggle. These are walkthrough "
         "steps, like the secret missions and runes.",
+    )
+    demo_ach(
+        "ach-inspekta",
+        "<strong>Slideshow achievement.</strong> Use Previous "
+        "and Next to walk through the guide slides — the card "
+        "stays the same height throughout, so nothing below it "
+        "jumps. Slide images open in the viewer, like on a real "
+        "game page.",
+        game=grove,
     )
     return "\n".join(demos)
 

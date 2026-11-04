@@ -140,6 +140,7 @@
               <label class="btn btn-outline-secondary btn-sm mb-0" for="importFile">Import progress</label>
               <input type="file" id="importFile" accept=".json,application/json" class="d-none">
               <button type="button" id="resetBtn" class="btn btn-outline-danger btn-sm">Reset all</button>
+              <button type="button" class="note-btn" data-note-key="game" title="Game notes" aria-label="Game notes"><i class="bi bi-journal-text"></i></button>
             </div>
             <div class="controls d-flex flex-wrap gap-2 mt-2" role="group" aria-label="Filter by phase">
               <button type="button" class="filter btn btn-outline-success active" data-filter="all">All</button>
@@ -153,14 +154,6 @@
 @@XBOX_SYNC_CARD@@
 
 @@SECTIONS_HTML@@
-
-        <div class="card" id="notes-section">
-          <div class="card-header"><h3 class="card-title">My notes</h3></div>
-          <div class="card-body">
-            <textarea id="notes" class="form-control" rows="4" placeholder="Current power level, gear to farm, co-op partner…"></textarea>
-            <p class="text-secondary mt-2 mb-0">Saved in this browser only.</p>
-          </div>
-        </div>
 
         <div class="card">
           <div class="card-body text-secondary">
@@ -187,6 +180,16 @@
     <p id="media-modal-caption" class="media-modal-caption"></p>
   </div>
 </dialog>
+<dialog id="notes-modal" aria-label="Notes">
+  <div class="notes-modal-inner">
+    <div class="d-flex justify-content-between align-items-center gap-3">
+      <h3 id="notes-modal-title" class="mb-0 fs-5">Notes</h3>
+      <button type="button" class="notes-modal-close" aria-label="Close notes">×</button>
+    </div>
+    <textarea id="notes-modal-text" class="form-control mt-2" rows="5" placeholder="Anything you want to remember for this one…"></textarea>
+    <p class="text-secondary mt-2 mb-0">Saved in this browser only, alongside your progress.</p>
+  </div>
+</dialog>
 <script>
 /* Tracker progress. The hub never writes progress, only reads it;
    this script is the single writer for a game page. */
@@ -201,7 +204,15 @@
   var tasks=[].slice.call(document.querySelectorAll('button.task'));
   var steps=[].slice.call(document.querySelectorAll('input.step'));
   var counts=[].slice.call(document.querySelectorAll('input.count'));
-  var notes=document.getElementById('notes');
+  var notesModal=document.getElementById('notes-modal');
+  var notesModalTitle=document.getElementById('notes-modal-title');
+  var notesModalText=document.getElementById('notes-modal-text');
+  /* Notes are one object, not one string: the game-wide note
+     lives under 'game', each achievement's under its card id.
+     Old saves and exports stored a single string — that was
+     the game-wide note, so it migrates to the 'game' key. */
+  var notesData={};
+  var notesKey=null;
   var search=document.getElementById('search');
   var incompleteOnly=document.getElementById('incompleteOnly');
   var overallText=document.getElementById('overallText');
@@ -211,7 +222,7 @@
   /* Save dedupes shared counters: several achievements render an input
      for the same group, but localStorage stores one value per group. */
   function save(){
-    var data={checked:{},steps:{},counters:{},notes:notes.value};
+    var data={checked:{},steps:{},counters:{},notes:notesData};
     tasks.forEach(function(t){ if(t.getAttribute('aria-pressed')==='true') data.checked[t.id]=true; });
     steps.forEach(function(s){ if(s.checked) data.steps[s.id]=true; });
     var seen={};
@@ -222,7 +233,11 @@
     tasks.forEach(function(t){ t.setAttribute('aria-pressed', (data.checked&&data.checked[t.id]) ? 'true' : 'false'); });
     steps.forEach(function(s){ s.checked=!!(data.steps&&data.steps[s.id]); });
     counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(data.counters&&data.counters[g]!==undefined) c.value=data.counters[g]; });
-    if(data.notes!==undefined) notes.value=data.notes;
+    var n=data.notes;
+    if(typeof n==='string'){ notesData=n?{game:n}:{}; }
+    else if(n&&typeof n==='object'){ notesData=n; }
+    else { notesData={}; }
+    refreshNoteIcons();
   }
   /* Migration runs ONLY when no new-format progress exists. If a player
      already has new progress, legacy data must not overwrite it; the
@@ -232,7 +247,7 @@
     if(!raw||!MIGRATION) return;
     try{
       var d=JSON.parse(raw), checked=d.checked||{}, cnts=d.counts||{};
-      var out={checked:{},steps:{},counters:{},notes:''};
+      var out={checked:{},steps:{},counters:{},notes:{}};
       Object.keys(MIGRATION.checked_map||{}).forEach(function(k){ if(checked[k]) MIGRATION.checked_map[k].forEach(function(a){ out.checked[a]=true; }); });
       Object.keys(MIGRATION.step_map||{}).forEach(function(k){ if(checked[k]) out.steps[MIGRATION.step_map[k]]=true; });
       Object.keys(MIGRATION.counter_map||{}).forEach(function(k){ if(cnts[k]) out.counters[MIGRATION.counter_map[k]]=cnts[k]; });
@@ -373,7 +388,7 @@
     tasks.forEach(function(t){t.setAttribute('aria-pressed','false');});
     steps.forEach(function(s){s.checked=false;});
     counts.forEach(function(c){c.value=0;});
-    notes.value='';
+    notesData={}; refreshNoteIcons();
     try{ localStorage.removeItem(KEY); }catch(e){}
     updateProgress(); applyFilters();
   });
@@ -709,9 +724,50 @@
       });
     });
   }
+  /* Notes live behind the note icons: one icon per card, one on
+     the filter card for game-wide notes. The popup saves as you
+     type, so closing it (button, Escape, outside tap) loses
+     nothing; the icon swaps to a check when its note is set. */
+  function refreshNoteIcons(){
+    document.querySelectorAll('.note-btn').forEach(function(b){
+      var key=b.getAttribute('data-note-key');
+      var has=!!(notesData[key]||'').trim();
+      var icon=b.querySelector('i');
+      if(icon){
+        icon.classList.toggle('bi-journal-check', has);
+        icon.classList.toggle('bi-journal-text', !has);
+      }
+      b.classList.toggle('has-note', has);
+    });
+  }
+  function openNotes(key, title){
+    notesKey=key;
+    notesModalTitle.textContent=title;
+    notesModalText.value=notesData[key]||'';
+    if(notesModal.showModal) notesModal.showModal();
+  }
+  if(notesModal){
+    notesModalText.addEventListener('input', function(){
+      if(notesKey===null) return;
+      var v=notesModalText.value;
+      if(v) notesData[notesKey]=v; else delete notesData[notesKey];
+      save(); refreshNoteIcons();
+    });
+    var notesModalClose=notesModal.querySelector('.notes-modal-close');
+    if(notesModalClose) notesModalClose.addEventListener('click', function(){ notesModal.close(); });
+    notesModal.addEventListener('click', function(e){ if(e.target===notesModal) notesModal.close(); });
+    document.querySelectorAll('.note-btn').forEach(function(b){
+      b.addEventListener('click', function(){
+        var art=b.closest('article');
+        var title=art ? 'Notes: '+art.querySelector('.ach-name').textContent : 'Game notes';
+        openNotes(b.getAttribute('data-note-key'), title);
+      });
+    });
+  }
   /* Slideshow cards: Previous/Next walk through the guide
      slides; only one slide shows at a time, and the ends
-     disable their button. */
+     disable their button. Hidden slides are also pulled out
+     of tab order, since they are visibility-hidden, not gone. */
   document.querySelectorAll('.slideshow').forEach(function(ss){
     var slides = ss.querySelectorAll('.slideshow-slide');
     var prev = ss.querySelector('.slideshow-prev');
@@ -720,7 +776,14 @@
     var cur = 0;
     function show(i){
       cur = Math.max(0, Math.min(slides.length - 1, i));
-      slides.forEach(function(s, j){ s.classList.toggle('active', j === cur); });
+      slides.forEach(function(s, j){
+        var on = j === cur;
+        s.classList.toggle('active', on);
+        s.setAttribute('aria-hidden', on ? 'false' : 'true');
+        s.querySelectorAll('a').forEach(function(a){
+          if(on){ a.removeAttribute('tabindex'); } else { a.setAttribute('tabindex', '-1'); }
+        });
+      });
       count.textContent = (cur + 1) + ' of ' + slides.length;
       prev.disabled = cur === 0;
       next.disabled = cur === slides.length - 1;

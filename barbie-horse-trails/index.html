@@ -99,7 +99,6 @@
               <li class="nav-item"><a href="../barbie-horse-trails/" class="nav-link active"><i class="nav-icon bi bi-controller"></i><p>Barbie Horse Trails</p></a></li>
               <li class="nav-item"><a href="../great-god-grove/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Great God Grove</p></a></li>
               <li class="nav-item"><a href="../minecraft-dungeons/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Minecraft Dungeons</p></a></li>
-              <li class="nav-item"><a href="#notes-section" class="nav-link"><i class="nav-icon bi bi-journal-text"></i><p>Notes</p></a></li>
         </ul>
       </nav>
       <div class="sidebar-bottom">
@@ -145,6 +144,7 @@
               <label class="btn btn-outline-secondary btn-sm mb-0" for="importFile">Import progress</label>
               <input type="file" id="importFile" accept=".json,application/json" class="d-none">
               <button type="button" id="resetBtn" class="btn btn-outline-danger btn-sm">Reset all</button>
+              <button type="button" class="note-btn" data-note-key="game" title="Game notes" aria-label="Game notes"><i class="bi bi-journal-text"></i></button>
             </div>
             <div class="controls d-flex flex-wrap gap-2 mt-2" role="group" aria-label="Filter by phase">
               <button type="button" class="filter btn btn-outline-success active" data-filter="all">All</button>
@@ -161,30 +161,22 @@
 <summary>Canterbury Trails <small>All 15 achievements in story order · <span class="sec-progress" data-section="full-game"></span></small></summary>
 <div class="section-body">
 <div class="row g-3">
-<div class="item col-12 col-md-6 col-xl-4" data-name="Welcome to Canterbury Trails Complete the Prologue Finish the prologue at the stable."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-welcome" data-gs="25" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#1</span><span class="ach-name">Welcome to Canterbury Trails</span><span class="gs badge text-bg-warning ms-auto">25G</span></button></div><div class="card-body"><p class="req text-secondary">Complete the Prologue</p><p class="how">Finish the prologue at the stable.</p></div></article></div>
-<div class="item col-12 col-md-6 col-xl-4" data-name="Snapshot Complete the photography tutorial Start the Scenic Photography 101 mission with Barbie&#x27;s father and finish the photography tutorial."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-snapshot" data-gs="25" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#2</span><span class="ach-name">Snapshot</span><span class="gs badge text-bg-warning ms-auto">25G</span></button></div><div class="card-body"><p class="req text-secondary">Complete the photography tutorial</p><p class="how">Start the Scenic Photography 101 mission with Barbie&#x27;s father and finish the photography tutorial.</p></div></article></div>
-<div class="item col-12 col-md-6 col-xl-4" data-name="Well Done Congratulate Lucky on a job well done After Scenic Photography 101, use the special pet on Lucky (&quot;super pet&quot;) at least once after finishing a quest."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-well-done" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#3</span><span class="ach-name">Well Done</span><span class="gs badge text-bg-warning ms-auto">50G</span></button></div><div class="card-body"><p class="req text-secondary">Congratulate Lucky on a job well done</p><p class="how">After Scenic Photography 101, use the special pet on Lucky (&quot;super pet&quot;) at least once after finishing a quest.</p></div></article></div>
-<div class="item col-12 col-md-6 col-xl-4" data-name="New Look Enter a changing station and change your outfit Step into a changing station at the Ranger Station or any stable and change any piece of clothing. Outfits come from tasks, boxes lying around, and horse level-ups."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-new-look" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#4</span><span class="ach-name">New Look</span><span class="gs badge text-bg-warning ms-auto">50G</span></button></div><div class="card-body"><p class="req text-secondary">Enter a changing station and change your outfit</p><p class="how">Step into a changing station at the Ranger Station or any stable and change any piece of clothing. Outfits come from tasks, boxes lying around, and horse level-ups.</p></div></article></div>
-<div class="item col-12 col-md-6 col-xl-4" data-name="1st Place Win first place in a race Win the story horse race in first place. Other races are marked with a checkered flag on the map, and only one race is mandatory."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-first-place" data-gs="100" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#5</span><span class="ach-name">1st Place</span><span class="gs badge text-bg-warning ms-auto">100G</span></button></div><div class="card-body"><p class="req text-secondary">Win first place in a race</p><p class="how">Win the story horse race in first place. Other races are marked with a checkered flag on the map, and only one race is mandatory.</p></div></article></div>
-<div class="item col-12 col-md-6 col-xl-4" data-name="Silver Canyon Mustang Find the Silver Canyon Mustang Finish Dr. Potts&#x27; Mystery Horse questline, through the second artifact, the backpack quest, and the website pictures to the final artifact and the thrilling conclusion."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-mustang" data-gs="100" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#6</span><span class="ach-name">Silver Canyon Mustang</span><span class="gs badge text-bg-warning ms-auto">100G</span></button></div><div class="card-body"><p class="req text-secondary">Find the Silver Canyon Mustang</p><p class="how">Finish Dr. Potts&#x27; Mystery Horse questline, through the second artifact, the backpack quest, and the website pictures to the final artifact and the thrilling conclusion.</p></div></article></div>
-<div class="item col-12 col-md-6 col-xl-4" data-name="Ranger Duty II Complete a mission for Ranger Quinn Finish your first quest for Ranger Quinn (Trail Trek)."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-ranger-quinn" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#7</span><span class="ach-name">Ranger Duty II</span><span class="gs badge text-bg-warning ms-auto">50G</span></button></div><div class="card-body"><p class="req text-secondary">Complete a mission for Ranger Quinn</p><p class="how">Finish your first quest for Ranger Quinn (Trail Trek).</p></div></article></div>
-<div class="item col-12 col-md-6 col-xl-4" data-name="Ranger Duty Complete a mission for Ranger Rory Finish your first quest for Ranger Rory."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-ranger-rory" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#8</span><span class="ach-name">Ranger Duty</span><span class="gs badge text-bg-warning ms-auto">50G</span></button></div><div class="card-body"><p class="req text-secondary">Complete a mission for Ranger Rory</p><p class="how">Finish your first quest for Ranger Rory.</p></div></article></div>
-<div class="item col-12 col-md-6 col-xl-4" data-name="Green Thumb Complete a mission for Dr. Green Finish your first quest for Dr. Green."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-green-thumb" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#9</span><span class="ach-name">Green Thumb</span><span class="gs badge text-bg-warning ms-auto">50G</span></button></div><div class="card-body"><p class="req text-secondary">Complete a mission for Dr. Green</p><p class="how">Finish your first quest for Dr. Green.</p></div></article></div>
-<div class="item col-12 col-md-6 col-xl-4" data-name="Bonded Reach max level for Horse Bond Raise Lucky&#x27;s bond to max level 11: pet her when she asks, brush her, feed her everything you receive, and keep her clean."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-bonded" data-gs="100" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#10</span><span class="ach-name">Bonded</span><span class="gs badge text-bg-warning ms-auto">100G</span></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="bond" data-target="11"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Reach max level for Horse Bond</p><p class="how">Raise Lucky&#x27;s bond to max level 11: pet her when she asks, brush her, feed her everything you receive, and keep her clean.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease bond counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="bond" data-target="11" min="0" value="0" aria-label="bond counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase bond counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
-<div class="item col-12 col-md-6 col-xl-4" data-name="Star Search Complete a mission for Stella For Stella, recreate the Big Dipper constellation at her site."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-star-search" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#11</span><span class="ach-name">Star Search</span><span class="gs badge text-bg-warning ms-auto">50G</span></button></div><div class="card-body"><p class="req text-secondary">Complete a mission for Stella</p><p class="how">For Stella, recreate the Big Dipper constellation at her site.</p></div></article></div>
-<div class="item col-12 col-md-6 col-xl-4" data-name="Friends in Need Complete all the missions for Barbie&#x27;s friends Finish every side quest. They are the &quot;!&quot; markers on the map; press Options to track one (blue marker)."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-friends-in-need" data-gs="100" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#12</span><span class="ach-name">Friends in Need</span><span class="gs badge text-bg-warning ms-auto">100G</span></button></div><div class="card-body"><p class="req text-secondary">Complete all the missions for Barbie&#x27;s friends</p><p class="how">Finish every side quest. They are the &quot;!&quot; markers on the map; press Options to track one (blue marker).</p></div></article></div>
-<div class="item col-12 col-md-6 col-xl-4" data-name="Park Progress Complete the park packet Fill the park packet with main and side quests and photos of animals, people, and viewpoints. If the story stalls on the packet bar, clear side quests first, then return to the main quests."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-park-progress" data-gs="100" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#13</span><span class="ach-name">Park Progress</span><span class="gs badge text-bg-warning ms-auto">100G</span></button></div><div class="card-body"><p class="req text-secondary">Complete the park packet</p><p class="how">Fill the park packet with main and side quests and photos of animals, people, and viewpoints. If the story stalls on the packet bar, clear side quests first, then return to the main quests.</p></div></article></div>
-<div class="item col-12 col-md-6 col-xl-4" data-name="Golden Moments Get together for the big group photo Story mission near the end: just follow the quest marker to the big group photo."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-golden-moments" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#14</span><span class="ach-name">Golden Moments</span><span class="gs badge text-bg-warning ms-auto">50G</span></button></div><div class="card-body"><p class="req text-secondary">Get together for the big group photo</p><p class="how">Story mission near the end: just follow the quest marker to the big group photo.</p></div></article></div>
-<div class="item col-12 col-md-6 col-xl-4" data-name="Best Friends Forever Complete the game Finish the game: go to Barbie on the last quest and let the conversation play out."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-best-friends" data-gs="100" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#15</span><span class="ach-name">Best Friends Forever</span><span class="gs badge text-bg-warning ms-auto">100G</span></button></div><div class="card-body"><p class="req text-secondary">Complete the game</p><p class="how">Finish the game: go to Barbie on the last quest and let the conversation play out.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Welcome to Canterbury Trails Complete the Prologue Finish the prologue at the stable."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-welcome" data-gs="25" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#1</span><span class="ach-name">Welcome to Canterbury Trails</span><span class="gs badge text-bg-warning ms-auto">25G</span></button><button type="button" class="note-btn" data-note-key="ach-welcome" title="Notes for Welcome to Canterbury Trails" aria-label="Notes for Welcome to Canterbury Trails"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete the Prologue</p><p class="how">Finish the prologue at the stable.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Snapshot Complete the photography tutorial Start the Scenic Photography 101 mission with Barbie&#x27;s father and finish the photography tutorial."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-snapshot" data-gs="25" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#2</span><span class="ach-name">Snapshot</span><span class="gs badge text-bg-warning ms-auto">25G</span></button><button type="button" class="note-btn" data-note-key="ach-snapshot" title="Notes for Snapshot" aria-label="Notes for Snapshot"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete the photography tutorial</p><p class="how">Start the Scenic Photography 101 mission with Barbie&#x27;s father and finish the photography tutorial.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Well Done Congratulate Lucky on a job well done After Scenic Photography 101, use the special pet on Lucky (&quot;super pet&quot;) at least once after finishing a quest."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-well-done" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#3</span><span class="ach-name">Well Done</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-well-done" title="Notes for Well Done" aria-label="Notes for Well Done"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Congratulate Lucky on a job well done</p><p class="how">After Scenic Photography 101, use the special pet on Lucky (&quot;super pet&quot;) at least once after finishing a quest.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="New Look Enter a changing station and change your outfit Step into a changing station at the Ranger Station or any stable and change any piece of clothing. Outfits come from tasks, boxes lying around, and horse level-ups."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-new-look" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#4</span><span class="ach-name">New Look</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-new-look" title="Notes for New Look" aria-label="Notes for New Look"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Enter a changing station and change your outfit</p><p class="how">Step into a changing station at the Ranger Station or any stable and change any piece of clothing. Outfits come from tasks, boxes lying around, and horse level-ups.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="1st Place Win first place in a race Win the story horse race in first place. Other races are marked with a checkered flag on the map, and only one race is mandatory."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-first-place" data-gs="100" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#5</span><span class="ach-name">1st Place</span><span class="gs badge text-bg-warning ms-auto">100G</span></button><button type="button" class="note-btn" data-note-key="ach-first-place" title="Notes for 1st Place" aria-label="Notes for 1st Place"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Win first place in a race</p><p class="how">Win the story horse race in first place. Other races are marked with a checkered flag on the map, and only one race is mandatory.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Silver Canyon Mustang Find the Silver Canyon Mustang Finish Dr. Potts&#x27; Mystery Horse questline, through the second artifact, the backpack quest, and the website pictures to the final artifact and the thrilling conclusion."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-mustang" data-gs="100" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#6</span><span class="ach-name">Silver Canyon Mustang</span><span class="gs badge text-bg-warning ms-auto">100G</span></button><button type="button" class="note-btn" data-note-key="ach-mustang" title="Notes for Silver Canyon Mustang" aria-label="Notes for Silver Canyon Mustang"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Find the Silver Canyon Mustang</p><p class="how">Finish Dr. Potts&#x27; Mystery Horse questline, through the second artifact, the backpack quest, and the website pictures to the final artifact and the thrilling conclusion.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Ranger Duty II Complete a mission for Ranger Quinn Finish your first quest for Ranger Quinn (Trail Trek)."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-ranger-quinn" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#7</span><span class="ach-name">Ranger Duty II</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-ranger-quinn" title="Notes for Ranger Duty II" aria-label="Notes for Ranger Duty II"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete a mission for Ranger Quinn</p><p class="how">Finish your first quest for Ranger Quinn (Trail Trek).</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Ranger Duty Complete a mission for Ranger Rory Finish your first quest for Ranger Rory."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-ranger-rory" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#8</span><span class="ach-name">Ranger Duty</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-ranger-rory" title="Notes for Ranger Duty" aria-label="Notes for Ranger Duty"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete a mission for Ranger Rory</p><p class="how">Finish your first quest for Ranger Rory.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Green Thumb Complete a mission for Dr. Green Finish your first quest for Dr. Green."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-green-thumb" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#9</span><span class="ach-name">Green Thumb</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-green-thumb" title="Notes for Green Thumb" aria-label="Notes for Green Thumb"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete a mission for Dr. Green</p><p class="how">Finish your first quest for Dr. Green.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Bonded Reach max level for Horse Bond Raise Lucky&#x27;s bond to max level 11: pet her when she asks, brush her, feed her everything you receive, and keep her clean."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-bonded" data-gs="100" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#10</span><span class="ach-name">Bonded</span><span class="gs badge text-bg-warning ms-auto">100G</span></button><button type="button" class="note-btn" data-note-key="ach-bonded" title="Notes for Bonded" aria-label="Notes for Bonded"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="bond" data-target="11"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Reach max level for Horse Bond</p><p class="how">Raise Lucky&#x27;s bond to max level 11: pet her when she asks, brush her, feed her everything you receive, and keep her clean.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease bond counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="bond" data-target="11" min="0" value="0" aria-label="bond counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase bond counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Star Search Complete a mission for Stella For Stella, recreate the Big Dipper constellation at her site."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-star-search" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#11</span><span class="ach-name">Star Search</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-star-search" title="Notes for Star Search" aria-label="Notes for Star Search"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete a mission for Stella</p><p class="how">For Stella, recreate the Big Dipper constellation at her site.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Friends in Need Complete all the missions for Barbie&#x27;s friends Finish every side quest. They are the &quot;!&quot; markers on the map; press Options to track one (blue marker)."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-friends-in-need" data-gs="100" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#12</span><span class="ach-name">Friends in Need</span><span class="gs badge text-bg-warning ms-auto">100G</span></button><button type="button" class="note-btn" data-note-key="ach-friends-in-need" title="Notes for Friends in Need" aria-label="Notes for Friends in Need"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete all the missions for Barbie&#x27;s friends</p><p class="how">Finish every side quest. They are the &quot;!&quot; markers on the map; press Options to track one (blue marker).</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Park Progress Complete the park packet Fill the park packet with main and side quests and photos of animals, people, and viewpoints. If the story stalls on the packet bar, clear side quests first, then return to the main quests."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-park-progress" data-gs="100" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#13</span><span class="ach-name">Park Progress</span><span class="gs badge text-bg-warning ms-auto">100G</span></button><button type="button" class="note-btn" data-note-key="ach-park-progress" title="Notes for Park Progress" aria-label="Notes for Park Progress"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete the park packet</p><p class="how">Fill the park packet with main and side quests and photos of animals, people, and viewpoints. If the story stalls on the packet bar, clear side quests first, then return to the main quests.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Golden Moments Get together for the big group photo Story mission near the end: just follow the quest marker to the big group photo."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-golden-moments" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#14</span><span class="ach-name">Golden Moments</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-golden-moments" title="Notes for Golden Moments" aria-label="Notes for Golden Moments"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Get together for the big group photo</p><p class="how">Story mission near the end: just follow the quest marker to the big group photo.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Best Friends Forever Complete the game Finish the game: go to Barbie on the last quest and let the conversation play out."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-best-friends" data-gs="100" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#15</span><span class="ach-name">Best Friends Forever</span><span class="gs badge text-bg-warning ms-auto">100G</span></button><button type="button" class="note-btn" data-note-key="ach-best-friends" title="Notes for Best Friends Forever" aria-label="Notes for Best Friends Forever"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete the game</p><p class="how">Finish the game: go to Barbie on the last quest and let the conversation play out.</p></div></article></div>
 </div></div></details>
-
-        <div class="card" id="notes-section">
-          <div class="card-header"><h3 class="card-title">My notes</h3></div>
-          <div class="card-body">
-            <textarea id="notes" class="form-control" rows="4" placeholder="Current power level, gear to farm, co-op partner…"></textarea>
-            <p class="text-secondary mt-2 mb-0">Saved in this browser only.</p>
-          </div>
-        </div>
 
         <div class="card">
           <div class="card-body text-secondary">
@@ -211,6 +203,16 @@
     <p id="media-modal-caption" class="media-modal-caption"></p>
   </div>
 </dialog>
+<dialog id="notes-modal" aria-label="Notes">
+  <div class="notes-modal-inner">
+    <div class="d-flex justify-content-between align-items-center gap-3">
+      <h3 id="notes-modal-title" class="mb-0 fs-5">Notes</h3>
+      <button type="button" class="notes-modal-close" aria-label="Close notes">×</button>
+    </div>
+    <textarea id="notes-modal-text" class="form-control mt-2" rows="5" placeholder="Anything you want to remember for this one…"></textarea>
+    <p class="text-secondary mt-2 mb-0">Saved in this browser only, alongside your progress.</p>
+  </div>
+</dialog>
 <script>
 /* Tracker progress. The hub never writes progress, only reads it;
    this script is the single writer for a game page. */
@@ -225,7 +227,15 @@
   var tasks=[].slice.call(document.querySelectorAll('button.task'));
   var steps=[].slice.call(document.querySelectorAll('input.step'));
   var counts=[].slice.call(document.querySelectorAll('input.count'));
-  var notes=document.getElementById('notes');
+  var notesModal=document.getElementById('notes-modal');
+  var notesModalTitle=document.getElementById('notes-modal-title');
+  var notesModalText=document.getElementById('notes-modal-text');
+  /* Notes are one object, not one string: the game-wide note
+     lives under 'game', each achievement's under its card id.
+     Old saves and exports stored a single string — that was
+     the game-wide note, so it migrates to the 'game' key. */
+  var notesData={};
+  var notesKey=null;
   var search=document.getElementById('search');
   var incompleteOnly=document.getElementById('incompleteOnly');
   var overallText=document.getElementById('overallText');
@@ -235,7 +245,7 @@
   /* Save dedupes shared counters: several achievements render an input
      for the same group, but localStorage stores one value per group. */
   function save(){
-    var data={checked:{},steps:{},counters:{},notes:notes.value};
+    var data={checked:{},steps:{},counters:{},notes:notesData};
     tasks.forEach(function(t){ if(t.getAttribute('aria-pressed')==='true') data.checked[t.id]=true; });
     steps.forEach(function(s){ if(s.checked) data.steps[s.id]=true; });
     var seen={};
@@ -246,7 +256,11 @@
     tasks.forEach(function(t){ t.setAttribute('aria-pressed', (data.checked&&data.checked[t.id]) ? 'true' : 'false'); });
     steps.forEach(function(s){ s.checked=!!(data.steps&&data.steps[s.id]); });
     counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(data.counters&&data.counters[g]!==undefined) c.value=data.counters[g]; });
-    if(data.notes!==undefined) notes.value=data.notes;
+    var n=data.notes;
+    if(typeof n==='string'){ notesData=n?{game:n}:{}; }
+    else if(n&&typeof n==='object'){ notesData=n; }
+    else { notesData={}; }
+    refreshNoteIcons();
   }
   /* Migration runs ONLY when no new-format progress exists. If a player
      already has new progress, legacy data must not overwrite it; the
@@ -256,7 +270,7 @@
     if(!raw||!MIGRATION) return;
     try{
       var d=JSON.parse(raw), checked=d.checked||{}, cnts=d.counts||{};
-      var out={checked:{},steps:{},counters:{},notes:''};
+      var out={checked:{},steps:{},counters:{},notes:{}};
       Object.keys(MIGRATION.checked_map||{}).forEach(function(k){ if(checked[k]) MIGRATION.checked_map[k].forEach(function(a){ out.checked[a]=true; }); });
       Object.keys(MIGRATION.step_map||{}).forEach(function(k){ if(checked[k]) out.steps[MIGRATION.step_map[k]]=true; });
       Object.keys(MIGRATION.counter_map||{}).forEach(function(k){ if(cnts[k]) out.counters[MIGRATION.counter_map[k]]=cnts[k]; });
@@ -397,7 +411,7 @@
     tasks.forEach(function(t){t.setAttribute('aria-pressed','false');});
     steps.forEach(function(s){s.checked=false;});
     counts.forEach(function(c){c.value=0;});
-    notes.value='';
+    notesData={}; refreshNoteIcons();
     try{ localStorage.removeItem(KEY); }catch(e){}
     updateProgress(); applyFilters();
   });
@@ -733,9 +747,50 @@
       });
     });
   }
+  /* Notes live behind the note icons: one icon per card, one on
+     the filter card for game-wide notes. The popup saves as you
+     type, so closing it (button, Escape, outside tap) loses
+     nothing; the icon swaps to a check when its note is set. */
+  function refreshNoteIcons(){
+    document.querySelectorAll('.note-btn').forEach(function(b){
+      var key=b.getAttribute('data-note-key');
+      var has=!!(notesData[key]||'').trim();
+      var icon=b.querySelector('i');
+      if(icon){
+        icon.classList.toggle('bi-journal-check', has);
+        icon.classList.toggle('bi-journal-text', !has);
+      }
+      b.classList.toggle('has-note', has);
+    });
+  }
+  function openNotes(key, title){
+    notesKey=key;
+    notesModalTitle.textContent=title;
+    notesModalText.value=notesData[key]||'';
+    if(notesModal.showModal) notesModal.showModal();
+  }
+  if(notesModal){
+    notesModalText.addEventListener('input', function(){
+      if(notesKey===null) return;
+      var v=notesModalText.value;
+      if(v) notesData[notesKey]=v; else delete notesData[notesKey];
+      save(); refreshNoteIcons();
+    });
+    var notesModalClose=notesModal.querySelector('.notes-modal-close');
+    if(notesModalClose) notesModalClose.addEventListener('click', function(){ notesModal.close(); });
+    notesModal.addEventListener('click', function(e){ if(e.target===notesModal) notesModal.close(); });
+    document.querySelectorAll('.note-btn').forEach(function(b){
+      b.addEventListener('click', function(){
+        var art=b.closest('article');
+        var title=art ? 'Notes: '+art.querySelector('.ach-name').textContent : 'Game notes';
+        openNotes(b.getAttribute('data-note-key'), title);
+      });
+    });
+  }
   /* Slideshow cards: Previous/Next walk through the guide
      slides; only one slide shows at a time, and the ends
-     disable their button. */
+     disable their button. Hidden slides are also pulled out
+     of tab order, since they are visibility-hidden, not gone. */
   document.querySelectorAll('.slideshow').forEach(function(ss){
     var slides = ss.querySelectorAll('.slideshow-slide');
     var prev = ss.querySelector('.slideshow-prev');
@@ -744,7 +799,14 @@
     var cur = 0;
     function show(i){
       cur = Math.max(0, Math.min(slides.length - 1, i));
-      slides.forEach(function(s, j){ s.classList.toggle('active', j === cur); });
+      slides.forEach(function(s, j){
+        var on = j === cur;
+        s.classList.toggle('active', on);
+        s.setAttribute('aria-hidden', on ? 'false' : 'true');
+        s.querySelectorAll('a').forEach(function(a){
+          if(on){ a.removeAttribute('tabindex'); } else { a.setAttribute('tabindex', '-1'); }
+        });
+      });
       count.textContent = (cur + 1) + ' of ' + slides.length;
       prev.disabled = cur === 0;
       next.disabled = cur === slides.length - 1;

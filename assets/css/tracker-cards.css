@@ -171,8 +171,31 @@ button.task[aria-pressed="true"] .task-state::after {
 .media-modal-close{position:absolute;top:.5rem;right:.5rem;width:44px;height:44px;border:0;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:1.5rem;line-height:1;cursor:pointer}
 .media-modal-caption{color:#fff;text-align:center;margin:.5rem 0 0}
 
-/* Slideshow cards: one guide slide at a time. */
-.slideshow-slide{display:none}
-.slideshow-slide.active{display:block}
+/* Slideshow cards: one guide slide at a time. Slides stack in one
+   grid cell, so the card renders at the tallest slide's height
+   from the start: stepping through slides never moves content
+   below the card. Hidden slides are visibility-hidden (not
+   display:none) so they still size the cell; the nav script
+   pulls their links out of tab order. */
+.slideshow-slides{display:grid}
+.slideshow-slide{grid-area:1/1;visibility:hidden}
+.slideshow-slide.active{visibility:visible}
 .slideshow-controls{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-top:.5rem}
 .slideshow-count{font-size:.875rem}
+
+/* The note button sits beside the header toggle, on the tinted
+   header, instead of inside the toggle button (a button inside a
+   button is invalid and would flip the achievement). */
+.ach-head{display:flex}
+.ach-head button.task{flex:1 1 auto;min-width:0;width:auto}
+.note-btn{flex:none;align-self:center;margin-right:.75rem;border:0;background:transparent;color:inherit;cursor:pointer;padding:.25rem .5rem;border-radius:6px}
+.note-btn:focus-visible{outline:2px solid var(--at-green);outline-offset:2px}
+.note-btn.has-note{color:var(--at-green)}
+
+/* Notes popup: a form dialog, not an image viewer, so it gets a
+   card-like background and width instead of the transparent
+   image-viewer style. */
+#notes-modal{border:0;border-radius:.5rem;padding:1rem;width:min(92vw,480px);background:var(--bs-body-bg);color:var(--bs-body-color)}
+#notes-modal::backdrop{background:rgba(0,0,0,.6)}
+.notes-modal-close{border:0;background:transparent;color:inherit;font-size:1.5rem;line-height:1;cursor:pointer;padding:.25rem .5rem}
+#notes-modal-text{width:100%}
