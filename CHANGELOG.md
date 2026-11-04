@@ -4,6 +4,16 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Xbox sync setup documented
+
+### Added
+
+- README section documenting the OpenXBL activation steps (key,
+  XUID, title ID via title history, per-title fetch, `map_xbox.py`,
+  regenerate and commit) and the key-safety rule: the key never goes
+  in the repo, because a key in a public repo is public permanently
+  and OpenXBL keys carry no per-gamertag scope.
+
 ## 2026-11-04 — Privacy Dashboard import (live on every game page)
 
 ### Added
