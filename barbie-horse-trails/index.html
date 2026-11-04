@@ -364,7 +364,50 @@
       var hasItems=sec.querySelectorAll('.item').length>0;
       sec.classList.toggle('hidden',!catMatch||(hasItems&&visibleItems===0));
     });
+    fitHeaders();
   }
+  /* Header normalisation: long names shrink toward a floor
+     (1.05rem to 0.85rem) before they are allowed to wrap, and
+     headers in the same visible row are then equalised to the
+     row's tallest, so card bodies start on one line instead of
+     staggering. Runs after every filter pass (which is also
+     every search, reset and import path), on resize, when a
+     section opens or closes, and once fonts arrive. */
+  function fitHeaders(){
+    document.querySelectorAll('.ach-head').forEach(function(h){ h.style.minHeight = ''; });
+    document.querySelectorAll('.ach-name').forEach(function(n){ n.style.fontSize = ''; });
+    document.querySelectorAll('.ach-name').forEach(function(n){
+      var floors = ['0.95rem', '0.85rem'];
+      for(var i = 0; i < floors.length; i++){
+        var line = parseFloat(getComputedStyle(n).lineHeight);
+        if(n.offsetHeight <= line + 1) break;
+        n.style.fontSize = floors[i];
+      }
+    });
+    var rows = {};
+    document.querySelectorAll('.item').forEach(function(item){
+      if(item.classList.contains('hidden') || !item.offsetParent) return;
+      var head = item.querySelector('.ach-head');
+      if(!head) return;
+      var sec = item.closest('details');
+      var key = (sec ? sec.getAttribute('data-cat') : '') + ':' + item.offsetTop;
+      (rows[key] = rows[key] || []).push(head);
+    });
+    Object.keys(rows).forEach(function(key){
+      var max = 0;
+      rows[key].forEach(function(h){ max = Math.max(max, h.offsetHeight); });
+      rows[key].forEach(function(h){ h.style.minHeight = max + 'px'; });
+    });
+  }
+  var fitTimer = null;
+  window.addEventListener('resize', function(){
+    if(fitTimer) clearTimeout(fitTimer);
+    fitTimer = setTimeout(fitHeaders, 150);
+  });
+  document.querySelectorAll('details[data-cat]').forEach(function(d){
+    d.addEventListener('toggle', fitHeaders);
+  });
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeaders);
   document.querySelectorAll('.filter').forEach(function(btn){
     btn.addEventListener('click',function(){
       document.querySelectorAll('.filter').forEach(function(b){b.classList.remove('active');});
@@ -781,7 +824,10 @@
     modalSync();
   }
   if(modal){
-    modal.addEventListener('close', function(){ modalImg.removeAttribute('src'); modalShow = null; });
+    modal.addEventListener('close', function(){
+      modalImg.removeAttribute('src'); modalShow = null;
+      modal.classList.remove('media-modal-slideshow');
+    });
     modal.addEventListener('click', function(e){ if(e.target === modal) modal.close(); });
     var modalClose = modal.querySelector('.media-modal-close');
     if(modalClose) modalClose.addEventListener('click', function(){ modal.close(); });
@@ -792,6 +838,15 @@
       if(e.key === 'ArrowLeft') modalStep(-1);
       else if(e.key === 'ArrowRight') modalStep(1);
     });
+    /* Tapping the left or right side of a slideshow image steps
+       it too: the buttons underneath stay the discoverable
+       control, this is the faster path for repeat viewing. */
+    modalImg.addEventListener('click', function(e){
+      if(!modalShow) return;
+      var r = modalImg.getBoundingClientRect();
+      if(!r.width) return;
+      modalStep(e.clientX - r.left < r.width / 2 ? -1 : 1);
+    });
     document.querySelectorAll('.ach-media a, .slideshow a').forEach(function(a){
       a.addEventListener('click', function(e){
         if(!modal.showModal) return;
@@ -800,10 +855,12 @@
         if(ss){
           modalShow = {ss: ss, links: [].slice.call(ss.querySelectorAll('a'))};
           modalNav.style.display = '';
+          modal.classList.add('media-modal-slideshow');
           modalSync();
         } else {
           modalShow = null;
           modalNav.style.display = 'none';
+          modal.classList.remove('media-modal-slideshow');
           modalFromLink(a);
         }
         modal.showModal();

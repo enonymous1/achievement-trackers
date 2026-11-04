@@ -471,6 +471,17 @@ class TestRender(unittest.TestCase):
         self.assertIn(".slideshow-slide{grid-area:1/1;visibility:hidden}", css)
         self.assertIn(".slideshow-slide.active{visibility:visible}", css)
 
+    def test_headers_normalise_and_viewer_side_tap(self):
+        # Header normalisation (shrink + per-row equalisation)
+        # and viewer side-tap navigation exist on game pages.
+        template = (Path(__file__).parent / "template.html").read_text()
+        self.assertIn("fitHeaders", template)
+        self.assertIn("0.85rem", template)
+        self.assertIn("media-modal-slideshow", template)
+        css = (Path(__file__).parent.parent
+               / "assets" / "css" / "tracker-cards.css").read_text()
+        self.assertIn("justify-content:center", css)
+
     def test_viewer_has_slideshow_navigation(self):
         # The viewer carries Previous/Next for slideshow shots
         # (hidden for standalone images), and the credit overlay

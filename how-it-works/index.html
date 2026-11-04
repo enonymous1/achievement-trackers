@@ -128,7 +128,7 @@
             <p class="mb-1"><strong>Tick an achievement</strong> by clicking its whole header — number, name and Gamerscore pill included. The header's state box fills green when it is done.</p>
             <p class="mb-1"><strong>Sub-steps</strong> under some achievements are the route to that one achievement; ticking every sub-step ticks the achievement itself.</p>
             <p class="mb-1"><strong>Counters</strong> track numbers (mobs defeated, emeralds, levels). Use the −/+ buttons beside the input, or type a number directly. Counters shared between achievements stay in sync, and each counter's progress bar sits right under its card header.</p>
-            <p class="mb-1"><strong>Missable:</strong> a red Missable pill means the achievement can be passed without popping — usually a choice or a one-time window, so do it when the card says to. <strong>Media:</strong> where a card has a screenshot or clip, it sits under the route note. Guide images carry their credit on the image itself, shown when you hover it (and in the viewer caption), and if one can't load, a placeholder explains why instead of a broken-image icon. Tapping a walkthrough shot opens its full-size version in a viewer on the same page. Some achievements carry a step-by-step guide instead: use Previous and Next to walk through its slides, on the card or inside the viewer.</p>
+            <p class="mb-1"><strong>Missable:</strong> a red Missable pill means the achievement can be passed without popping — usually a choice or a one-time window, so do it when the card says to. <strong>Media:</strong> where a card has a screenshot or clip, it sits under the route note. Guide images carry their credit on the image itself, shown when you hover it (and in the viewer caption), and if one can't load, a placeholder explains why instead of a broken-image icon. Tapping a walkthrough shot opens its full-size version in a viewer on the same page. Some achievements carry a step-by-step guide instead: use Previous and Next to walk through its slides, on the card or inside the viewer — inside the viewer, tapping the left or right side of the image steps it too.</p>
           <p class="mb-1"><strong>Finding things:</strong> search matches achievement names, missions and gear; the phase pills filter to one section; "Incomplete only" hides everything already done. The slim Gamerscore progress bar pins to the top while you scroll.</p>
             <p class="mb-0"><strong>Your notes</strong> live on the cards: tap the note icon on any achievement card — or the note icon in the filter card for game-wide notes — and write in the popup. Notes save as you type, in your browser only, alongside your progress.</p>
           </div>
@@ -315,7 +315,10 @@
     modalSync();
   }
   if(modal){
-    modal.addEventListener('close', function(){ modalImg.removeAttribute('src'); modalShow = null; });
+    modal.addEventListener('close', function(){
+      modalImg.removeAttribute('src'); modalShow = null;
+      modal.classList.remove('media-modal-slideshow');
+    });
     modal.addEventListener('click', function(e){ if(e.target === modal) modal.close(); });
     var modalClose = modal.querySelector('.media-modal-close');
     if(modalClose) modalClose.addEventListener('click', function(){ modal.close(); });
@@ -326,6 +329,12 @@
       if(e.key === 'ArrowLeft') modalStep(-1);
       else if(e.key === 'ArrowRight') modalStep(1);
     });
+    modalImg.addEventListener('click', function(e){
+      if(!modalShow) return;
+      var r = modalImg.getBoundingClientRect();
+      if(!r.width) return;
+      modalStep(e.clientX - r.left < r.width / 2 ? -1 : 1);
+    });
     root.querySelectorAll('.slideshow a').forEach(function(a){
       a.addEventListener('click', function(e){
         if(!modal.showModal) return;
@@ -333,11 +342,47 @@
         var ss = a.closest('.slideshow');
         modalShow = {ss: ss, links: [].slice.call(ss.querySelectorAll('a'))};
         modalNav.style.display = '';
+        modal.classList.add('media-modal-slideshow');
         modalSync();
         modal.showModal();
       });
     });
   }
+  /* Demo header normalisation, same as the game pages but scoped
+     to #card-demos: shrink long names toward a floor, then
+     equalise header heights per visible row. */
+  function fitDemoHeaders(){
+    root.querySelectorAll('.ach-head').forEach(function(h){ h.style.minHeight = ''; });
+    root.querySelectorAll('.ach-name').forEach(function(n){ n.style.fontSize = ''; });
+    root.querySelectorAll('.ach-name').forEach(function(n){
+      var floors = ['0.95rem', '0.85rem'];
+      for(var i = 0; i < floors.length; i++){
+        var line = parseFloat(getComputedStyle(n).lineHeight);
+        if(n.offsetHeight <= line + 1) break;
+        n.style.fontSize = floors[i];
+      }
+    });
+    var rows = {};
+    [].slice.call(root.children).forEach(function(item){
+      if(!item.offsetParent) return;
+      var head = item.querySelector('.ach-head');
+      if(!head) return;
+      var key = item.offsetTop;
+      (rows[key] = rows[key] || []).push(head);
+    });
+    Object.keys(rows).forEach(function(key){
+      var max = 0;
+      rows[key].forEach(function(h){ max = Math.max(max, h.offsetHeight); });
+      rows[key].forEach(function(h){ h.style.minHeight = max + 'px'; });
+    });
+  }
+  var demoFitTimer = null;
+  window.addEventListener('resize', function(){
+    if(demoFitTimer) clearTimeout(demoFitTimer);
+    demoFitTimer = setTimeout(fitDemoHeaders, 150);
+  });
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(fitDemoHeaders);
+  fitDemoHeaders();
 })();
 </script>
 </body>

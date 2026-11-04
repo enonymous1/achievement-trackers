@@ -4,6 +4,25 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Even card headers, viewer side-tap
+
+### Changed
+
+- Card headers no longer stagger: long names shrink toward
+  a floor (1.05rem down to 0.85rem) before they are allowed
+  to wrap, and headers in the same visible row are then
+  equalised to the row's tallest, so card bodies start on
+  one line. Re-runs after every filter pass, on resize,
+  when a section opens or closes, and once fonts arrive;
+  the How demos get the same treatment, scoped to their
+  grid.
+- Viewer slideshow navigation is now centered under the
+  caption as one group, instead of spread to the edges,
+  and tapping the left or right side of the image steps
+  it too (buttons underneath stay the discoverable
+  control; the image gets a pointer cursor while a
+  slideshow is open).
+
 ## 2026-11-04 — Credit on hover, viewer steps through slideshows
 
 ### Changed

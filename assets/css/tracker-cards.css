@@ -211,5 +211,6 @@ figure:hover .media-credit, figure:focus-within .media-credit{opacity:1}
 
 /* Viewer slideshow navigation: shown only for slideshow shots,
    hidden for standalone images. */
-.media-modal-nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:.5rem}
+.media-modal-nav{display:flex;align-items:center;justify-content:center;gap:1rem;margin-top:.5rem}
+.media-modal-slideshow #media-modal-img{cursor:pointer}
 .media-modal-count{color:#fff;font-size:.875rem}

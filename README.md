@@ -219,7 +219,9 @@ Schema, per game file:
   the card (same entry shape as media, images only), rendered
   one slide at a time with Previous/Next buttons; slide images
   open in the same viewer, where Previous/Next step through
-  the slideshow too.
+  the slideshow too (or tap the left/right side of the
+  image). Card headers shrink long names toward a floor and
+  equalise per row, so bodies start on one line.
 - `step_cards`: walkthrough steps that are *not* achievements
   themselves (secret missions, runes) — `title`, `how`, `steps`.
 - Filter buttons: each section may carry its own `filter_label`
