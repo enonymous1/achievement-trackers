@@ -103,6 +103,23 @@ def validate_game(filename, game):
         if not condition:
             fail(f"{filename}: {message}")
 
+    def check_media_entry(entry, ach_id):
+        """Shared shape checks for media and slideshow entries:
+        a usable src, an optional full of the same shape, and
+        string alt/caption/credit when present."""
+        check(isinstance(entry, dict)
+              and isinstance(entry.get("src"), str) and entry["src"],
+              f"{ach_id}: bad media entry {entry!r}")
+        for key in ("src", "full"):
+            if entry.get(key):
+                check(isinstance(entry[key], str)
+                      and (entry[key].startswith("assets/")
+                           or entry[key].startswith("https://")),
+                      f"{ach_id}: bad media {key} {entry[key]!r}")
+        for field in ("alt", "caption", "credit"):
+            check(field not in entry or isinstance(entry[field], str),
+                  f"{ach_id}: media {field} must be a string")
+
     check(isinstance(game, dict),
           f"top level must be a JSON object, not {type(game).__name__}")
     for field in ("slug", "title", "tagline", "order_note", "scope_note",
@@ -184,23 +201,18 @@ def validate_game(filename, game):
                       f"{ach['id']}: missable must be true/false, not {ach['missable']!r}")
             for entry in ach.get("media", []):
                 check(isinstance(entry, dict)
-                      and entry.get("type") in ("image", "video")
-                      and isinstance(entry.get("src"), str) and entry["src"],
+                      and entry.get("type") in ("image", "video"),
                       f"{ach['id']}: bad media entry {entry!r}")
-                check(entry["src"].startswith("assets/")
-                      or entry["src"].startswith("https://"),
-                      f"{ach['id']}: bad media src {entry['src']!r}")
-                if entry.get("full"):
-                    check(entry["full"].startswith("assets/")
-                          or entry["full"].startswith("https://"),
-                          f"{ach['id']}: bad media full {entry['full']!r}")
-                for field in ("alt", "caption", "credit"):
-                    check(field not in entry or isinstance(entry[field], str),
-                          f"{ach['id']}: media {field} must be a string")
+                check_media_entry(entry, ach["id"])
                 if entry["type"] == "video" and entry["src"].startswith("https://"):
                     check(entry["src"].lower().endswith((".mp4", ".webm", ".ogg"))
                           or _youtube_id(entry["src"]),
                           f"{ach['id']}: bad remote video {entry['src']!r}")
+            slides = ach.get("slideshow", [])
+            check(isinstance(slides, list),
+                  f"{ach['id']}: slideshow must be a list")
+            for entry in slides:
+                check_media_entry(entry, ach["id"])
         for card in section.get("step_cards", []):
             check(isinstance(card, dict)
                   and card.get("title") and card.get("how") and card.get("steps"),
@@ -383,6 +395,44 @@ def render_media(ach):
     return "".join(parts)
 
 
+def render_slideshow(ach):
+    """Step-by-step guide block for one achievement card: one
+    slide at a time, walked with Previous/Next. Slides reuse
+    the media entry shape (src, optional full, caption, credit,
+    alt); slide images open in the same viewer as media images.
+    """
+    slides = ach.get("slideshow", [])
+    if not slides:
+        return ""
+    parts = []
+    for i, entry in enumerate(slides):
+        img = (f'<img src="{esc(_media_src(entry["src"]))}" '
+               f'alt="{esc(entry.get("alt") or ach["name"])}" '
+               f'loading="lazy" class="img-fluid rounded">')
+        if entry.get("full"):
+            img = (f'<a href="{esc(_media_src(entry["full"]))}" target="_blank" '
+                   f'rel="noopener" title="Open larger version">{img}</a>')
+        cap = []
+        if entry.get("caption"):
+            cap.append(esc(entry["caption"]))
+        if entry.get("credit"):
+            cap.append(f'Image: {esc(entry["credit"])}')
+        figcap = (f'<figcaption class="figure-caption">{" ".join(cap)}</figcaption>'
+                  if cap else "")
+        active = " active" if i == 0 else ""
+        parts.append(f'<figure class="slideshow-slide{active}">{img}{figcap}</figure>')
+    controls = (
+        '<div class="slideshow-controls">'
+        '<button type="button" class="slideshow-prev btn btn-outline-success btn-sm">'
+        '← Previous</button>'
+        f'<span class="slideshow-count text-secondary">1 of {len(slides)}</span>'
+        '<button type="button" class="slideshow-next btn btn-outline-success btn-sm">'
+        'Next →</button></div>'
+    )
+    return (f'<div class="slideshow mt-2"><div class="slideshow-slides">'
+            f'{"".join(parts)}</div>{controls}</div>')
+
+
 def render_achievement(ach, number, wrap=True):
     """Render one achievement card.
 
@@ -414,6 +464,7 @@ def render_achievement(ach, number, wrap=True):
         "HOW": esc(ach["how"]),
         "MISSABLE": missable,
         "MEDIA": render_media(ach),
+        "SLIDESHOW": render_slideshow(ach),
         "STEPS": render_steps(ach.get("steps", []), parent_id=ach["id"]),
         "COUNTERS": counters,
         "COUNTER_BARS": counter_bars,

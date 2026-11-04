@@ -214,6 +214,10 @@ Schema, per game file:
   broken-image icon. `full` (optional) is a larger version the
   image opens in an on-page viewer (a new tab if scripts are
   off). Media must be real captures, never mocked.
+  Optional `slideshow` is an ordered step-by-step guide for
+  the card (same entry shape as media, images only), rendered
+  one slide at a time with Previous/Next buttons; slide images
+  open in the same viewer.
 - `step_cards`: walkthrough steps that are *not* achievements
   themselves (secret missions, runes) — `title`, `how`, `steps`.
 - Filter buttons: each section may carry its own `filter_label`

@@ -4,6 +4,26 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Slideshow guide cards (INSPEKTA first)
+
+### Added
+
+- Achievements gain an optional `slideshow`: an ordered
+  step-by-step guide rendered one slide at a time with
+  Previous/Next buttons (first slide shown, ends disable
+  their button) and a "N of M" count. Slides reuse the media
+  entry shape (src, optional full, caption, credit, alt) and
+  slide images open in the same viewer as media images. The
+  media validation was refactored into one shared entry
+  check used by both lists.
+- INSPEKTA is the first slideshow card (3 slides, both
+  sizes cached like the other shots): grab the 'IT'S
+  MEGAPON!' phrase from Vib by the net, show it to Capochin
+  to get into the van, then meet Inspekta inside. The card's
+  route note alone never said how to get into the van, which
+  is exactly the gap a slideshow fills. Route-note text
+  stays paraphrased; game phrases stay exact.
+
 ## 2026-11-04 — Walkthrough shots open in an on-page viewer
 
 ### Changed

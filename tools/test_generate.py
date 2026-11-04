@@ -17,6 +17,7 @@ from generate import (
     render_how,
     render_hub,
     render_sections,
+    render_slideshow,
     render_xbox_sync_card,
     sidebar_how_href,
     sidebar_menu,
@@ -191,6 +192,41 @@ class TestXboxValidation(unittest.TestCase):
         ):
             game = make_game()
             game["sections"][0]["achievements"][0]["media"] = [bad]
+            with self.assertRaises(SystemExit):
+                validate_game("test.json", game)
+
+    def test_slideshow_renders_with_first_slide_active(self):
+        base = {"id": "a1", "name": "A", "gs": 10, "req": "R", "how": "H"}
+        self.assertEqual(render_slideshow(dict(base)), "")
+        html = render_slideshow(dict(base, slideshow=[
+            {"src": "assets/media/s1.png", "full": "assets/media/s1-full.png",
+             "caption": "Step one", "credit": "Guide"},
+            {"src": "assets/media/s2.png", "caption": "Step two"},
+        ]))
+        self.assertIn('class="slideshow-slide active"', html)
+        self.assertIn('class="slideshow-slide"', html)
+        self.assertIn("1 of 2", html)
+        self.assertIn("slideshow-prev", html)
+        self.assertIn("slideshow-next", html)
+        self.assertIn('<a href="../assets/media/s1-full.png"', html)
+        self.assertIn("Step one Image: Guide", html)
+        full = render_achievement(dict(base, slideshow=[
+            {"src": "assets/media/s1.png", "caption": "Step one"},
+        ]), 1)
+        self.assertIn('class="slideshow mt-2"', full)
+
+    def test_bad_slideshow_fails_validation(self):
+        game = make_game()
+        game["sections"][0]["achievements"][0]["slideshow"] = "nope"
+        with self.assertRaises(SystemExit):
+            validate_game("test.json", game)
+        for bad in (
+            {"caption": "No src"},
+            {"src": "/tmp/s.png"},
+            {"src": "assets/media/s.png", "full": "notaurl"},
+        ):
+            game = make_game()
+            game["sections"][0]["achievements"][0]["slideshow"] = [bad]
             with self.assertRaises(SystemExit):
                 validate_game("test.json", game)
 

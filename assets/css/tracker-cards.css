@@ -170,3 +170,9 @@ button.task[aria-pressed="true"] .task-state::after {
 #media-modal-img{display:block;max-width:95vw;max-height:85vh;width:auto;height:auto;margin:0 auto;border-radius:.375rem}
 .media-modal-close{position:absolute;top:.5rem;right:.5rem;width:44px;height:44px;border:0;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:1.5rem;line-height:1;cursor:pointer}
 .media-modal-caption{color:#fff;text-align:center;margin:.5rem 0 0}
+
+/* Slideshow cards: one guide slide at a time. */
+.slideshow-slide{display:none}
+.slideshow-slide.active{display:block}
+.slideshow-controls{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-top:.5rem}
+.slideshow-count{font-size:.875rem}
