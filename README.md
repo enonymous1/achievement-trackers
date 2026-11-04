@@ -33,13 +33,10 @@ incomplete-only toggle, phase filters, and export / import / reset for
 your progress. Progress saves in your browser only (localStorage, one
 key per game); nothing is uploaded, and the hub can show progress
 across games because they share the same Pages origin. Each page also
-has an "Import from a Microsoft export" card: pick the JSON files
-from a Privacy Dashboard archive (instructions on the card), and it
-analyses the match — confident, possible, ambiguous, unmatched, and
-not-found — and previews exactly what it will tick before you
-confirm. It needs no API key and no Xbox mapping, because it matches
-by achievement name; the Xbox sync card (above it, when a game is
-mapped) is the ID-matched alternative.
+has an Xbox sync card (when a game is mapped) that ticks from your
+Xbox data with your own key. A Privacy Dashboard import was tried
+and dropped: the archive holds app usage, not achievement records —
+see "We tried the Microsoft export" on the How it works page.
 
 ## Xbox sync setup (OpenXBL)
 

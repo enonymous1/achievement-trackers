@@ -12,8 +12,8 @@ from pathlib import Path
 
 from generate import (
     render_demos,
+    render_game,
     render_how,
-    render_privacy_import_card,
     render_sections,
     render_xbox_sync_card,
     sidebar_how_href,
@@ -141,14 +141,19 @@ class TestXboxValidation(unittest.TestCase):
         with self.assertRaises(SystemExit):
             validate_game("test.json", game)
 
-    def test_privacy_import_card_on_every_game(self):
-        card = render_privacy_import_card(make_game())
-        self.assertIn('id="privacy-import"', card)
-        self.assertIn('data-game-title="Test"', card)
-        self.assertIn('id="privacy-files"', card)
-        self.assertIn('account.microsoft.com/privacy', card)
+    def test_no_privacy_import_on_game_pages(self):
+        # The Microsoft export import was removed (the archive holds
+        # app usage, not achievement records); its explainer lives on
+        # the How page instead. Game pages must not render the card,
+        # and the template must not still carry its placeholder.
+        html = render_game(validate_game("test.json", make_game()), [])
+        self.assertNotIn('id="privacy-import"', html)
+        self.assertNotIn('id="privacy-files"', html)
         template = (Path(__file__).parent / "template.html").read_text()
-        self.assertIn("@@PRIVACY_IMPORT_CARD@@", template)
+        self.assertNotIn("@@PRIVACY_IMPORT_CARD@@", template)
+        self.assertNotIn("privacy_import", template)
+        how = (Path(__file__).parent / "how_template.html").read_text()
+        self.assertIn("We tried the Microsoft export", how)
 
     def test_sync_card_only_for_synced_games(self):
         self.assertEqual(render_xbox_sync_card(make_game()), "")

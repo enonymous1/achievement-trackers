@@ -4,6 +4,27 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Microsoft export import removed, explained on How page
+
+### Removed
+
+- The "Import from a Microsoft export" card from every game page
+  (fragment, template placeholder, and its parser/analysis script).
+  The Xbox sync card and its shared preview/apply machinery are
+  untouched, and progress Export/Import is a separate feature and
+  stays.
+
+### Added
+
+- "We tried the Microsoft export" on the How it works page: the
+  Privacy Dashboard archive was tried and holds app/service usage
+  (which apps were opened and when, plus searches) — no achievement
+  names, unlock dates, or Gamerscore — so there was nothing to match
+  and the import would have reported "no achievement records found"
+  for every game. The section names the working alternatives (Xbox
+  sync on mapped games, ticking by hand) and says the import can
+  return if Microsoft ever ships achievement records in the archive.
+
 ## 2026-11-04 — Great God Grove (game #2)
 
 ### Added

@@ -65,7 +65,7 @@
   .filter.active{background:var(--at-green) !important;border-color:var(--at-green) !important;font-weight:700}
   [data-bs-theme="dark"] .filter.active{color:#12140f !important}
   .hidden{display:none !important}
-  @media print{.app-header,.controls,#xbox-sync,#privacy-import{display:none !important}.progress-card{position:static}details{break-inside:avoid}}
+  @media print{.app-header,.controls,#xbox-sync{display:none !important}.progress-card{position:static}details{break-inside:avoid}}
 </style>
 </head>
 <body class="layout-fixed sidebar-expand-lg">
@@ -159,32 +159,6 @@
         </div>
 
 
-
-<div class="card mb-3" id="privacy-import" data-game-title="Minecraft Dungeons">
-  <div class="card-header"><h3 class="card-title">Import from a Microsoft export</h3></div>
-  <div class="card-body">
-    <p class="text-secondary">Tick achievements from a copy of your own Xbox data, without any API key. The files you pick are read in this browser only — nothing is uploaded — and nothing is ticked until you review the analysis and confirm.</p>
-    <ol class="text-secondary">
-      <li>Sign in at <a href="https://account.microsoft.com/privacy">account.microsoft.com/privacy</a> with the Microsoft account that owns the Xbox profile, then open the “Download your data” tab at the top of the page — or go straight there: <a href="https://account.microsoft.com/privacy/download-data">account.microsoft.com/privacy/download-data</a>.</li>
-      <li>Open “Download your data”, then “Create new archive”, and tick the gaming / activity data types on offer. Microsoft does not publish a fixed list of checkboxes — include anything Xbox, gaming, or activity related.</li>
-      <li>Wait for the archive: it can take minutes to hours. Under “Archives”, click Download when it is ready, and save the ZIP before it expires (archives are removed after a few days).</li>
-      <li>Extract the ZIP, then choose its JSON files here (or the whole extracted folder). If a file is not JSON, it is skipped and reported below.</li>
-      <li>Review the analysis, then Confirm to apply. Confident matches are records the file attributes to this game; possible matches are records with no game shown — they are held back unless you tick the box.</li>
-    </ol>
-    <p class="text-secondary">Microsoft does not document a filename or a field list for achievement records in the archive, and Xbox data may arrive through a separate Xbox export rather than the main archive. If the analysis finds no achievement records, the archive may simply not include them — the Xbox sync card above (once this game is mapped) is the alternative. In particular, an archive of app and service usage alone (a file like <code>ProductAndServiceUsage.csv</code>) lists play sessions, not achievements: it shows which apps were opened and when, with no achievement names, unlocks, or Gamerscore, so it cannot fill anything in.</p>
-    <div class="d-flex flex-wrap gap-2 align-items-center">
-      <label class="btn btn-outline-success mb-0" for="privacy-files">Choose export files</label>
-      <input type="file" id="privacy-files" accept=".json,.csv,application/json,text/csv" multiple webkitdirectory class="d-none">
-      <label class="form-check-label"><input type="checkbox" id="privacy-include-possible" class="form-check-input me-1"> Include possible matches (game not shown in file)</label>
-    </div>
-    <p id="privacy-status" class="mt-2 mb-0" role="status"></p>
-    <div id="privacy-analysis" class="hidden mt-3"></div>
-    <div id="privacy-preview" class="import-preview hidden mt-3">
-      <div id="privacy-preview-body"></div>
-      <div class="d-flex gap-2 mt-2"><button type="button" id="privacy-confirm" class="btn btn-success">Apply these ticks</button><button type="button" id="privacy-cancel" class="btn btn-outline-secondary">Cancel — change nothing</button></div>
-    </div>
-  </div>
-</div>
 
 <details open data-cat="story">
 <summary>Phase 1 · First run — Default difficulty <small>11 achievements · <span class="sec-progress" data-section="story"></span></small></summary>
@@ -489,13 +463,11 @@
     };
     r.readAsText(f);
   });
-  /* Shared import preview/apply machinery, used by both the Xbox
-     sync card and the Privacy Dashboard import card. Only one
-     import preview is live at a time: showing one hides the other
-     card's, and Confirm applies whichever is pending. Both cards
-     are additive only — they tick newly unlocked achievements and
-     their sub-steps, and never untick, never touch notes or
-     counters. */
+  /* Shared import preview/apply machinery, used by the Xbox sync
+     card. Only one import preview is live at a time, and Confirm
+     applies whichever is pending. Sync is additive only — it ticks
+     newly unlocked achievements and their sub-steps, and never
+     unticks, never touches notes or counters. */
   function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function achName(achId){ var b=document.getElementById(achId); var n=b?b.querySelector('.ach-name'):null; return n?n.textContent.trim():achId; }
   function achHasCounter(achId){ var b=document.getElementById(achId); var it=b?b.closest('.item'):null; return !!(it&&it.querySelector('input.count')); }
@@ -755,275 +727,6 @@
       keyInput.value='';
       var m=metaLoad(); m.key=''; metaSave(m); xboxMeta=m;
       setStatus('Key cleared from this browser.');
-    });
-  }
-  /* Privacy Dashboard import. Unlike the sync card this needs no
-     Xbox mapping: records are matched by achievement name against
-     the cards on this page, so it works for unmapped games too.
-     Microsoft does not document a filename or a field list for
-     achievement records in its archive, so the parser is
-     deliberately tolerant and diagnostic: it walks whatever JSON
-     the user picks, collects objects that look like unlocked
-     achievements, and reports exactly what it found — including
-     "nothing found" — instead of guessing. The file is read with
-     FileReader in this browser only; nothing is uploaded. */
-  var privCard=document.getElementById('privacy-import');
-  if(privCard){
-    var privFiles=document.getElementById('privacy-files');
-    var privInclude=document.getElementById('privacy-include-possible');
-    var privStatus=document.getElementById('privacy-status');
-    var privAnalysisEl=document.getElementById('privacy-analysis');
-    var privPreviewEl=document.getElementById('privacy-preview');
-    var privPreviewBody=document.getElementById('privacy-preview-body');
-    var privConfirmBtn=document.getElementById('privacy-confirm');
-    var privCancelBtn=document.getElementById('privacy-cancel');
-    var privacyAnalysis=null;
-    function setPrivStatus(msg){ privStatus.textContent=msg; }
-    function normName(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
-    function firstStr(obj,keys){
-      for(var i=0;i<keys.length;i++){
-        var v=obj[keys[i]];
-        if(typeof v==='string'&&v.trim()) return v.trim();
-      }
-      return null;
-    }
-    function entryDate(e){
-      var d=firstStr(e,['dateUnlocked','timeUnlocked','unlockedDate','unlockDate','earnedDate','unlockedAt']);
-      if(d) return d;
-      /* Xbox's own shape nests the unlock time under progression. */
-      if(e.progression&&typeof e.progression==='object') return firstStr(e.progression,['timeUnlocked','dateUnlocked','unlockedDate']);
-      return null;
-    }
-    function entryGs(e){
-      if(Array.isArray(e.rewards)){
-        for(var i=0;i<e.rewards.length;i++){
-          var r=e.rewards[i];
-          if(r&&r.name==='Gamerscore'){ var n=parseInt(r.value,10); if(!isNaN(n)) return n; }
-        }
-      }
-      var g=e.gamerscore!==undefined?e.gamerscore:e.gs;
-      var n2=parseInt(g,10); return isNaN(n2)?null:n2;
-    }
-    function entryGame(e){
-      if(Array.isArray(e.titleAssociations)&&e.titleAssociations[0]&&typeof e.titleAssociations[0].name==='string') return e.titleAssociations[0].name;
-      return firstStr(e,['game','gameTitle','productName']);
-    }
-    /* An achievement-like record needs a name AND an unlock signal.
-       A bare date field does not count: activity rows ("played this
-       game on…") also carry dates, so only unlock-specific date
-       fields, an Achieved state, or an unlocked flag qualify. */
-    function isAchLike(e){
-      if(!e||typeof e!=='object'||Array.isArray(e)) return false;
-      if(Array.isArray(e.achievements)) return false;
-      var name=firstStr(e,['achievementName','achievement','name','displayName']);
-      if(!name) return false;
-      var st=typeof e.status==='string'?e.status.toLowerCase():'';
-      return e.progressState==='Achieved'||e.unlocked===true||st==='unlocked'||st==='completed'||!!entryDate(e);
-    }
-    function collectRecords(node,gameCtx,out){
-      if(Array.isArray(node)){ node.forEach(function(item){ collectRecords(item,gameCtx,out); }); return; }
-      if(!node||typeof node!=='object') return;
-      var ctx=gameCtx;
-      if(Array.isArray(node.titleAssociations)&&node.titleAssociations[0]&&typeof node.titleAssociations[0].name==='string') ctx=node.titleAssociations[0].name;
-      else if(typeof node.game==='string'&&node.game.trim()&&(node.achievements||node.games||node.titles)) ctx=node.game;
-      if(isAchLike(node)){
-        out.push({name:firstStr(node,['achievementName','achievement','name','displayName']), game:entryGame(node)||ctx, date:entryDate(node), gs:entryGs(node)});
-        return;
-      }
-      Object.keys(node).forEach(function(k){ var v=node[k]; if(v&&typeof v==='object') collectRecords(v,ctx,out); });
-    }
-    function parseCSVText(text){
-      var rows=[], row=[], cur='', inQ=false;
-      for(var i=0;i<text.length;i++){
-        var ch=text[i];
-        if(inQ){
-          if(ch==='"'){ if(text[i+1]==='"'){ cur+='"'; i++; } else inQ=false; }
-          else cur+=ch;
-        } else if(ch==='"') inQ=true;
-        else if(ch===','){ row.push(cur); cur=''; }
-        else if(ch==='\n'){ row.push(cur); rows.push(row); row=[]; cur=''; }
-        else if(ch==='\r'){}
-        else cur+=ch;
-      }
-      if(cur!==''||row.length){ row.push(cur); rows.push(row); }
-      if(!rows.length) return [];
-      var header=rows[0].map(function(h){ return h.trim().toLowerCase(); });
-      function col(re){ for(var j=0;j<header.length;j++){ if(re.test(header[j])) return j; } return -1; }
-      var nameCol=col(/^(achievement|achievement name|name)$/);
-      if(nameCol<0) return [];
-      var gameCol=col(/^(game|game title|title)$/);
-      var dateCol=col(/^(date unlocked|time unlocked|unlocked|unlock date|date|earned)$/);
-      var gsCol=col(/^(gamerscore|gs|score)$/);
-      var statusCol=col(/^status$/);
-      var out=[];
-      rows.slice(1).forEach(function(r){
-        var name=(r[nameCol]||'').trim(); if(!name) return;
-        var st=statusCol>=0?(r[statusCol]||'').trim().toLowerCase():'';
-        var date=dateCol>=0?(r[dateCol]||'').trim():'';
-        if(!date&&st!=='unlocked'&&st!=='completed') return;
-        var gs=gsCol>=0?parseInt((r[gsCol]||'').replace(/[^0-9-]/g,''),10):null;
-        out.push({name:name, game:gameCol>=0?(r[gameCol]||'').trim()||null:null, date:date||null, gs:isNaN(gs)?null:gs});
-      });
-      return out;
-    }
-    function analyseRecords(allRecords){
-      var seen={}, records=[];
-      allRecords.forEach(function(r){
-        var key=normName(r.name)+'|'+normName(r.game||'');
-        if(!seen[key]){ seen[key]=r; records.push(r); }
-        else if(!seen[key].date&&r.date) seen[key].date=r.date;
-      });
-      var tracker=tasks.map(function(t){ return {id:t.id, name:achName(t.id), norm:normName(achName(t.id)), gs:parseInt(t.getAttribute('data-gs'),10)||0}; });
-      var byNorm={};
-      tracker.forEach(function(a){ (byNorm[a.norm]=byNorm[a.norm]||[]).push(a); });
-      var titleNorm=normName(privCard.getAttribute('data-game-title')||'');
-      /* Game attribution is strict on purpose: "Minecraft Dungeons
-         II" contains "Minecraft Dungeons" but is a different game,
-         so only an exact title or a known edition suffix counts.
-         Anything else with a game shown is other-game, never
-         applied, even when its achievement name matches. */
-      var EDITION_SUFFIXES=['heroedition','ultimateedition','standardedition','deluxeedition','hero','ultimate','standard','deluxe','gotyedition','gameoftheyearedition'];
-      function gameMatches(game){
-        if(!game) return false;
-        var g=normName(game);
-        if(g===titleNorm) return true;
-        if(g.indexOf(titleNorm)===0) return EDITION_SUFFIXES.indexOf(g.slice(titleNorm.length))>=0;
-        return false;
-      }
-      var confident=[], possible=[], ambiguous=[], unmatchedThisGame=[], otherGame=0, unknownNoMatch=0;
-      var confidentIds={}, possibleIds={};
-      records.forEach(function(r){
-        var matches=byNorm[normName(r.name)]||[];
-        if(matches.length>1&&r.gs!==null){
-          var gsMatches=matches.filter(function(a){ return a.gs===r.gs; });
-          if(gsMatches.length===1) matches=gsMatches;
-        }
-        if(matches.length===1){
-          var a=matches[0];
-          if(gameMatches(r.game)){ confident.push({achId:a.id, srcName:r.name, date:r.date}); confidentIds[a.id]=true; }
-          else if(!r.game){ possible.push({achId:a.id, srcName:r.name, date:r.date}); possibleIds[a.id]=true; }
-          else otherGame++;
-        } else if(matches.length>1){
-          ambiguous.push({record:r, candidates:matches.map(function(a){ return a.name; })});
-        } else {
-          if(gameMatches(r.game)) unmatchedThisGame.push(r.name);
-          else if(!r.game) unknownNoMatch++;
-          else otherGame++;
-        }
-      });
-      var matchedIds={};
-      Object.keys(confidentIds).forEach(function(id){ matchedIds[id]=true; });
-      Object.keys(possibleIds).forEach(function(id){ matchedIds[id]=true; });
-      var trackerNotFound=tracker.filter(function(a){ return !matchedIds[a.id]; }).map(function(a){ return a.name; });
-      return {recordsFound:records.length, confident:confident, possible:possible, ambiguous:ambiguous, unmatchedThisGame:unmatchedThisGame, otherGame:otherGame, unknownNoMatch:unknownNoMatch, trackerNotFound:trackerNotFound};
-    }
-    function nameList(items,cap){
-      var list=items.slice(0,cap);
-      var html='<ul>';
-      list.forEach(function(s){ html+='<li>'+escHtml(s)+'</li>'; });
-      if(items.length>cap) html+='<li class="text-secondary">and '+(items.length-cap)+' more</li>';
-      return html+'</ul>';
-    }
-    function renderAnalysis(a){
-      var html='<p><strong>Analysis</strong> — '+a.filesScanned+' file(s) read, '+a.recordsFound+' unlocked achievement record(s) found';
-      if(a.unreadable.length) html+=', '+a.unreadable.length+' unreadable ('+a.unreadable.map(escHtml).join(', ')+')';
-      if(a.skippedFiles) html+=', '+a.skippedFiles+' non-JSON/CSV file(s) skipped';
-      if(a.oversized.length) html+=', '+a.oversized.length+' oversized file(s) skipped (over 25 MB)';
-      html+='.</p>';
-      function matchList(title,items){
-        if(!items.length) return '';
-        var out='<p><strong>'+title+' ('+items.length+'):</strong></p><ul>';
-        items.forEach(function(m){
-          out+='<li>'+escHtml(m.srcName);
-          if(m.srcName!==achName(m.achId)) out+=' → '+escHtml(achName(m.achId));
-          if(m.date) out+=' <span class="text-secondary">— unlocked '+escHtml(m.date)+'</span>';
-          out+='</li>';
-        });
-        return out+'</ul>';
-      }
-      html+=matchList('Confident matches — records the file attributes to this game',a.confident);
-      html+=matchList('Possible matches — records with no game shown (held back unless you tick the box)',a.possible);
-      if(a.ambiguous.length){
-        html+='<p><strong>Ambiguous ('+a.ambiguous.length+') — not applied, tick by hand if one is yours:</strong></p><ul>';
-        a.ambiguous.forEach(function(x){ html+='<li>'+escHtml(x.record.name)+' could be: '+x.candidates.map(escHtml).join(', ')+'</li>'; });
-        html+='</ul>';
-      }
-      if(a.unmatchedThisGame.length) html+='<p><strong>Records for this game with no matching tracker card ('+a.unmatchedThisGame.length+') — most likely achievements from later DLC, which this tracker does not cover:</strong></p>'+nameList(a.unmatchedThisGame,20);
-      if(a.otherGame) html+='<p class="text-secondary">Records from other games: '+a.otherGame+' (never applied, even when an achievement name matches — a same-named achievement from another game must not tick this one).</p>';
-      if(a.unknownNoMatch) html+='<p class="text-secondary">Records with no game shown and no tracker match: '+a.unknownNoMatch+' (ignored).</p>';
-      if(a.trackerNotFound.length) html+='<p><strong>Tracker achievements not found in this export ('+a.trackerNotFound.length+') — still to unlock, or missing from the export:</strong></p>'+nameList(a.trackerNotFound,34);
-      privAnalysisEl.innerHTML=html;
-      privAnalysisEl.classList.remove('hidden');
-    }
-    function renderPrivacyPreview(){
-      if(!privacyAnalysis) return;
-      var a=privacyAnalysis;
-      function uniq(ids){ var s={}, out=[]; ids.forEach(function(id){ if(!s[id]){ s[id]=true; out.push(id); } }); return out; }
-      var confidentIds=a.confident.map(function(m){ return m.achId; });
-      var possibleIds=a.possible.map(function(m){ return m.achId; });
-      var matchedIds=uniq(confidentIds.concat(possibleIds));
-      var appliedIds=privInclude.checked?matchedIds:uniq(confidentIds);
-      var dates={};
-      a.confident.concat(a.possible).forEach(function(m){ if(m.date) dates[m.achId]=m.date; });
-      var plan=planFor(appliedIds,matchedIds);
-      var heldBack=privInclude.checked?0:a.possible.length;
-      showImportPreview({
-        bodyEl:privPreviewBody, previewEl:privPreviewEl, confirmBtn:privConfirmBtn,
-        warnings:[], plan:plan, dates:dates,
-        statsHtml:'<p class="text-secondary mb-0">Already ticked: '+plan.already+' · Possible matches held back: '+heldBack+' · Tracker achievements not found in this export: '+plan.lockedCount+'.</p>'
-      });
-    }
-    privFiles.addEventListener('change',function(){
-      var files=[].slice.call(privFiles.files||[]);
-      if(!files.length) return;
-      setPrivStatus('Reading '+files.length+' file(s)…');
-      privAnalysisEl.classList.add('hidden');
-      hideImportPreviews();
-      privacyAnalysis=null;
-      var usable=files.filter(function(f){ return /\.json$/i.test(f.name)||/\.csv$/i.test(f.name); });
-      var skippedFiles=files.length-usable.length;
-      var oversized=usable.filter(function(f){ return f.size>25*1024*1024; });
-      var toRead=usable.filter(function(f){ return f.size<=25*1024*1024; });
-      Promise.all(toRead.map(function(f){
-        return new Promise(function(resolve){
-          var r=new FileReader();
-          r.onload=function(){ resolve({name:f.name, text:r.result}); };
-          r.onerror=function(){ resolve({name:f.name, text:null}); };
-          r.readAsText(f);
-        });
-      })).then(function(results){
-        var allRecords=[], unreadable=[];
-        results.forEach(function(res){
-          if(res.text===null){ unreadable.push(res.name); return; }
-          try{
-            if(/\.csv$/i.test(res.name)) allRecords=allRecords.concat(parseCSVText(res.text));
-            else collectRecords(JSON.parse(res.text),null,allRecords);
-          }catch(e){ unreadable.push(res.name); }
-        });
-        var analysis=analyseRecords(allRecords);
-        analysis.filesScanned=toRead.length;
-        analysis.unreadable=unreadable;
-        analysis.skippedFiles=skippedFiles;
-        analysis.oversized=oversized.map(function(f){ return f.name; });
-        privacyAnalysis=analysis;
-        renderAnalysis(analysis);
-        if(analysis.recordsFound===0){
-          setPrivStatus('No achievement records found in these files. Check you picked the export JSON files (not the ZIP itself), or that the archive includes achievement records — Microsoft does not guarantee them.');
-        } else {
-          setPrivStatus('Analysis ready — review below before applying.');
-          renderPrivacyPreview();
-        }
-      });
-    });
-    privInclude.addEventListener('change',function(){ renderPrivacyPreview(); });
-    privConfirmBtn.addEventListener('click',function(){
-      var n=applyImportPending();
-      hideImportPreviews();
-      setPrivStatus('Applied '+n+' new achievement'+(n===1?'':'s')+' from your export.');
-    });
-    privCancelBtn.addEventListener('click',function(){
-      hideImportPreviews();
-      setPrivStatus('Import cancelled — nothing changed.');
     });
   }
   load(); updateProgress(); applyFilters();

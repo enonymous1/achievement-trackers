@@ -140,6 +140,14 @@
         </div>
 
         <div class="card mb-3">
+          <div class="card-header"><h3 class="card-title">We tried the Microsoft export</h3></div>
+          <div class="card-body">
+            <p class="mb-1">We tried importing achievements from a Microsoft Privacy Dashboard archive (account.microsoft.com/privacy → Download your data → Create new archive), and it does not work as an achievement source — so the game pages no longer offer it. What the archive actually held was app and service usage: a file listing which apps were opened and when, plus search requests. It held no achievement names, no unlock dates, and no Gamerscore, so there was nothing to match against the cards — the import would have reported "no achievement records found" for every game.</p>
+            <p class="mb-0">That is a property of the archive, not a bug in the matching: usage sessions cannot tell you which achievements popped. What does work is the Xbox sync card on mapped games (your own OpenXBL key, in your browser only), or ticking cards by hand from your achievement list on xbox.com. If Microsoft ever ships achievement records in the archive, this section will say so and the import can return.</p>
+          </div>
+        </div>
+
+        <div class="card mb-3">
           <div class="card-header"><h3 class="card-title">How the site is built</h3></div>
           <div class="card-body">
             <p class="mb-1">One JSON file per game is the source of truth. A generator validates it — Gamerscore must sum to the declared total, IDs must be unique, counters must be well-formed — and renders a tracker page from it. The generated pages are committed to the repo and deployed to GitHub Pages; there is no backend and no build step at deploy time.</p>

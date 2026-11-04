@@ -409,19 +409,6 @@ def render_xbox_sync_card(game):
     })
 
 
-def render_privacy_import_card(game):
-    """Privacy Dashboard import card, rendered on every game page.
-
-    Unlike the Xbox sync card this needs no Xbox mapping: matching is
-    by achievement name against the cards already on the page, so it
-    works for unmapped games too. The game title travels as a data
-    attribute so the page script can tell this game's records apart
-    from other games' records in the same export.
-    """
-    return _fill(_fragment("privacy_import"), {
-        "TITLE": esc(game["title"]),
-    })
-
 
 def sidebar_menu(all_games, prefix, current, include_notes=False):
     """Sidebar menu items: Home, a Games header, then the games flat
@@ -495,7 +482,6 @@ def render_game(game, all_games):
         "TOTAL_COUNT": str(game["_total_count"]),
         "FILTER_BUTTONS": "\n".join(filters),
         "XBOX_SYNC_CARD": render_xbox_sync_card(game),
-        "PRIVACY_IMPORT_CARD": render_privacy_import_card(game),
         "SECTIONS_HTML": render_sections(game),
         "SOURCES_HTML": sources,
         "SHELL_TEXT": SHELL_TEXT,
