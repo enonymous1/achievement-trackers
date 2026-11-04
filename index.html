@@ -30,8 +30,11 @@
   /* Integrated card headers (no divider strip), as on game pages. */
   .card-header{background:transparent;border-bottom:0;padding-bottom:0}
   .card-body{padding-top:.5rem}
-  /* Game cards are grid columns: the row gap is the spacing, so the
-     cards themselves carry no bottom margin. */
+  /* Game cards sit inside grid columns: the row gutter is the
+     spacing, so the column (and the card inside it) carries no
+     bottom margin. A card must never be the column itself — the
+     horizontal gutter is column padding, which sits inside a
+     card-as-column's border and leaves zero visible gap. */
   .game{margin-bottom:0}
   .hidden{display:none !important}
   @media print{.app-header{display:none !important}}
@@ -95,8 +98,8 @@
         </div>
 
         <div class="row g-3 mb-3">
-<div class="game item card col-12 col-md-6" data-name="Great God Grove"><div class="card-header"><h3 class="fs-5 mb-0"><a href="great-god-grove/">Great God Grove</a></h3></div><div class="card-body"><p class="text-secondary">All 42 achievements / 1,000G — the full game. One playthrough covers everything if you use the cloud-save trick for the two deputy answers in Chapter 1; completed chapters can also be replayed from their start.</p><p><strong>42 achievements · 1,000G</strong> · <span class="game-progress" data-slug="great-god-grove">Not started yet</span></p><p class="mb-0"><a class="btn btn-success" href="great-god-grove/">Open tracker →</a></p></div></div>
-<div class="game item card col-12 col-md-6" data-name="Minecraft Dungeons"><div class="card-header"><h3 class="fs-5 mb-0"><a href="minecraft-dungeons/">Minecraft Dungeons</a></h3></div><div class="card-body"><p class="text-secondary">The 34 achievements from the linked walkthrough — base game (24, 1,000G) + Jungle Awakens (5, 130G) + Creeping Winter (5, 120G) = 1,250G. The full game now has 104 achievements / 3,000G; later DLC is not in this tracker.</p><p><strong>34 achievements · 1,250G</strong> · <span class="game-progress" data-slug="minecraft-dungeons">Not started yet</span></p><p class="mb-0"><a class="btn btn-success" href="minecraft-dungeons/">Open tracker →</a></p></div></div>
+<div class="game item col-12 col-md-6" data-name="Great God Grove"><div class="card h-100"><div class="card-header"><h3 class="fs-5 mb-0"><a href="great-god-grove/">Great God Grove</a></h3></div><div class="card-body"><p class="text-secondary">All 42 achievements / 1,000G — the full game. One playthrough covers everything if you use the cloud-save trick for the two deputy answers in Chapter 1; completed chapters can also be replayed from their start.</p><p><strong>42 achievements · 1,000G</strong> · <span class="game-progress" data-slug="great-god-grove">Not started yet</span></p><p class="mb-0"><a class="btn btn-success" href="great-god-grove/">Open tracker →</a></p></div></div></div>
+<div class="game item col-12 col-md-6" data-name="Minecraft Dungeons"><div class="card h-100"><div class="card-header"><h3 class="fs-5 mb-0"><a href="minecraft-dungeons/">Minecraft Dungeons</a></h3></div><div class="card-body"><p class="text-secondary">The 34 achievements from the linked walkthrough — base game (24, 1,000G) + Jungle Awakens (5, 130G) + Creeping Winter (5, 120G) = 1,250G. The full game now has 104 achievements / 3,000G; later DLC is not in this tracker.</p><p><strong>34 achievements · 1,250G</strong> · <span class="game-progress" data-slug="minecraft-dungeons">Not started yet</span></p><p class="mb-0"><a class="btn btn-success" href="minecraft-dungeons/">Open tracker →</a></p></div></div></div>
         </div>
 
       </div>

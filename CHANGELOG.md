@@ -4,6 +4,21 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Hub card spacing + CI ruff fix
+
+### Fixed
+
+- Home game cards touched side by side (measured gap 0px at
+  1440px): the card itself was the grid column, and Bootstrap's
+  horizontal gutter is column padding, which sits inside a
+  card-as-column's border. Cards now sit inside their columns
+  (`col-12 col-md-6` wrapper + inner `card h-100`), so the gutter
+  separates them — measured 16px at 1440px and stacked. A test
+  guards the nesting so the structure cannot regress silently.
+- CI `ruff check tools/` failed with 3 E501 lines over 100 chars
+  in `tools/generate.py` (media validation messages, image tag).
+  Messages shortened, tag split; `ruff check tools/` is clean.
+
 ## 2026-11-04 — Missable pills and card media
 
 ### Added

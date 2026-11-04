@@ -189,14 +189,14 @@ def validate_game(filename, game):
                       f"{ach['id']}: bad media entry {entry!r}")
                 check(entry["src"].startswith("assets/")
                       or entry["src"].startswith("https://"),
-                      f"{ach['id']}: media src must be an assets/ path or https:// URL, not {entry['src']!r}")
+                      f"{ach['id']}: bad media src {entry['src']!r}")
                 for field in ("alt", "caption"):
                     check(field not in entry or isinstance(entry[field], str),
                           f"{ach['id']}: media {field} must be a string")
                 if entry["type"] == "video" and entry["src"].startswith("https://"):
                     check(entry["src"].lower().endswith((".mp4", ".webm", ".ogg"))
                           or _youtube_id(entry["src"]),
-                          f"{ach['id']}: remote video must be a media file or a YouTube URL, not {entry['src']!r}")
+                          f"{ach['id']}: bad remote video {entry['src']!r}")
         for card in section.get("step_cards", []):
             check(isinstance(card, dict)
                   and card.get("title") and card.get("how") and card.get("steps"),
@@ -349,7 +349,8 @@ def render_media(ach):
         src = entry["src"]
         if entry["type"] == "image":
             alt = esc(entry.get("alt") or ach["name"])
-            fig = f'<img src="{esc(_media_src(src))}" alt="{alt}" loading="lazy" class="img-fluid rounded">'
+            fig = (f'<img src="{esc(_media_src(src))}" alt="{alt}"'
+                   f' loading="lazy" class="img-fluid rounded">')
             if entry.get("caption"):
                 fig += f'<figcaption class="figure-caption">{esc(entry["caption"])}</figcaption>'
             parts.append(f'<figure class="ach-media mt-2 mb-0">{fig}</figure>')
@@ -595,8 +596,9 @@ def render_hub(games):
         })
         slug = esc(game["slug"])
         cards.append(
-            f'<div class="game item card col-12 col-md-6" '
+            f'<div class="game item col-12 col-md-6" '
             f'data-name="{esc(game["title"])}">'
+            f'<div class="card h-100">'
             f'<div class="card-header"><h3 class="fs-5 mb-0">'
             f'<a href="{slug}/">{esc(game["title"])}</a></h3></div>'
             f'<div class="card-body">'
@@ -606,7 +608,7 @@ def render_hub(games):
             f'Not started yet</span></p>'
             f'<p class="mb-0"><a class="btn btn-success" '
             f'href="{slug}/">Open tracker →</a></p>'
-            f'</div></div>'
+            f'</div></div></div>'
         )
     total_games = len(games)
     total_count = sum(g["_total_count"] for g in games)

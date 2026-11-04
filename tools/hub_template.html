@@ -30,8 +30,11 @@
   /* Integrated card headers (no divider strip), as on game pages. */
   .card-header{background:transparent;border-bottom:0;padding-bottom:0}
   .card-body{padding-top:.5rem}
-  /* Game cards are grid columns: the row gap is the spacing, so the
-     cards themselves carry no bottom margin. */
+  /* Game cards sit inside grid columns: the row gutter is the
+     spacing, so the column (and the card inside it) carries no
+     bottom margin. A card must never be the column itself — the
+     horizontal gutter is column padding, which sits inside a
+     card-as-column's border and leaves zero visible gap. */
   .game{margin-bottom:0}
   .hidden{display:none !important}
   @media print{.app-header{display:none !important}}

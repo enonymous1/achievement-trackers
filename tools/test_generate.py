@@ -15,6 +15,7 @@ from generate import (
     render_demos,
     render_game,
     render_how,
+    render_hub,
     render_sections,
     render_xbox_sync_card,
     sidebar_how_href,
@@ -174,6 +175,17 @@ class TestXboxValidation(unittest.TestCase):
             game["sections"][0]["achievements"][0]["media"] = [bad]
             with self.assertRaises(SystemExit):
                 validate_game("test.json", game)
+
+    def test_hub_game_cards_are_nested_in_columns(self):
+        # Regression: a card that IS the column touches its
+        # neighbour — the horizontal gutter is column padding, which
+        # sits inside a card-as-column's border and leaves zero
+        # visible gap. The card must sit inside the column so the
+        # gutter separates the two cards.
+        html = render_hub([validate_game("test.json", make_game())])
+        self.assertIn('<div class="game item col-12 col-md-6"', html)
+        self.assertIn('<div class="card h-100">', html)
+        self.assertNotIn("card col-12", html)
 
     def test_no_privacy_import_on_game_pages(self):
         # The Microsoft export import was removed (the archive holds
