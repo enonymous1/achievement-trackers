@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Winter Burrow — Achievement Tracker</title>
+<meta name="description" content="Achievement-first tracker for Winter Burrow: achievements grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<meta property="og:title" content="Winter Burrow — Achievement Tracker">
+<meta property="og:description" content="Achievement-first tracker for Winter Burrow: achievements grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<script>
+  /* Theme before first paint: saved choice wins, otherwise follow the
+     system. AdminLTE 4 / Bootstrap 5.3 read data-bs-theme. */
+  (function () {
+    try {
+      var theme = localStorage.getItem("at-theme");
+      if (!theme) {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      document.documentElement.setAttribute("data-bs-theme", theme);
+    } catch (e) {}
+  })();
+</script>
+<link rel="stylesheet" href="../assets/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="../assets/vendor/bootstrap-icons.min.css">
+<link rel="stylesheet" href="../assets/vendor/adminlte.min.css">
+<link rel="stylesheet" href="../assets/css/sidebar.css">
+<link rel="stylesheet" href="../assets/css/tracker-cards.css">
+<style>
+  /* Page rules only: the card language itself lives in
+     assets/css/tracker-cards.css, shared with the How page demos. */
+  /* v2's contained column, not AdminLTE's full-width fluid layout. */
+  .app-main .container-fluid{max-width:1100px;margin-left:auto;margin-right:auto}
+  /* Only the progress bar card is pinned: the slim card holding the
+     Gamerscore title, counts and bar sticks to the top of the
+     viewport while scrolling (the top header scrolls away in this
+     layout, so top: 0 is right). Search, filters and the
+     Order/Scope text live in the card below it and scroll away. */
+  .progress-card{position:sticky;top:0;z-index:1030;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  /* AdminLTE's layout-fixed sets .app-main to overflow:auto (via
+     .sidebar-expand-lg.layout-fixed .app-main), which makes it the
+     sticky element's scrolling ancestor — and since it never
+     scrolls itself, position:sticky on the progress card stops
+     working. Restore visible overflow at the same specificity, so
+     the card sticks to the viewport scroll, as it did in the
+     top-nav layout. */
+  .sidebar-expand-lg.layout-fixed .app-main{overflow:visible}
+  /* Sections read as a group again (v2's card background), not as a
+     bare bordered box on the page background. */
+  details{background:var(--bs-card-bg);border:1px solid var(--bs-border-color);border-radius:12px;margin-bottom:1rem;overflow:hidden}
+  details summary{cursor:pointer;padding:1rem;font-weight:700;font-size:1.1rem}
+  details summary::marker{color:var(--bs-secondary-color)}
+  details summary small{display:block;font-weight:400;color:var(--bs-secondary-color);font-size:.9rem;margin-top:2px}
+  .section-body{padding:0 1rem 1rem}
+  /* Overall progress bar: v2's rounded gradient pill, not the flat
+     Bootstrap bar. The counter bars keep Bootstrap's flat bar. */
+  #overallBar{background:linear-gradient(90deg,var(--at-green),#a8e07a);border-radius:99px}
+  .progress:has(#overallBar){height:14px;border-radius:99px;overflow:hidden}
+  /* Phase filters are separate pills (v2), not a joined button group;
+     the active pill is solid green with dark text, as in v2. */
+  /* Phase pills read as normal text (v2), not Bootstrap's dark-green
+     outline-success text, which is near-illegible on a dark card. */
+  .filter{--bs-btn-color:var(--bs-body-color);--bs-btn-border-color:var(--bs-border-color);--bs-btn-hover-color:var(--bs-body-color);--bs-btn-hover-border-color:var(--at-green);--bs-btn-active-color:var(--bs-body-color)}
+  .filter.active{background:var(--at-green) !important;border-color:var(--at-green) !important;font-weight:700}
+  [data-bs-theme="dark"] .filter.active{color:#12140f !important}
+  .hidden{display:none !important}
+  @media print{.app-header,.controls,#xbox-sync{display:none !important}.progress-card{position:static}details{break-inside:avoid}}
+</style>
+</head>
+<body class="layout-fixed sidebar-expand-lg">
+<script>
+  /* Restore the sidebar's collapsed/open state before AdminLTE's
+     own init runs, so the drawer does not flash open on every page.
+     The observer in assets/js/sidebar-state.js saves each change. */
+  (function(){try{var s=localStorage.getItem('at-sidebar');if(s==='collapsed')document.body.classList.add('sidebar-collapse');if(s==='open')document.body.classList.add('sidebar-open');}catch(e){}})();
+</script>
+<div class="app-wrapper">
+  <nav class="app-header navbar navbar-expand bg-body">
+    <div class="container-fluid">
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" aria-label="Toggle sidebar"><i class="bi bi-list"></i></a></li>
+      </ul>
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item"><span class="nav-link" id="overallTextNav">0 / 32 · 0G</span></li>
+        <li class="nav-item ms-2"><button type="button" id="theme-toggle" class="btn btn-sm btn-outline-secondary" aria-label="Toggle dark mode">Theme</button></li>
+      </ul>
+    </div>
+  </nav>
+  <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+    <div class="sidebar-brand">
+      <a href="../" class="brand-link"><span class="brand-text fw-light">🏆 Achievement Trackers</span></a>
+    </div>
+    <div class="sidebar-wrapper">
+      <nav class="mt-2">
+        <ul class="nav sidebar-menu flex-column" role="menu">
+              <li class="nav-item"><a href="../" class="nav-link"><i class="nav-icon bi bi-house"></i><p>Home</p></a></li>
+              <li class="nav-header">Games</li>
+              <li class="nav-item"><a href="../barbie-horse-trails/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Barbie Horse Trails</p></a></li>
+              <li class="nav-item"><a href="../great-god-grove/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Great God Grove</p></a></li>
+              <li class="nav-item"><a href="../minecraft-dungeons/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Minecraft Dungeons</p></a></li>
+              <li class="nav-item"><a href="../pigeon-simulator/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Pigeon Simulator</p></a></li>
+              <li class="nav-item"><a href="../winter-burrow/" class="nav-link active"><i class="nav-icon bi bi-controller"></i><p>Winter Burrow</p></a></li>
+        </ul>
+      </nav>
+      <div class="sidebar-bottom">
+        <ul class="nav sidebar-menu flex-column" role="menu">
+          <li class="nav-item"><a href="../how-it-works/" class="nav-link"><i class="nav-icon bi bi-question-circle"></i><p>How it works</p></a></li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+  <main class="app-main">
+    <div class="app-content-header">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-12">
+            <h3 class="mb-0">Winter Burrow <small class="text-secondary">— Achievement Tracker</small></h3>
+            <p class="text-secondary mb-0">A little mouse rebuilds a burrow through a long winter — follow the owl, find Aunty, and furnish the house.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="app-content">
+      <div class="container-fluid">
+
+        <div class="card progress-card">
+          <div class="card-header d-flex justify-content-between flex-wrap gap-2">
+            <h3 class="card-title">Gamerscore progress</h3>
+            <span id="overallText">0 / 32 achievements · 0 / 1000G</span>
+          </div>
+          <div class="card-body">
+            <div class="progress" role="progressbar" aria-label="Gamerscore progress">
+              <div class="progress-bar bg-success" id="overallBar" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="controls d-flex flex-wrap gap-2 align-items-center">
+              <input type="search" id="search" class="form-control flex-grow-1" style="min-width:220px" placeholder="Search achievements, missions, gear…" aria-label="Search tracker">
+              <label class="form-check-label"><input type="checkbox" id="incompleteOnly" class="form-check-input me-1"> Incomplete only</label>
+              <button type="button" id="exportBtn" class="btn btn-outline-secondary btn-sm">Export progress</button>
+              <label class="btn btn-outline-secondary btn-sm mb-0" for="importFile">Import progress</label>
+              <input type="file" id="importFile" accept=".json,application/json" class="d-none">
+              <button type="button" id="resetBtn" class="btn btn-outline-danger btn-sm">Reset all</button>
+              <button type="button" class="note-btn" data-note-key="game" title="Game notes" aria-label="Game notes"><i class="bi bi-journal-text"></i></button>
+            </div>
+            <div class="controls d-flex flex-wrap gap-2 mt-2" role="group" aria-label="Filter by phase">
+              <button type="button" class="filter btn btn-outline-success active" data-filter="all">All</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="beginning">Beginning</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="owl">Owl</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="recovery">Recovery</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="rebuilding">Rebuilding</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="furnishings">Furnishings</button>
+            </div>
+            <p class="text-secondary mt-3 mb-0"><strong>Order:</strong> In walkthrough order, following the story pages: the beginning, following the owl, Aunty&#x27;s recovery, rebuilding the burrow, then the furnishing cleanup. Cumulative achievements (wood, kills, cooking, furniture) pop whenever their totals land, so they may arrive earlier or later than listed.</p>
+            <p class="text-secondary mb-0"><strong>Scope:</strong> Full game: all 32 achievements / 1,000G. No missables; about 8–10 hours in a single playthrough.</p>
+          </div>
+        </div>
+
+
+
+<details open data-cat="beginning">
+<summary>The Beginning <small>5 achievements · <span class="sec-progress" data-section="beginning"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Protector of Dreams Place a bed in the burrow Craft a Simple Bed at the woodworking table (4 twigs, 3 flax fiber, 2 beech wood) and place it in your home."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-dreams" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#1</span><span class="ach-name">Protector of Dreams</span><span class="gs badge text-bg-warning ms-auto">10G</span></button><button type="button" class="note-btn" data-note-key="ach-dreams" title="Notes for Protector of Dreams" aria-label="Notes for Protector of Dreams"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Place a bed in the burrow</p><p class="how">Craft a Simple Bed at the woodworking table (4 twigs, 3 flax fiber, 2 beech wood) and place it in your home.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Knitting Advocate Repair the armchair Repair the Dusty Armchair (2 beech planks, 4 twigs, 10 flax fiber) — this also unlocks the knitting recipes."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-knitting" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#2</span><span class="ach-name">Knitting Advocate</span><span class="gs badge text-bg-warning ms-auto">10G</span></button><button type="button" class="note-btn" data-note-key="ach-knitting" title="Notes for Knitting Advocate" aria-label="Notes for Knitting Advocate"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Repair the armchair</p><p class="how">Repair the Dusty Armchair (2 beech planks, 4 twigs, 10 flax fiber) — this also unlocks the knitting recipes.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Keen on Cooking Repair the stove in the burrow Repair the stove with 8 pebbles gathered outside the house."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-cooking" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#3</span><span class="ach-name">Keen on Cooking</span><span class="gs badge text-bg-warning ms-auto">10G</span></button><button type="button" class="note-btn" data-note-key="ach-cooking" title="Notes for Keen on Cooking" aria-label="Notes for Keen on Cooking"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Repair the stove in the burrow</p><p class="how">Repair the stove with 8 pebbles gathered outside the house.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Bridge of Reunion Repair the bridge to Aunty Repair the broken bridge south-east of your house (5 beech planks, 5 flax rope), then cross to Aunty."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-bridge" data-gs="20" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#4</span><span class="ach-name">Bridge of Reunion</span><span class="gs badge text-bg-warning ms-auto">20G</span></button><button type="button" class="note-btn" data-note-key="ach-bridge" title="Notes for Bridge of Reunion" aria-label="Notes for Bridge of Reunion"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Repair the bridge to Aunty</p><p class="how">Repair the broken bridge south-east of your house (5 beech planks, 5 flax rope), then cross to Aunty.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Basement Dweller Unlock the door to the basement Use the Basement Key from Aunty on the basement door to the left of the house."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-basement" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#5</span><span class="ach-name">Basement Dweller</span><span class="gs badge text-bg-warning ms-auto">10G</span></button><button type="button" class="note-btn" data-note-key="ach-basement" title="Notes for Basement Dweller" aria-label="Notes for Basement Dweller"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Unlock the door to the basement</p><p class="how">Use the Basement Key from Aunty on the basement door to the left of the house.</p></div></article></div>
+</div></div></details>
+<details data-cat="owl">
+<summary>Follow the Owl <small>4 achievements · <span class="sec-progress" data-section="owl"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Gnarled Discoveries Discover the Gnarled Oaks Cross the bridge past Aunty&#x27;s collapsed home into the new area to discover the Gnarled Oaks."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-gnarled" data-gs="20" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#6</span><span class="ach-name">Gnarled Discoveries</span><span class="gs badge text-bg-warning ms-auto">20G</span></button><button type="button" class="note-btn" data-note-key="ach-gnarled" title="Notes for Gnarled Discoveries" aria-label="Notes for Gnarled Discoveries"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Discover the Gnarled Oaks</p><p class="how">Cross the bridge past Aunty&#x27;s collapsed home into the new area to discover the Gnarled Oaks.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Gloomy Adventures Discover the Shadow Pines Head north past Bufo into the next area to discover the Shadow Pines."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-gloomy" data-gs="20" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#7</span><span class="ach-name">Gloomy Adventures</span><span class="gs badge text-bg-warning ms-auto">20G</span></button><button type="button" class="note-btn" data-note-key="ach-gloomy" title="Notes for Gloomy Adventures" aria-label="Notes for Gloomy Adventures"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Discover the Shadow Pines</p><p class="how">Head north past Bufo into the next area to discover the Shadow Pines.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Mouse of the Wild Build a campfire in the wilderness Use a campfire kit from a backpack north-east of Gnawtusk&#x27;s area to build a campfire in the wilderness."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-campfire" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#8</span><span class="ach-name">Mouse of the Wild</span><span class="gs badge text-bg-warning ms-auto">10G</span></button><button type="button" class="note-btn" data-note-key="ach-campfire" title="Notes for Mouse of the Wild" aria-label="Notes for Mouse of the Wild"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Build a campfire in the wilderness</p><p class="how">Use a campfire kit from a backpack north-east of Gnawtusk&#x27;s area to build a campfire in the wilderness.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Aunty&#x27;s Saviour Bring Aunty back home Finish Gnawtusk&#x27;s herb stashes (by the pine tree, by the shell, by the funny-looking rock), then talk to Aunty back home."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-aunty" data-gs="60" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#9</span><span class="ach-name">Aunty&#x27;s Saviour</span><span class="gs badge text-bg-warning ms-auto">60G</span></button><button type="button" class="note-btn" data-note-key="ach-aunty" title="Notes for Aunty&#x27;s Saviour" aria-label="Notes for Aunty&#x27;s Saviour"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Bring Aunty back home</p><p class="how">Finish Gnawtusk&#x27;s herb stashes (by the pine tree, by the shell, by the funny-looking rock), then talk to Aunty back home.</p></div></article></div>
+</div></div></details>
+<details data-cat="recovery">
+<summary>Aunty&#x27;s Recovery <small>8 achievements · <span class="sec-progress" data-section="recovery"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="A Full Basket Collect 100 pieces of wood Collect 100 pieces of wood — it comes naturally while gathering for the planter boxes and repairs."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-basket" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#10</span><span class="ach-name">A Full Basket</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-basket" title="Notes for A Full Basket" aria-label="Notes for A Full Basket"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="wood" data-target="100"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Collect 100 pieces of wood</p><p class="how">Collect 100 pieces of wood — it comes naturally while gathering for the planter boxes and repairs.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease wood counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="wood" data-target="100" min="0" value="0" aria-label="wood counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase wood counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Reach for the Stars! Unlock first floor in the burrow Repair the stairs to the first floor (15 oak planks, 5 pine planks)."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-stars" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#11</span><span class="ach-name">Reach for the Stars!</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-stars" title="Notes for Reach for the Stars!" aria-label="Notes for Reach for the Stars!"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Unlock first floor in the burrow</p><p class="how">Repair the stairs to the first floor (15 oak planks, 5 pine planks).</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Hot Knitting Needles Knit 8 clothing pieces Knit 8 clothing pieces — start with the linen set, then wool clothes from fur tufts once you have enough yarn."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-needles" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#12</span><span class="ach-name">Hot Knitting Needles</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-needles" title="Notes for Hot Knitting Needles" aria-label="Notes for Hot Knitting Needles"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="clothing" data-target="8"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Knit 8 clothing pieces</p><p class="how">Knit 8 clothing pieces — start with the linen set, then wool clothes from fur tufts once you have enough yarn.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease clothing counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="clothing" data-target="8" min="0" value="0" aria-label="clothing counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase clothing counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Family Reunion Complete Bufo&#x27;s quests Finish Bufo&#x27;s quests: fetch pebbles and twigs, find Pollywog south of the water, bake Blackberry and Rowanberry pies, and deliver Bufo&#x27;s key to Pollywog."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-bufo" data-gs="35" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#13</span><span class="ach-name">Family Reunion</span><span class="gs badge text-bg-warning ms-auto">35G</span></button><button type="button" class="note-btn" data-note-key="ach-bufo" title="Notes for Family Reunion" aria-label="Notes for Family Reunion"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Bufo&#x27;s quests</p><p class="how">Finish Bufo&#x27;s quests: fetch pebbles and twigs, find Pollywog south of the water, bake Blackberry and Rowanberry pies, and deliver Bufo&#x27;s key to Pollywog.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Frozen Horizons Discover the White Pillars Head south-west past the spider area to discover the White Pillars, collecting birch wood there."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-frozen" data-gs="20" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#14</span><span class="ach-name">Frozen Horizons</span><span class="gs badge text-bg-warning ms-auto">20G</span></button><button type="button" class="note-btn" data-note-key="ach-frozen" title="Notes for Frozen Horizons" aria-label="Notes for Frozen Horizons"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Discover the White Pillars</p><p class="how">Head south-west past the spider area to discover the White Pillars, collecting birch wood there.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Pickaxe Champion Craft all pickaxes Craft all pickaxes, ending with the Flint Pickaxe once Willow&#x27;s area gives you birch wood."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-pickaxe" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#15</span><span class="ach-name">Pickaxe Champion</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-pickaxe" title="Notes for Pickaxe Champion" aria-label="Notes for Pickaxe Champion"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Craft all pickaxes</p><p class="how">Craft all pickaxes, ending with the Flint Pickaxe once Willow&#x27;s area gives you birch wood.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Axe Master Craft all axes Craft all axes, ending with the Flint Axe."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-axe" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#16</span><span class="ach-name">Axe Master</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-axe" title="Notes for Axe Master" aria-label="Notes for Axe Master"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Craft all axes</p><p class="how">Craft all axes, ending with the Flint Axe.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Willow&#x27;s Epiphany Complete Willow&#x27;s quests Finish Willow&#x27;s quests: return their notebook (found outside your house), find the tunnel entrance north-east of home with the Flint Shovel, recover the helmet artifact, and hand over hazelnuts."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-willow" data-gs="40" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#17</span><span class="ach-name">Willow&#x27;s Epiphany</span><span class="gs badge text-bg-warning ms-auto">40G</span></button><button type="button" class="note-btn" data-note-key="ach-willow" title="Notes for Willow&#x27;s Epiphany" aria-label="Notes for Willow&#x27;s Epiphany"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Willow&#x27;s quests</p><p class="how">Finish Willow&#x27;s quests: return their notebook (found outside your house), find the tunnel entrance north-east of home with the Flint Shovel, recover the helmet artifact, and hand over hazelnuts.</p></div></article></div>
+</div></div></details>
+<details data-cat="rebuilding">
+<summary>Rebuilding the Burrow <small>6 achievements · <span class="sec-progress" data-section="rebuilding"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Pest Control Kill 100 creatures Kill 100 creatures — beetles, ants, and spiders as you travel; it usually pops while gathering for Aunty&#x27;s burrow."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-pest" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#18</span><span class="ach-name">Pest Control</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-pest" title="Notes for Pest Control" aria-label="Notes for Pest Control"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="creatures" data-target="100"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Kill 100 creatures</p><p class="how">Kill 100 creatures — beetles, ants, and spiders as you travel; it usually pops while gathering for Aunty&#x27;s burrow.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease creatures counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="creatures" data-target="100" min="0" value="0" aria-label="creatures counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase creatures counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Let&#x27;s Start Over Repair Aunty&#x27;s broken house Rebuild Aunty&#x27;s burrow: 10 birch planks, 20 oak planks, 20 granite, 10 silk yarn (spiders drop silk — cut their webs if you&#x27;d rather not fight them)."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-startover" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#19</span><span class="ach-name">Let&#x27;s Start Over</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-startover" title="Notes for Let&#x27;s Start Over" aria-label="Notes for Let&#x27;s Start Over"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Repair Aunty&#x27;s broken house</p><p class="how">Rebuild Aunty&#x27;s burrow: 10 birch planks, 20 oak planks, 20 granite, 10 silk yarn (spiders drop silk — cut their webs if you&#x27;d rather not fight them).</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Friends in a Nutshell Complete Gnawtusk&#x27;s quests Finish Gnawtusk&#x27;s quests by handing over the rare herbs you picked up in backpacks, then invite him to the feast."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-gnawtusk" data-gs="35" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#20</span><span class="ach-name">Friends in a Nutshell</span><span class="gs badge text-bg-warning ms-auto">35G</span></button><button type="button" class="note-btn" data-note-key="ach-gnawtusk" title="Notes for Friends in a Nutshell" aria-label="Notes for Friends in a Nutshell"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Gnawtusk&#x27;s quests</p><p class="how">Finish Gnawtusk&#x27;s quests by handing over the rare herbs you picked up in backpacks, then invite him to the feast.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Yearning for Yarn Spin 50 balls of yarn Spin 50 balls of yarn at the armchair — it builds up naturally while knitting clothes and the Warm Shoes."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-yarn" data-gs="20" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#21</span><span class="ach-name">Yearning for Yarn</span><span class="gs badge text-bg-warning ms-auto">20G</span></button><button type="button" class="note-btn" data-note-key="ach-yarn" title="Notes for Yearning for Yarn" aria-label="Notes for Yearning for Yarn"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="yarn" data-target="50"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Spin 50 balls of yarn</p><p class="how">Spin 50 balls of yarn at the armchair — it builds up naturally while knitting clothes and the Warm Shoes.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease yarn counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="yarn" data-target="50" min="0" value="0" aria-label="yarn counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase yarn counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Moss Moves On Complete Moss quests Finish Moss&#x27;s quests: bring the white fox fur tufts, find his missing key, show him Aunty&#x27;s Old Shawl, then bring back Pinesap&#x27;s pendant from the dark area west of the hood."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-moss" data-gs="40" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#22</span><span class="ach-name">Moss Moves On</span><span class="gs badge text-bg-warning ms-auto">40G</span></button><button type="button" class="note-btn" data-note-key="ach-moss" title="Notes for Moss Moves On" aria-label="Notes for Moss Moves On"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Moss quests</p><p class="how">Finish Moss&#x27;s quests: bring the white fox fur tufts, find his missing key, show him Aunty&#x27;s Old Shawl, then bring back Pinesap&#x27;s pendant from the dark area west of the hood.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="A Well-Earned Feast Have a big dinner at Aunty&#x27;s Invite everyone — Gnawtusk, Bufo, Willow, and Moss — then return to Aunty to trigger the feast and the story ending."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-feast" data-gs="80" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#23</span><span class="ach-name">A Well-Earned Feast</span><span class="gs badge text-bg-warning ms-auto">80G</span></button><button type="button" class="note-btn" data-note-key="ach-feast" title="Notes for A Well-Earned Feast" aria-label="Notes for A Well-Earned Feast"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Have a big dinner at Aunty&#x27;s</p><p class="how">Invite everyone — Gnawtusk, Bufo, Willow, and Moss — then return to Aunty to trigger the feast and the story ending.</p></div></article></div>
+</div></div></details>
+<details data-cat="furnishings">
+<summary>Furnishings for a Mouse <small>9 achievements · <span class="sec-progress" data-section="furnishings"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Culinary Completionist Cook 100 recipes Cook 100 recipes — Roasted Chanterelle and Blue Tea are the cheapest to spam, and &#x27;Craft All&#x27; speeds it up."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-culinary" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#24</span><span class="ach-name">Culinary Completionist</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-culinary" title="Notes for Culinary Completionist" aria-label="Notes for Culinary Completionist"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="recipes" data-target="100"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Cook 100 recipes</p><p class="how">Cook 100 recipes — Roasted Chanterelle and Blue Tea are the cheapest to spam, and &#x27;Craft All&#x27; speeds it up.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease recipes counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="recipes" data-target="100" min="0" value="0" aria-label="recipes counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase recipes counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Twig House Craft 8 pieces of the twig furniture set Craft 8 twig furniture pieces — Twig Side Tables use the least materials."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-twig" data-gs="20" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#25</span><span class="ach-name">Twig House</span><span class="gs badge text-bg-warning ms-auto">20G</span></button><button type="button" class="note-btn" data-note-key="ach-twig" title="Notes for Twig House" aria-label="Notes for Twig House"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="twig" data-target="8"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Craft 8 pieces of the twig furniture set</p><p class="how">Craft 8 twig furniture pieces — Twig Side Tables use the least materials.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease twig counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="twig" data-target="8" min="0" value="0" aria-label="twig counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase twig counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Fibre House Craft 9 pieces of the fibre furniture set Craft 9 fibre pieces — Round Fibre Rugs are the cheapest, though they eat a lot of flax rope."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-fibre" data-gs="20" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#26</span><span class="ach-name">Fibre House</span><span class="gs badge text-bg-warning ms-auto">20G</span></button><button type="button" class="note-btn" data-note-key="ach-fibre" title="Notes for Fibre House" aria-label="Notes for Fibre House"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="fibre" data-target="9"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Craft 9 pieces of the fibre furniture set</p><p class="how">Craft 9 fibre pieces — Round Fibre Rugs are the cheapest, though they eat a lot of flax rope.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease fibre counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="fibre" data-target="9" min="0" value="0" aria-label="fibre counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase fibre counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Master Builder Craft 150 woodworking recipes Craft 150 woodworking recipes — it usually pops while working through the furniture sets."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-master" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#27</span><span class="ach-name">Master Builder</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-master" title="Notes for Master Builder" aria-label="Notes for Master Builder"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="woodworking" data-target="150"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Craft 150 woodworking recipes</p><p class="how">Craft 150 woodworking recipes — it usually pops while working through the furniture sets.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease woodworking counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="woodworking" data-target="150" min="0" value="0" aria-label="woodworking counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase woodworking counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Pine House Craft 9 pieces of the pine furniture set Craft 9 pine pieces — Pine Chairs are the simplest."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-pine" data-gs="20" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#28</span><span class="ach-name">Pine House</span><span class="gs badge text-bg-warning ms-auto">20G</span></button><button type="button" class="note-btn" data-note-key="ach-pine" title="Notes for Pine House" aria-label="Notes for Pine House"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="pine" data-target="9"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Craft 9 pieces of the pine furniture set</p><p class="how">Craft 9 pine pieces — Pine Chairs are the simplest.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease pine counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="pine" data-target="9" min="0" value="0" aria-label="pine counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase pine counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Birch House Craft 9 pieces of the birch furniture set Craft 9 birch pieces — Birch Stools are the easiest."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-birch" data-gs="20" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#29</span><span class="ach-name">Birch House</span><span class="gs badge text-bg-warning ms-auto">20G</span></button><button type="button" class="note-btn" data-note-key="ach-birch" title="Notes for Birch House" aria-label="Notes for Birch House"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="birch" data-target="9"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Craft 9 pieces of the birch furniture set</p><p class="how">Craft 9 birch pieces — Birch Stools are the easiest.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease birch counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="birch" data-target="9" min="0" value="0" aria-label="birch counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase birch counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Full House Craft 30 furniture pieces Craft 30 furniture pieces in total — it pops while working through the sets."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-fullhouse" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#30</span><span class="ach-name">Full House</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-fullhouse" title="Notes for Full House" aria-label="Notes for Full House"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="furniture" data-target="30"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Craft 30 furniture pieces</p><p class="how">Craft 30 furniture pieces in total — it pops while working through the sets.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease furniture counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="furniture" data-target="30" min="0" value="0" aria-label="furniture counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase furniture counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Pebble House Craft 9 pieces of the pebble furniture set Craft 9 pebble pieces — Pebble Stools are the easiest."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-pebble" data-gs="20" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#31</span><span class="ach-name">Pebble House</span><span class="gs badge text-bg-warning ms-auto">20G</span></button><button type="button" class="note-btn" data-note-key="ach-pebble" title="Notes for Pebble House" aria-label="Notes for Pebble House"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="pebble" data-target="9"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Craft 9 pieces of the pebble furniture set</p><p class="how">Craft 9 pebble pieces — Pebble Stools are the easiest.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease pebble counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="pebble" data-target="9" min="0" value="0" aria-label="pebble counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase pebble counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Oak House Craft 9 pieces of the oak furniture set Craft 9 oak pieces — Oak Tables are the easiest."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-oak" data-gs="20" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#32</span><span class="ach-name">Oak House</span><span class="gs badge text-bg-warning ms-auto">20G</span></button><button type="button" class="note-btn" data-note-key="ach-oak" title="Notes for Oak House" aria-label="Notes for Oak House"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="oak" data-target="9"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Craft 9 pieces of the oak furniture set</p><p class="how">Craft 9 oak pieces — Oak Tables are the easiest.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease oak counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="oak" data-target="9" min="0" value="0" aria-label="oak counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase oak counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+</div></div></details>
+
+        <div class="card">
+          <div class="card-body text-secondary">
+            <p class="mb-1"><strong>Sources:</strong> achievement names, requirements and Gamerscore from the achievement list linked below; route notes are short paraphrases of the linked walkthrough — the full guide text is not reproduced here. <a href="https://www.trueachievements.com/game/Winter-Burrow/walkthrough">TrueAchievements — Walkthrough by wolfnflowers</a> · <a href="https://www.trueachievements.com/game/Winter-Burrow/achievements">TrueAchievements — Achievements</a></p>
+            <p class="mb-0">Unofficial fan tracker, not affiliated with the achievement site, the walkthrough author, or the game's publisher. Shell: AdminLTE 4.10.0 + Bootstrap 5.3.8 + Bootstrap Icons 1.11.3, vendored under <code>assets/vendor/</code> (see <code>THIRD_PARTY_NOTICES.md</code>).</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+  <footer class="app-footer">
+    <strong>Achievement Trackers</strong> — <a href="../">back to all games</a>
+  </footer>
+</div>
+<script src="../assets/vendor/bootstrap.bundle.min.js"></script>
+<script src="../assets/vendor/adminlte.min.js"></script>
+<script src="../assets/js/theme-toggle.js"></script>
+<script src="../assets/js/sidebar-state.js"></script>
+<dialog id="media-modal" aria-label="Image viewer">
+  <div class="media-modal-inner">
+    <button type="button" class="media-modal-close" aria-label="Close image viewer">×</button>
+    <img id="media-modal-img" alt="">
+    <p id="media-modal-caption" class="media-modal-caption"></p>
+    <div id="media-modal-nav" class="media-modal-nav" style="display:none">
+      <button type="button" class="media-modal-prev btn btn-outline-light btn-sm">← Previous</button>
+      <span id="media-modal-count" class="media-modal-count"></span>
+      <button type="button" class="media-modal-next btn btn-outline-light btn-sm">Next →</button>
+    </div>
+  </div>
+</dialog>
+<dialog id="notes-modal" aria-label="Notes">
+  <div class="notes-modal-inner">
+    <div class="d-flex justify-content-between align-items-center gap-3">
+      <h3 id="notes-modal-title" class="mb-0 fs-5">Notes</h3>
+      <button type="button" class="notes-modal-close" aria-label="Close notes">×</button>
+    </div>
+    <textarea id="notes-modal-text" class="form-control mt-2" rows="5" placeholder="Anything you want to remember for this one…"></textarea>
+    <p class="text-secondary mt-2 mb-0">Saved in this browser only, alongside your progress.</p>
+  </div>
+</dialog>
+<script>
+/* Tracker progress. The hub never writes progress, only reads it;
+   this script is the single writer for a game page. */
+(function(){
+  var KEY='wb-tracker-v1';
+  var OLD='';
+  var MIGRATION={};
+  var TOTAL_GS=1000;
+  /* Tasks are now header toggle buttons, not checkboxes: the pressed
+     state lives in aria-pressed, and the id / data-gs contract with
+     save, export and the step auto-tick code is unchanged. */
+  var tasks=[].slice.call(document.querySelectorAll('button.task'));
+  var steps=[].slice.call(document.querySelectorAll('input.step'));
+  var counts=[].slice.call(document.querySelectorAll('input.count'));
+  var notesModal=document.getElementById('notes-modal');
+  var notesModalTitle=document.getElementById('notes-modal-title');
+  var notesModalText=document.getElementById('notes-modal-text');
+  /* Notes are one object, not one string: the game-wide note
+     lives under 'game', each achievement's under its card id.
+     Old saves and exports stored a single string — that was
+     the game-wide note, so it migrates to the 'game' key. */
+  var notesData={};
+  var notesKey=null;
+  var search=document.getElementById('search');
+  var incompleteOnly=document.getElementById('incompleteOnly');
+  var overallText=document.getElementById('overallText');
+  var overallTextNav=document.getElementById('overallTextNav');
+  var overallBar=document.getElementById('overallBar');
+
+  /* Save dedupes shared counters: several achievements render an input
+     for the same group, but localStorage stores one value per group. */
+  function save(){
+    var data={checked:{},steps:{},counters:{},notes:notesData};
+    tasks.forEach(function(t){ if(t.getAttribute('aria-pressed')==='true') data.checked[t.id]=true; });
+    steps.forEach(function(s){ if(s.checked) data.steps[s.id]=true; });
+    var seen={};
+    counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(!seen[g]){ data.counters[g]=c.value; seen[g]=true; } });
+    try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(e){}
+  }
+  function applyData(data){
+    tasks.forEach(function(t){ t.setAttribute('aria-pressed', (data.checked&&data.checked[t.id]) ? 'true' : 'false'); });
+    steps.forEach(function(s){ s.checked=!!(data.steps&&data.steps[s.id]); });
+    counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(data.counters&&data.counters[g]!==undefined) c.value=data.counters[g]; });
+    var n=data.notes;
+    if(typeof n==='string'){ notesData=n?{game:n}:{}; }
+    else if(n&&typeof n==='object'){ notesData=n; }
+    else { notesData={}; }
+    refreshNoteIcons();
+  }
+  /* Migration runs ONLY when no new-format progress exists. If a player
+     already has new progress, legacy data must not overwrite it; the
+     old key is left alone rather than deleted. */
+  function migrateLegacy(){
+    var raw; try{ raw=localStorage.getItem(OLD); }catch(e){ return; }
+    if(!raw||!MIGRATION) return;
+    try{
+      var d=JSON.parse(raw), checked=d.checked||{}, cnts=d.counts||{};
+      var out={checked:{},steps:{},counters:{},notes:{}};
+      Object.keys(MIGRATION.checked_map||{}).forEach(function(k){ if(checked[k]) MIGRATION.checked_map[k].forEach(function(a){ out.checked[a]=true; }); });
+      Object.keys(MIGRATION.step_map||{}).forEach(function(k){ if(checked[k]) out.steps[MIGRATION.step_map[k]]=true; });
+      Object.keys(MIGRATION.counter_map||{}).forEach(function(k){ if(cnts[k]) out.counters[MIGRATION.counter_map[k]]=cnts[k]; });
+      if(Object.keys(out.checked).length||Object.keys(out.steps).length||Object.keys(out.counters).length){
+        try{ localStorage.setItem(KEY,JSON.stringify(out)); }catch(e){}
+        applyData(out);
+      }
+    }catch(e){}
+  }
+  function load(){
+    var raw; try{ raw=localStorage.getItem(KEY); }catch(e){ return; }
+    if(!raw){ migrateLegacy(); return; }
+    try{ applyData(JSON.parse(raw)); }catch(e){}
+  }
+  function syncCounters(source){
+    if(!source) return;
+    var g=source.getAttribute('data-counter');
+    counts.forEach(function(c){ if(c.getAttribute('data-counter')===g) c.value=source.value; });
+  }
+  function updateProgress(){
+    var done=tasks.filter(function(t){return t.getAttribute('aria-pressed')==='true';});
+    var gs=done.reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+    var text=done.length+' / '+tasks.length+' achievements · '+gs.toLocaleString('en-US')+' / '+TOTAL_GS.toLocaleString('en-US')+'G';
+    overallText.textContent=text;
+    if(overallTextNav) overallTextNav.textContent=done.length+' / '+tasks.length+' · '+gs.toLocaleString('en-US')+'G';
+    overallBar.style.width=Math.round(gs/TOTAL_GS*100)+'%';
+    document.querySelectorAll('details[data-cat]').forEach(function(sec){
+      var box=sec.querySelectorAll('button.task');
+      if(!box.length) return;
+      var pressed=function(t){return t.getAttribute('aria-pressed')==='true';};
+      var d=[].slice.call(box).filter(pressed).length;
+      var g=[].slice.call(box).filter(pressed).reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+      var el=sec.querySelector('.sec-progress');
+      if(el) el.textContent=d+' / '+box.length+' · '+g+'G';
+    });
+    counts.forEach(function(c){
+      var target=parseInt(c.getAttribute('data-target'),10)||0;
+      var val=parseInt(c.value,10)||0;
+      var pct=target?Math.min(100,Math.round(val/target*100)):0;
+      var wrap=c.closest('.counter');
+      var txt=wrap?wrap.querySelector('.count-text'):null;
+      if(txt) txt.textContent=' '+val.toLocaleString('en-US')+' / '+target.toLocaleString('en-US')+' ('+pct+'%)';
+      /* Bars live under the card header, not next to the input, and
+         are matched by group AND target: a shared group can feed
+         several thresholds, and each bar must show its own target. */
+      var g=c.getAttribute('data-counter');
+      document.querySelectorAll('.counter-bar[data-counter="'+g+'"][data-target="'+target+'"]').forEach(function(barEl){
+        var bar=barEl.querySelector('.progress-bar');
+        if(bar) bar.style.width=pct+'%';
+      });
+    });
+    /* Step progress bars under the headers of multi-step
+       achievements: the bar shows how many of that achievement's
+       sub-steps are ticked. Step cards have no parent, so they
+       carry no bar — this is only for achievement cards. */
+    document.querySelectorAll('.step-bar').forEach(function(barEl){
+      var parent=barEl.getAttribute('data-step-parent');
+      var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+parent+'"]'));
+      var done=sibs.filter(function(s){return s.checked;}).length;
+      var pct=sibs.length?Math.round(done/sibs.length*100):0;
+      var bar=barEl.querySelector('.progress-bar');
+      if(bar) bar.style.width=pct+'%';
+    });
+  }
+  /* applyFilters hides whole sections, not just cards: a section with
+     no visible cards after filtering must not leave an empty heading
+     and an empty bordered box behind. */
+  function applyFilters(){
+    var q=(search.value||'').toLowerCase().trim();
+    var active=document.querySelector('.filter.active');
+    var cat=active?active.getAttribute('data-filter'):'all';
+    var inc=incompleteOnly.checked;
+    document.querySelectorAll('details[data-cat]').forEach(function(sec){
+      var secCat=sec.getAttribute('data-cat');
+      var catMatch=(cat==='all'||cat===secCat);
+      var visibleItems=0;
+      sec.querySelectorAll('.item').forEach(function(item){
+        var name=(item.getAttribute('data-name')||'')+' '+item.textContent.toLowerCase();
+        var qMatch=!q||name.indexOf(q)>-1;
+        var task=item.querySelector('button.task');
+        var incMatch=!inc||!task||task.getAttribute('aria-pressed')!=='true';
+        var show=catMatch&&qMatch&&incMatch;
+        item.classList.toggle('hidden',!show);
+        if(show) visibleItems++;
+      });
+      var hasItems=sec.querySelectorAll('.item').length>0;
+      sec.classList.toggle('hidden',!catMatch||(hasItems&&visibleItems===0));
+    });
+    fitHeaders();
+  }
+  /* Header normalisation: long names shrink toward a floor
+     (1.05rem to 0.85rem) before they are allowed to wrap, and
+     headers in the same visible row are then equalised to the
+     row's tallest, so card bodies start on one line instead of
+     staggering. Runs after every filter pass (which is also
+     every search, reset and import path), on resize, when a
+     section opens or closes, and once fonts arrive. */
+  function fitHeaders(){
+    document.querySelectorAll('.ach-head').forEach(function(h){ h.style.minHeight = ''; });
+    document.querySelectorAll('.ach-name').forEach(function(n){ n.style.fontSize = ''; });
+    document.querySelectorAll('.ach-name').forEach(function(n){
+      var floors = ['0.95rem', '0.85rem'];
+      for(var i = 0; i < floors.length; i++){
+        var line = parseFloat(getComputedStyle(n).lineHeight);
+        if(n.offsetHeight <= line + 1) break;
+        n.style.fontSize = floors[i];
+      }
+    });
+    var rows = {};
+    document.querySelectorAll('.item').forEach(function(item){
+      if(item.classList.contains('hidden') || !item.offsetParent) return;
+      var head = item.querySelector('.ach-head');
+      if(!head) return;
+      var sec = item.closest('details');
+      var key = (sec ? sec.getAttribute('data-cat') : '') + ':' + item.offsetTop;
+      (rows[key] = rows[key] || []).push(head);
+    });
+    Object.keys(rows).forEach(function(key){
+      var max = 0;
+      rows[key].forEach(function(h){ max = Math.max(max, h.offsetHeight); });
+      rows[key].forEach(function(h){ h.style.minHeight = max + 'px'; });
+    });
+  }
+  var fitTimer = null;
+  window.addEventListener('resize', function(){
+    if(fitTimer) clearTimeout(fitTimer);
+    fitTimer = setTimeout(fitHeaders, 150);
+  });
+  document.querySelectorAll('details[data-cat]').forEach(function(d){
+    d.addEventListener('toggle', fitHeaders);
+  });
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeaders);
+  document.querySelectorAll('.filter').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.filter').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active'); applyFilters();
+    });
+  });
+  /* Header toggle: clicking anywhere in the header flips aria-pressed.
+     Steps still use the change handler below; a button does not fire
+     change, so this click handler is the task toggle. */
+  tasks.forEach(function(t){
+    t.addEventListener('click',function(){
+      t.setAttribute('aria-pressed', t.getAttribute('aria-pressed')==='true' ? 'false' : 'true');
+      save(); updateProgress(); applyFilters();
+    });
+  });
+  /* Counter steppers: -/+ buttons beside the input, clamped at 0.
+     A programmatic value change fires no input event, so sync, save
+     and progress are called explicitly here. */
+  document.addEventListener('click',function(e){
+    var btn=e.target.closest ? e.target.closest('.counter-btn') : null;
+    if(!btn) return;
+    var wrap=btn.closest('.counter');
+    var input=wrap?wrap.querySelector('input.count'):null;
+    if(!input) return;
+    var val=parseInt(input.value,10)||0;
+    val=Math.max(0, val + (parseInt(btn.getAttribute('data-step'),10)||0));
+    input.value=val;
+    syncCounters(input); save(); updateProgress();
+  });
+  document.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.classList.contains('step')&&t.getAttribute('data-parent')){
+      var parent=document.getElementById(t.getAttribute('data-parent'));
+      if(parent){
+        var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+t.getAttribute('data-parent')+'"]'));
+        if(sibs.length&&sibs.every(function(s){return s.checked;})) parent.setAttribute('aria-pressed','true');
+      }
+    }
+    save(); updateProgress(); applyFilters();
+  });
+  document.addEventListener('input',function(e){
+    if(e.target===search){ applyFilters(); return; }
+    if(e.target===incompleteOnly){ applyFilters(); return; }
+    if(e.target.classList.contains('count')) syncCounters(e.target);
+    save(); updateProgress();
+  });
+  document.getElementById('resetBtn').addEventListener('click',function(){
+    if(!confirm('Reset all achievements, steps, counters and notes?')) return;
+    tasks.forEach(function(t){t.setAttribute('aria-pressed','false');});
+    steps.forEach(function(s){s.checked=false;});
+    counts.forEach(function(c){c.value=0;});
+    notesData={}; refreshNoteIcons();
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    updateProgress(); applyFilters();
+  });
+  document.getElementById('exportBtn').addEventListener('click',function(){
+    save();
+    var raw; try{ raw=localStorage.getItem(KEY)||'{}'; }catch(e){ raw='{}'; }
+    var blob=new Blob([raw],{type:'application/json'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='winter-burrow-progress.json'; a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); },1000);
+  });
+  document.getElementById('importFile').addEventListener('change',function(e){
+    var f=e.target.files&&e.target.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{
+        var data=JSON.parse(r.result);
+        try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(err){}
+        applyData(data); updateProgress(); applyFilters();
+      }catch(err){ alert('That file did not look like a tracker export.'); }
+    };
+    r.readAsText(f);
+  });
+  /* Shared import preview/apply machinery, used by the Xbox sync
+     card. Only one import preview is live at a time, and Confirm
+     applies whichever is pending. Sync is additive only — it ticks
+     newly unlocked achievements and their sub-steps, and never
+     unticks, never touches notes or counters. */
+  function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function achName(achId){ var b=document.getElementById(achId); var n=b?b.querySelector('.ach-name'):null; return n?n.textContent.trim():achId; }
+  function achHasCounter(achId){ var b=document.getElementById(achId); var it=b?b.closest('.item'):null; return !!(it&&it.querySelector('input.count')); }
+  /* planFor splits a candidate set into what is new, what is
+     already ticked, and the sub-steps/counters that go with the new
+     ones. matchedIds is the wider matched set (for the "left as
+     they are" count); appliedIds is the subset the preview will
+     actually tick. */
+  function planFor(appliedIds, matchedIds){
+    var isPressed=function(achId){ var b=document.getElementById(achId); return b&&b.getAttribute('aria-pressed')==='true'; };
+    var newAch=[], already=0;
+    appliedIds.forEach(function(achId){ if(isPressed(achId)) already++; else newAch.push(achId); });
+    var stepIds=[], stepNames=[];
+    newAch.forEach(function(achId){
+      [].slice.call(document.querySelectorAll('.step[data-parent="'+achId+'"]')).forEach(function(s){
+        if(!s.checked){ stepIds.push(s.id); stepNames.push((s.parentNode?s.parentNode.textContent:'').trim()); }
+      });
+    });
+    var counterNames=[];
+    newAch.forEach(function(achId){ if(achHasCounter(achId)) counterNames.push(achName(achId)); });
+    var matchedSet={};
+    matchedIds.forEach(function(id){ matchedSet[id]=true; });
+    var lockedCount=tasks.filter(function(t){ return !matchedSet[t.id]; }).length;
+    return {newAch:newAch, already:already, stepIds:stepIds, stepNames:stepNames, counterNames:counterNames, lockedCount:lockedCount};
+  }
+  var importPending=null;
+  function hideImportPreviews(){
+    document.querySelectorAll('.import-preview').forEach(function(el){ el.classList.add('hidden'); });
+    importPending=null;
+  }
+  /* opts: bodyEl, previewEl, confirmBtn, plan (from planFor),
+     warnings (strings), dates (achId -> date string), statsHtml
+     (an already rendered stats paragraph, or ''). */
+  function showImportPreview(opts){
+    hideImportPreviews();
+    var plan=opts.plan, html='';
+    (opts.warnings||[]).forEach(function(w){ html+='<p class="text-warning mb-2">'+escHtml(w)+'</p>'; });
+    if(plan.newAch.length){
+      html+='<p><strong>'+plan.newAch.length+' new achievement'+(plan.newAch.length===1?'':'s')+' will be ticked:</strong></p><ul>';
+      plan.newAch.forEach(function(achId){
+        html+='<li>'+escHtml(achName(achId));
+        if(opts.dates&&opts.dates[achId]) html+=' <span class="text-secondary">— unlocked '+escHtml(opts.dates[achId])+'</span>';
+        html+='</li>';
+      });
+      html+='</ul>';
+    } else {
+      html+='<p>Nothing new — every matched achievement is already ticked here.</p>';
+    }
+    if(plan.stepNames.length){
+      html+='<p><strong>'+plan.stepNames.length+' sub-step'+(plan.stepNames.length===1?'':'s')+' will also be ticked</strong> (they are the route to the achievements above):</p><ul>';
+      plan.stepNames.forEach(function(n){ html+='<li>'+escHtml(n)+'</li>'; });
+      html+='</ul>';
+    }
+    if(plan.counterNames.length){
+      html+='<p class="text-secondary">Counters stay manual: the source does not report raw counts, so the counters for '+plan.counterNames.map(escHtml).join(', ')+' are left as they are.</p>';
+    }
+    if(opts.statsHtml) html+=opts.statsHtml;
+    opts.bodyEl.innerHTML=html;
+    opts.previewEl.classList.remove('hidden');
+    opts.confirmBtn.style.display=plan.newAch.length?'':'none';
+    importPending={achIds:plan.newAch, stepIds:plan.stepIds};
+  }
+  /* Applies the pending import through the normal save path and
+     returns how many achievements were ticked (0 if none pending). */
+  function applyImportPending(){
+    if(!importPending) return 0;
+    var n=importPending.achIds.length;
+    importPending.achIds.forEach(function(achId){
+      var b=document.getElementById(achId);
+      if(b) b.setAttribute('aria-pressed','true');
+    });
+    importPending.stepIds.forEach(function(stepId){
+      var s=document.getElementById(stepId);
+      if(s) s.checked=true;
+    });
+    importPending=null;
+    save(); updateProgress(); applyFilters();
+    return n;
+  }
+  /* Xbox sync via OpenXBL (user-supplied key). The sync card is only
+     rendered for games whose JSON carries xbox_title_id and an
+     xbox_id per achievement; without the card this block is a no-op.
+     Sync is additive and previewed: it ticks newly unlocked
+     achievements (and their sub-steps) and never unticks, never
+     touches notes or counters. The key and gamertag live under the
+     separate 'at-xbox' localStorage key, so Export/Import — which
+     only read and write the progress key above — can never leak
+     them. Response shapes are handled tolerantly (see the extract
+     helpers): OpenXBL's published spec documents endpoints but no
+     response schema, so the first live response may still refine
+     these, and anything unrecognised fails loudly instead of
+     guessing a tick. */
+  var syncCard=document.getElementById('xbox-sync');
+  if(syncCard){
+    var XBOX_API='https://api.xbl.io/api/v2';
+    var XBOX_META_KEY='at-xbox';
+    var syncMap={};
+    try{ syncMap=JSON.parse(syncCard.getAttribute('data-xbox-map')||'{}'); }catch(e){ syncMap={}; }
+    var syncTitleId=syncCard.getAttribute('data-xbox-title-id')||'';
+    var gtInput=document.getElementById('xbox-gamertag');
+    var keyInput=document.getElementById('xbox-key');
+    var syncBtn=document.getElementById('xbox-sync-btn');
+    var clearKeyBtn=document.getElementById('xbox-clear-key');
+    var statusEl=document.getElementById('xbox-status');
+    var previewEl=document.getElementById('xbox-preview');
+    var previewBody=document.getElementById('xbox-preview-body');
+    var confirmBtn=document.getElementById('xbox-confirm');
+    var cancelBtn=document.getElementById('xbox-cancel');
+    var pasteInput=document.getElementById('xbox-paste');
+    var pasteBtn=document.getElementById('xbox-paste-btn');
+    function metaLoad(){ try{ return JSON.parse(localStorage.getItem(XBOX_META_KEY)||'{}'); }catch(e){ return {}; } }
+    function metaSave(m){ try{ localStorage.setItem(XBOX_META_KEY,JSON.stringify(m)); }catch(e){} }
+    var xboxMeta=metaLoad();
+    if(xboxMeta.gamertag) gtInput.value=xboxMeta.gamertag;
+    if(xboxMeta.key) keyInput.value=xboxMeta.key;
+    function setStatus(msg){ statusEl.textContent=msg; }
+    function persistInputs(){
+      var m=metaLoad();
+      var gt=gtInput.value.trim();
+      if(m.gamertag!==gt) m.xuid='';
+      m.gamertag=gt; m.key=keyInput.value.trim(); metaSave(m); xboxMeta=m;
+    }
+    gtInput.addEventListener('change',persistInputs);
+    keyInput.addEventListener('change',persistInputs);
+    function xboxFetch(path,key){
+      return fetch(XBOX_API+path,{headers:{'X-Authorization':key,'Accept':'application/json'}}).then(function(r){
+        if(!r.ok){ var err=new Error('HTTP '+r.status); err.status=r.status; throw err; }
+        return r.json();
+      });
+    }
+    /* Shape tolerance: the gamertag endpoint documents a flat
+       {xuid, gamertag, gamerscore} body, while profile endpoints
+       return profileUsers[0].id. Accept both, plus a bare array. */
+    function extractXuid(data){
+      if(!data) return null;
+      if(typeof data==='string') return data;
+      if(data.xuid) return String(data.xuid);
+      if(data.profileUsers&&data.profileUsers[0]&&data.profileUsers[0].id) return String(data.profileUsers[0].id);
+      if(Array.isArray(data)&&data[0]) return extractXuid(data[0]);
+      return null;
+    }
+    function extractAchievements(data){
+      if(!data) return null;
+      if(Array.isArray(data)) return data;
+      if(Array.isArray(data.achievements)) return data.achievements;
+      return null;
+    }
+    function isUnlocked(a){
+      return a.progressState==='Achieved'||!!(a.progression&&a.progression.timeUnlocked);
+    }
+    function fetchTitlePages(xuid,key){
+      var entries=[], token='', prevToken=null, pages=0;
+      function next(){
+        if(pages>=5) return Promise.reject(new Error('too many pages'));
+        pages++;
+        var url='/achievements/player/'+encodeURIComponent(xuid)+'/title/'+encodeURIComponent(syncTitleId);
+        if(token) url+='?continuationToken='+encodeURIComponent(token);
+        return xboxFetch(url,key).then(function(data){
+          var list=extractAchievements(data);
+          if(!list) throw new Error('unexpected response shape');
+          entries=entries.concat(list);
+          var t=(data.pagingInfo&&data.pagingInfo.continuationToken)||data.continuationToken||'';
+          if(!t) return entries;
+          if(t===prevToken) throw new Error('pagination loop');
+          prevToken=token; token=t; return next();
+        });
+      }
+      return next();
+    }
+    function buildPreview(entries,warnings){
+      var unlocked=[], skipped=0, seenIds={};
+      entries.forEach(function(a){
+        var id=(a&&a.id!==undefined)?String(a.id):null;
+        if(id===null){ skipped++; return; }
+        if(seenIds[id]) return; seenIds[id]=true;
+        if(isUnlocked(a)) unlocked.push(id);
+      });
+      var mapped=[], unmapped=0;
+      unlocked.forEach(function(id){
+        if(syncMap[id]) mapped.push(syncMap[id]); else unmapped++;
+      });
+      var plan=planFor(mapped,mapped);
+      showImportPreview({
+        bodyEl:previewBody, previewEl:previewEl, confirmBtn:confirmBtn,
+        warnings:warnings, plan:plan,
+        statsHtml:'<p class="text-secondary mb-0">Already ticked: '+plan.already+' · Xbox achievements not in this tracker: '+unmapped+' · Tracker achievements Xbox does not report unlocked (left exactly as they are, including manual ticks from other platforms): '+plan.lockedCount+(skipped?' · Entries without an id, ignored: '+skipped:'')+'.</p>'
+      });
+      setStatus('Preview ready — nothing has changed yet. Confirm to apply, or Cancel.');
+    }
+    function syncError(e){
+      hideImportPreviews();
+      if(e&&e.status===401) setStatus('That key was rejected — check it at xbl.io, or create a new one.');
+      else if(e&&e.status===429) setStatus('OpenXBL rate limit — wait a while and try again.');
+      else if(e&&e.status===403) setStatus('Xbox returned no data for this title — check your Xbox privacy settings (achievement history) or that you have played this game on Xbox.');
+      else if(e&&e.status===404) setStatus('No Xbox profile or title data found — check the gamertag spelling and that you have played this game on Xbox.');
+      else if(e&&e.message==='gamertag not found') setStatus('No Xbox profile found for that gamertag — check the spelling.');
+      else if(e&&e.message==='too many pages') setStatus('OpenXBL paginated this title beyond what this page follows — sync stopped rather than applying a partial result.');
+      else if(e&&e.message==='pagination loop') setStatus('OpenXBL returned the same page twice — sync stopped rather than applying a partial result.');
+      else if(e&&e.message==='unexpected response shape') setStatus('OpenXBL returned a response this page does not recognise — sync stopped, nothing changed.');
+      else if(e instanceof TypeError) setStatus('The browser could not reach OpenXBL — check your connection, or use the paste-JSON option below.');
+      else setStatus('Sync failed — nothing changed. ('+(e&&e.message?e.message:'unknown error')+')');
+    }
+    syncBtn.addEventListener('click',function(){
+      var key=keyInput.value.trim(), gt=gtInput.value.trim();
+      if(!gt){ setStatus('Enter a gamertag first.'); return; }
+      if(!key){ setStatus('Paste your OpenXBL API key first.'); return; }
+      persistInputs();
+      hideImportPreviews();
+      setStatus('Fetching…');
+      syncBtn.disabled=true;
+      var warnings=[];
+      var xuidPromise;
+      if(xboxMeta.xuid&&xboxMeta.gamertag===gt){
+        xuidPromise=Promise.resolve(xboxMeta.xuid);
+      } else {
+        xuidPromise=xboxFetch('/player/gamertag/'+encodeURIComponent(gt),key).then(function(prof){
+          var xuid=extractXuid(prof);
+          if(!xuid) throw new Error('gamertag not found');
+          return xboxFetch('/account',key).then(function(acct){
+            var acctXuid=extractXuid(acct);
+            if(acctXuid&&acctXuid!==xuid) warnings.push('This key belongs to a different gamertag — sync may return public-only data.');
+            xboxMeta.xuid=xuid; metaSave(xboxMeta);
+            return xuid;
+          });
+        });
+      }
+      xuidPromise.then(function(xuid){
+        return fetchTitlePages(xuid,key);
+      }).then(function(entries){
+        buildPreview(entries,warnings);
+      }).catch(syncError).then(function(){ syncBtn.disabled=false; });
+    });
+    pasteBtn.addEventListener('click',function(){
+      var text=pasteInput.value.trim();
+      if(!text){ setStatus('Paste an OpenXBL JSON response first.'); return; }
+      hideImportPreviews();
+      try{
+        var entries=extractAchievements(JSON.parse(text));
+        if(!entries) throw new Error('shape');
+        buildPreview(entries,['Pasted JSON — no gamertag or key was used.']);
+      }catch(e){
+        hideImportPreviews();
+        setStatus('That text did not look like an OpenXBL achievements response.');
+      }
+    });
+    confirmBtn.addEventListener('click',function(){
+      var n=applyImportPending();
+      hideImportPreviews();
+      var m=metaLoad(); m.lastSyncAt=new Date().toISOString(); metaSave(m); xboxMeta=m;
+      setStatus('Synced '+n+' new achievement'+(n===1?'':'s')+' from Xbox at '+new Date().toLocaleString()+'.');
+    });
+    cancelBtn.addEventListener('click',function(){
+      hideImportPreviews();
+      setStatus('Sync cancelled — nothing changed.');
+    });
+    clearKeyBtn.addEventListener('click',function(){
+      keyInput.value='';
+      var m=metaLoad(); m.key=''; metaSave(m); xboxMeta=m;
+      setStatus('Key cleared from this browser.');
+    });
+  }
+  /* Guide images that fail to load (moved, or the host blocks
+     loading them here) are swapped for a placeholder that says
+     why, instead of a broken-image icon. Images already broken
+     when this runs are swapped immediately. */
+  document.querySelectorAll('.ach-media img').forEach(function(img){
+    function swap(){
+      var fig = img.closest('figure');
+      var cap = fig ? fig.querySelector('figcaption') : null;
+      var cred = fig ? fig.querySelector('.media-credit') : null;
+      var capText = cap ? cap.textContent : '';
+      var credText = cred ? cred.textContent : '';
+      var extra = capText + (capText && credText ? ' ' : '') + credText;
+      var d = document.createElement('div');
+      d.className = 'ach-media-fallback';
+      d.textContent = 'Guide image unavailable — it may have moved, or the host may block loading it here. The walkthrough linked in the sources below has the original.'
+        + (extra ? ' (' + extra + ')' : '');
+      img.replaceWith(d);
+    }
+    if(img.complete && img.naturalWidth === 0) swap();
+    else img.addEventListener('error', swap);
+  });
+  /* Walkthrough shots open their full-size version in an
+     on-page viewer instead of a new tab. The link's href is
+     kept, so without scripts (or on a browser too old for
+     <dialog>) the click still opens the image in a new tab,
+     per target=_blank. Escape and tapping outside close it;
+     the close event clears the image so it stops loading.
+     The viewer caption carries the image credit, since the
+     card itself now shows it only on hover. For slideshow
+     shots the viewer also gains Previous/Next: they drive
+     the card's own slideshow buttons, so the card and the
+     viewer never disagree about which slide is current, and
+     arrow keys work too. */
+  var modal = document.getElementById('media-modal');
+  var modalImg = document.getElementById('media-modal-img');
+  var modalCap = document.getElementById('media-modal-caption');
+  var modalNav = document.getElementById('media-modal-nav');
+  var modalCount = document.getElementById('media-modal-count');
+  var modalPrev = modal ? modal.querySelector('.media-modal-prev') : null;
+  var modalNext = modal ? modal.querySelector('.media-modal-next') : null;
+  var modalShow = null;
+  function modalCaption(fig){
+    var cap = fig ? fig.querySelector('figcaption') : null;
+    var cred = fig ? fig.querySelector('.media-credit') : null;
+    var capText = cap ? cap.textContent : '';
+    var credText = cred ? cred.textContent : '';
+    return (capText + (capText && credText ? ' ' : '') + credText).trim();
+  }
+  function modalFromLink(a){
+    var img = a.querySelector('img');
+    var fig = a.closest('figure');
+    modalImg.src = a.getAttribute('href');
+    modalImg.alt = img ? img.alt : '';
+    var text = modalCaption(fig);
+    modalCap.textContent = text;
+    modalCap.style.display = text ? '' : 'none';
+  }
+  function modalSync(){
+    if(!modalShow) return;
+    var ss = modalShow.ss;
+    var active = ss.querySelector('.slideshow-slide.active');
+    var link = active ? active.querySelector('a') : null;
+    if(link) modalFromLink(link);
+    var idx = modalShow.links.indexOf(link);
+    modalCount.textContent = (idx + 1) + ' of ' + modalShow.links.length;
+    modalPrev.disabled = ss.querySelector('.slideshow-prev').disabled;
+    modalNext.disabled = ss.querySelector('.slideshow-next').disabled;
+  }
+  function modalStep(dir){
+    if(!modalShow) return;
+    var btn = modalShow.ss.querySelector(dir < 0 ? '.slideshow-prev' : '.slideshow-next');
+    if(btn) btn.click();
+    modalSync();
+  }
+  if(modal){
+    modal.addEventListener('close', function(){
+      modalImg.removeAttribute('src'); modalShow = null;
+      modal.classList.remove('media-modal-slideshow');
+    });
+    modal.addEventListener('click', function(e){ if(e.target === modal) modal.close(); });
+    var modalClose = modal.querySelector('.media-modal-close');
+    if(modalClose) modalClose.addEventListener('click', function(){ modal.close(); });
+    if(modalPrev) modalPrev.addEventListener('click', function(){ modalStep(-1); });
+    if(modalNext) modalNext.addEventListener('click', function(){ modalStep(1); });
+    modal.addEventListener('keydown', function(e){
+      if(!modalShow) return;
+      if(e.key === 'ArrowLeft') modalStep(-1);
+      else if(e.key === 'ArrowRight') modalStep(1);
+    });
+    /* Tapping the left or right side of a slideshow image steps
+       it too: the buttons underneath stay the discoverable
+       control, this is the faster path for repeat viewing. */
+    modalImg.addEventListener('click', function(e){
+      if(!modalShow) return;
+      var r = modalImg.getBoundingClientRect();
+      if(!r.width) return;
+      modalStep(e.clientX - r.left < r.width / 2 ? -1 : 1);
+    });
+    document.querySelectorAll('.ach-media a, .slideshow a').forEach(function(a){
+      a.addEventListener('click', function(e){
+        if(!modal.showModal) return;
+        e.preventDefault();
+        var ss = a.closest('.slideshow');
+        if(ss){
+          modalShow = {ss: ss, links: [].slice.call(ss.querySelectorAll('a'))};
+          modalNav.style.display = '';
+          modal.classList.add('media-modal-slideshow');
+          modalSync();
+        } else {
+          modalShow = null;
+          modalNav.style.display = 'none';
+          modal.classList.remove('media-modal-slideshow');
+          modalFromLink(a);
+        }
+        modal.showModal();
+      });
+    });
+  }
+  /* Notes live behind the note icons: one icon per card, one on
+     the filter card for game-wide notes. The popup saves as you
+     type, so closing it (button, Escape, outside tap) loses
+     nothing; the icon swaps to a check when its note is set. */
+  function refreshNoteIcons(){
+    document.querySelectorAll('.note-btn').forEach(function(b){
+      var key=b.getAttribute('data-note-key');
+      var has=!!(notesData[key]||'').trim();
+      var icon=b.querySelector('i');
+      if(icon){
+        icon.classList.toggle('bi-journal-check', has);
+        icon.classList.toggle('bi-journal-text', !has);
+      }
+      b.classList.toggle('has-note', has);
+    });
+  }
+  function openNotes(key, title){
+    notesKey=key;
+    notesModalTitle.textContent=title;
+    notesModalText.value=notesData[key]||'';
+    if(notesModal.showModal) notesModal.showModal();
+  }
+  if(notesModal){
+    notesModalText.addEventListener('input', function(){
+      if(notesKey===null) return;
+      var v=notesModalText.value;
+      if(v) notesData[notesKey]=v; else delete notesData[notesKey];
+      save(); refreshNoteIcons();
+    });
+    var notesModalClose=notesModal.querySelector('.notes-modal-close');
+    if(notesModalClose) notesModalClose.addEventListener('click', function(){ notesModal.close(); });
+    notesModal.addEventListener('click', function(e){ if(e.target===notesModal) notesModal.close(); });
+    document.querySelectorAll('.note-btn').forEach(function(b){
+      b.addEventListener('click', function(){
+        var art=b.closest('article');
+        var title=art ? 'Notes: '+art.querySelector('.ach-name').textContent : 'Game notes';
+        openNotes(b.getAttribute('data-note-key'), title);
+      });
+    });
+  }
+  /* Slideshow cards: Previous/Next walk through the guide
+     slides; only one slide shows at a time, and the ends
+     disable their button. Hidden slides are also pulled out
+     of tab order, since they are visibility-hidden, not gone. */
+  document.querySelectorAll('.slideshow').forEach(function(ss){
+    var slides = ss.querySelectorAll('.slideshow-slide');
+    var prev = ss.querySelector('.slideshow-prev');
+    var next = ss.querySelector('.slideshow-next');
+    var count = ss.querySelector('.slideshow-count');
+    var cur = 0;
+    function show(i){
+      cur = Math.max(0, Math.min(slides.length - 1, i));
+      slides.forEach(function(s, j){
+        var on = j === cur;
+        s.classList.toggle('active', on);
+        s.setAttribute('aria-hidden', on ? 'false' : 'true');
+        s.querySelectorAll('a').forEach(function(a){
+          if(on){ a.removeAttribute('tabindex'); } else { a.setAttribute('tabindex', '-1'); }
+        });
+      });
+      count.textContent = (cur + 1) + ' of ' + slides.length;
+      prev.disabled = cur === 0;
+      next.disabled = cur === slides.length - 1;
+    }
+    prev.addEventListener('click', function(){ show(cur - 1); });
+    next.addEventListener('click', function(){ show(cur + 1); });
+    show(0);
+  });
+  load(); updateProgress(); applyFilters();
+})();
+</script>
+</body>
+</html>

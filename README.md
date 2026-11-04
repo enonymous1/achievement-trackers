@@ -25,8 +25,8 @@ through a game in order instead of hunting through a flat list.
 The hub is the landing page: a welcome line, a how-it-works card, a
 search box, and one card per game showing its achievement count,
 Gamerscore total, and your saved progress on this browser. The footer
-totals the whole library (currently: 4 games · 101 achievements ·
-4,250G) and links to this repo.
+totals the whole library (currently: 5 games · 133 achievements ·
+5,250G) and links to this repo.
 
 Each game page has a Gamerscore progress bar, search, an
 incomplete-only toggle, phase filters, and export / import / reset for
@@ -116,6 +116,10 @@ story/roadmap order.
 Pigeon Simulator — 10 achievements, 1,000G, the full game in
 walkthrough order: tutorial gadget cheese, first missions, then
 the upgrade grind.
+Winter Burrow — 32 achievements, 1,000G, the full game in
+walkthrough order across five sections (beginning, owl, recovery,
+rebuilding, furnishings), with counters for the cumulative
+crafting and gathering totals.
 
 ## Prerequisites
 

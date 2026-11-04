@@ -4,6 +4,24 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Game #5: Winter Burrow
+
+### Added
+
+- Winter Burrow — all 32 achievements / 1,000G, the full
+  game in walkthrough order (wolfnflowers on
+  TrueAchievements) across five sections: the beginning
+  (bed, armchair, stove, bridge, basement), following
+  the owl (Gnarled Oaks, Shadow Pines, campfire, Aunty
+  home), Aunty's recovery (first floor, Bufo, White
+  Pillars, flint tools, Willow), rebuilding the burrow
+  (burrow repair, Gnawtusk, Moss, the feast), then the
+  furnishing cleanup. Thirteen counters cover the
+  cumulative totals (wood, kills, yarn, clothing,
+  recipes, furniture sets, woodworking). No missables;
+  about 8–10 hours. Library totals now 5 games · 133
+  achievements · 5,250G.
+
 ## 2026-11-04 — Game #4: Pigeon Simulator
 
 ### Added

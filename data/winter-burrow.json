@@ -1,0 +1,85 @@
+{
+  "slug": "winter-burrow",
+  "title": "Winter Burrow",
+  "tagline": "A little mouse rebuilds a burrow through a long winter — follow the owl, find Aunty, and furnish the house.",
+  "order_note": "In walkthrough order, following the story pages: the beginning, following the owl, Aunty's recovery, rebuilding the burrow, then the furnishing cleanup. Cumulative achievements (wood, kills, cooking, furniture) pop whenever their totals land, so they may arrive earlier or later than listed.",
+  "scope_note": "Full game: all 32 achievements / 1,000G. No missables; about 8–10 hours in a single playthrough.",
+  "total_gs": 1000,
+  "total_count": 32,
+  "storage_key": "wb-tracker-v1",
+  "sources": [{"label": "TrueAchievements — Walkthrough by wolfnflowers", "url": "https://www.trueachievements.com/game/Winter-Burrow/walkthrough"}, {"label": "TrueAchievements — Achievements", "url": "https://www.trueachievements.com/game/Winter-Burrow/achievements"}],
+  "sections": [
+    {
+      "id": "beginning",
+      "filter_label": "Beginning",
+      "title": "The Beginning",
+      "subtitle": "5 achievements",
+      "achievements": [
+        {"id": "ach-dreams", "name": "Protector of Dreams", "gs": 10, "req": "Place a bed in the burrow", "how": "Craft a Simple Bed at the woodworking table (4 twigs, 3 flax fiber, 2 beech wood) and place it in your home."},
+        {"id": "ach-knitting", "name": "Knitting Advocate", "gs": 10, "req": "Repair the armchair", "how": "Repair the Dusty Armchair (2 beech planks, 4 twigs, 10 flax fiber) — this also unlocks the knitting recipes."},
+        {"id": "ach-cooking", "name": "Keen on Cooking", "gs": 10, "req": "Repair the stove in the burrow", "how": "Repair the stove with 8 pebbles gathered outside the house."},
+        {"id": "ach-bridge", "name": "Bridge of Reunion", "gs": 20, "req": "Repair the bridge to Aunty", "how": "Repair the broken bridge south-east of your house (5 beech planks, 5 flax rope), then cross to Aunty."},
+        {"id": "ach-basement", "name": "Basement Dweller", "gs": 10, "req": "Unlock the door to the basement", "how": "Use the Basement Key from Aunty on the basement door to the left of the house."}
+      ]
+    },
+    {
+      "id": "owl",
+      "filter_label": "Owl",
+      "title": "Follow the Owl",
+      "subtitle": "4 achievements",
+      "achievements": [
+        {"id": "ach-gnarled", "name": "Gnarled Discoveries", "gs": 20, "req": "Discover the Gnarled Oaks", "how": "Cross the bridge past Aunty's collapsed home into the new area to discover the Gnarled Oaks."},
+        {"id": "ach-gloomy", "name": "Gloomy Adventures", "gs": 20, "req": "Discover the Shadow Pines", "how": "Head north past Bufo into the next area to discover the Shadow Pines."},
+        {"id": "ach-campfire", "name": "Mouse of the Wild", "gs": 10, "req": "Build a campfire in the wilderness", "how": "Use a campfire kit from a backpack north-east of Gnawtusk's area to build a campfire in the wilderness."},
+        {"id": "ach-aunty", "name": "Aunty's Saviour", "gs": 60, "req": "Bring Aunty back home", "how": "Finish Gnawtusk's herb stashes (by the pine tree, by the shell, by the funny-looking rock), then talk to Aunty back home."}
+      ]
+    },
+    {
+      "id": "recovery",
+      "filter_label": "Recovery",
+      "title": "Aunty's Recovery",
+      "subtitle": "8 achievements",
+      "achievements": [
+        {"id": "ach-basket", "name": "A Full Basket", "gs": 50, "req": "Collect 100 pieces of wood", "how": "Collect 100 pieces of wood — it comes naturally while gathering for the planter boxes and repairs.", "counters": [{"group": "wood", "target": 100}]},
+        {"id": "ach-stars", "name": "Reach for the Stars!", "gs": 30, "req": "Unlock first floor in the burrow", "how": "Repair the stairs to the first floor (15 oak planks, 5 pine planks)."},
+        {"id": "ach-needles", "name": "Hot Knitting Needles", "gs": 50, "req": "Knit 8 clothing pieces", "how": "Knit 8 clothing pieces — start with the linen set, then wool clothes from fur tufts once you have enough yarn.", "counters": [{"group": "clothing", "target": 8}]},
+        {"id": "ach-bufo", "name": "Family Reunion", "gs": 35, "req": "Complete Bufo's quests", "how": "Finish Bufo's quests: fetch pebbles and twigs, find Pollywog south of the water, bake Blackberry and Rowanberry pies, and deliver Bufo's key to Pollywog."},
+        {"id": "ach-frozen", "name": "Frozen Horizons", "gs": 20, "req": "Discover the White Pillars", "how": "Head south-west past the spider area to discover the White Pillars, collecting birch wood there."},
+        {"id": "ach-pickaxe", "name": "Pickaxe Champion", "gs": 30, "req": "Craft all pickaxes", "how": "Craft all pickaxes, ending with the Flint Pickaxe once Willow's area gives you birch wood."},
+        {"id": "ach-axe", "name": "Axe Master", "gs": 30, "req": "Craft all axes", "how": "Craft all axes, ending with the Flint Axe."},
+        {"id": "ach-willow", "name": "Willow's Epiphany", "gs": 40, "req": "Complete Willow's quests", "how": "Finish Willow's quests: return their notebook (found outside your house), find the tunnel entrance north-east of home with the Flint Shovel, recover the helmet artifact, and hand over hazelnuts."}
+      ]
+    },
+    {
+      "id": "rebuilding",
+      "filter_label": "Rebuilding",
+      "title": "Rebuilding the Burrow",
+      "subtitle": "6 achievements",
+      "achievements": [
+        {"id": "ach-pest", "name": "Pest Control", "gs": 50, "req": "Kill 100 creatures", "how": "Kill 100 creatures — beetles, ants, and spiders as you travel; it usually pops while gathering for Aunty's burrow.", "counters": [{"group": "creatures", "target": 100}]},
+        {"id": "ach-startover", "name": "Let's Start Over", "gs": 50, "req": "Repair Aunty's broken house", "how": "Rebuild Aunty's burrow: 10 birch planks, 20 oak planks, 20 granite, 10 silk yarn (spiders drop silk — cut their webs if you'd rather not fight them)."},
+        {"id": "ach-gnawtusk", "name": "Friends in a Nutshell", "gs": 35, "req": "Complete Gnawtusk's quests", "how": "Finish Gnawtusk's quests by handing over the rare herbs you picked up in backpacks, then invite him to the feast."},
+        {"id": "ach-yarn", "name": "Yearning for Yarn", "gs": 20, "req": "Spin 50 balls of yarn", "how": "Spin 50 balls of yarn at the armchair — it builds up naturally while knitting clothes and the Warm Shoes.", "counters": [{"group": "yarn", "target": 50}]},
+        {"id": "ach-moss", "name": "Moss Moves On", "gs": 40, "req": "Complete Moss quests", "how": "Finish Moss's quests: bring the white fox fur tufts, find his missing key, show him Aunty's Old Shawl, then bring back Pinesap's pendant from the dark area west of the hood."},
+        {"id": "ach-feast", "name": "A Well-Earned Feast", "gs": 80, "req": "Have a big dinner at Aunty's", "how": "Invite everyone — Gnawtusk, Bufo, Willow, and Moss — then return to Aunty to trigger the feast and the story ending."}
+      ]
+    },
+    {
+      "id": "furnishings",
+      "filter_label": "Furnishings",
+      "title": "Furnishings for a Mouse",
+      "subtitle": "9 achievements",
+      "achievements": [
+        {"id": "ach-culinary", "name": "Culinary Completionist", "gs": 50, "req": "Cook 100 recipes", "how": "Cook 100 recipes — Roasted Chanterelle and Blue Tea are the cheapest to spam, and 'Craft All' speeds it up.", "counters": [{"group": "recipes", "target": 100}]},
+        {"id": "ach-twig", "name": "Twig House", "gs": 20, "req": "Craft 8 pieces of the twig furniture set", "how": "Craft 8 twig furniture pieces — Twig Side Tables use the least materials.", "counters": [{"group": "twig", "target": 8}]},
+        {"id": "ach-fibre", "name": "Fibre House", "gs": 20, "req": "Craft 9 pieces of the fibre furniture set", "how": "Craft 9 fibre pieces — Round Fibre Rugs are the cheapest, though they eat a lot of flax rope.", "counters": [{"group": "fibre", "target": 9}]},
+        {"id": "ach-master", "name": "Master Builder", "gs": 50, "req": "Craft 150 woodworking recipes", "how": "Craft 150 woodworking recipes — it usually pops while working through the furniture sets.", "counters": [{"group": "woodworking", "target": 150}]},
+        {"id": "ach-pine", "name": "Pine House", "gs": 20, "req": "Craft 9 pieces of the pine furniture set", "how": "Craft 9 pine pieces — Pine Chairs are the simplest.", "counters": [{"group": "pine", "target": 9}]},
+        {"id": "ach-birch", "name": "Birch House", "gs": 20, "req": "Craft 9 pieces of the birch furniture set", "how": "Craft 9 birch pieces — Birch Stools are the easiest.", "counters": [{"group": "birch", "target": 9}]},
+        {"id": "ach-fullhouse", "name": "Full House", "gs": 50, "req": "Craft 30 furniture pieces", "how": "Craft 30 furniture pieces in total — it pops while working through the sets.", "counters": [{"group": "furniture", "target": 30}]},
+        {"id": "ach-pebble", "name": "Pebble House", "gs": 20, "req": "Craft 9 pieces of the pebble furniture set", "how": "Craft 9 pebble pieces — Pebble Stools are the easiest.", "counters": [{"group": "pebble", "target": 9}]},
+        {"id": "ach-oak", "name": "Oak House", "gs": 20, "req": "Craft 9 pieces of the oak furniture set", "how": "Craft 9 oak pieces — Oak Tables are the easiest.", "counters": [{"group": "oak", "target": 9}]}
+      ]
+    }
+  ]
+}
