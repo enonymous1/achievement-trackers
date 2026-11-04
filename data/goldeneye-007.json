@@ -1,0 +1,100 @@
+{
+  "slug": "goldeneye-007",
+  "title": "GoldenEye 007",
+  "tagline": "Bond, James Bond — 20 levels, three difficulties, 21 cheat times, and a split-screen cleanup.",
+  "order_note": "In walkthrough order: story missions first, then the three difficulty completions, then the cheat time trials, then multiplayer. Play Agent first, then Secret Agent, then 00 Agent — difficulty does not stack, so each of the first 18 levels must be finished on each difficulty, and the level-select checkmarks alone don't prove a difficulty completion (check for a Best Time on the abort screen). Cheats can't be used to unlock other achievements. Multiplayer needs no online play and can be boosted split-screen with a single controller in about 45 minutes once single player is done.",
+  "scope_note": "Full game: all 55 achievements / 1,000G — the Xbox re-release of the 1997 classic. No missables; about 15–20 hours across 3 playthroughs plus the multiplayer cleanup.",
+  "total_gs": 1000,
+  "total_count": 55,
+  "storage_key": "ge007-tracker-v1",
+  "sources": [{"label": "TrueAchievements — Walkthrough", "url": "https://www.trueachievements.com/game/GoldenEye-007/walkthrough"}, {"label": "TrueAchievements — Achievements", "url": "https://www.trueachievements.com/game/GoldenEye-007/achievements"}, {"label": "Pure Xbox — Achievement list", "url": "https://www.purexbox.com/news/2023/01/heres-the-complete-list-of-xbox-achievements-in-goldeneye-007"}],
+  "sections": [
+    {
+      "id": "story",
+      "filter_label": "Story",
+      "title": "Story missions",
+      "subtitle": "20 achievements",
+      "achievements": [
+        {"id": "ach-dam", "name": "RUN!", "gs": 20, "req": "Complete Dam on any difficulty.", "how": "Complete Dam on any difficulty."},
+        {"id": "ach-facility", "name": "Now try gunning for 2:05…", "gs": 20, "req": "Complete Facility on any difficulty.", "how": "Complete Facility on any difficulty."},
+        {"id": "ach-runway", "name": "Fly Away!", "gs": 20, "req": "Complete Runway on any difficulty.", "how": "Complete Runway on any difficulty."},
+        {"id": "ach-surface1", "name": "Dual-wielding!", "gs": 20, "req": "Complete Surface 1 on any difficulty.", "how": "Complete Surface 1 on any difficulty."},
+        {"id": "ach-bunker1", "name": "Shooting Cameras", "gs": 20, "req": "Complete Bunker 1 on any difficulty.", "how": "Complete Bunker 1 on any difficulty."},
+        {"id": "ach-silo", "name": "Old-School Rockets!", "gs": 20, "req": "Complete Silo on any difficulty.", "how": "Complete Silo on any difficulty."},
+        {"id": "ach-frigate", "name": "Calm Seas", "gs": 20, "req": "Complete Frigate on any difficulty.", "how": "Complete Frigate on any difficulty."},
+        {"id": "ach-surface2", "name": "Back Again, Part One", "gs": 20, "req": "Complete Surface 2 on any difficulty.", "how": "Complete Surface 2 on any difficulty."},
+        {"id": "ach-bunker2", "name": "Back Again, Part Two", "gs": 20, "req": "Complete Bunker 2 on any difficulty.", "how": "Complete Bunker 2 on any difficulty."},
+        {"id": "ach-statue", "name": "A Walk in the Park", "gs": 20, "req": "Complete Statue Park on any difficulty.", "how": "Complete Statue Park on any difficulty."},
+        {"id": "ach-archives", "name": "Interrogate This!", "gs": 20, "req": "Complete Archives on any difficulty.", "how": "Complete Archives on any difficulty."},
+        {"id": "ach-streets", "name": "TANK!", "gs": 20, "req": "Complete Streets on any difficulty.", "how": "Complete Streets on any difficulty."},
+        {"id": "ach-depot", "name": "Brief Respite", "gs": 20, "req": "Complete Depot on any difficulty.", "how": "Complete Depot on any difficulty."},
+        {"id": "ach-train", "name": "How Long is this Train?!", "gs": 20, "req": "Complete Train on any difficulty.", "how": "Complete Train on any difficulty."},
+        {"id": "ach-jungle", "name": "In the Deep Jungle", "gs": 20, "req": "Complete Jungle on any difficulty.", "how": "Complete Jungle on any difficulty."},
+        {"id": "ach-control", "name": "Hello, Mr. Bond!", "gs": 20, "req": "Complete Control on any difficulty.", "how": "Complete Control on any difficulty."},
+        {"id": "ach-caverns", "name": "I Know It's Here Somewhere…", "gs": 20, "req": "Complete Caverns on any difficulty.", "how": "Complete Caverns on any difficulty."},
+        {"id": "ach-cradle", "name": "The Cradle Will Fall", "gs": 20, "req": "Complete Cradle on any difficulty.", "how": "Complete Cradle on any difficulty."},
+        {"id": "ach-aztec", "name": "That Music, Though…", "gs": 30, "req": "Complete Aztec on any difficulty.", "how": "Complete Aztec on any difficulty. Aztec is a bonus mission, unlocked after Cradle."},
+        {"id": "ach-egyptian", "name": "Samedi Fight Fever!", "gs": 30, "req": "Complete Egyptian on any difficulty.", "how": "Complete Egyptian on any difficulty. Egyptian is a bonus mission, unlocked after Cradle."}
+      ]
+    },
+    {
+      "id": "difficulty",
+      "filter_label": "Difficulty",
+      "title": "Difficulty completions",
+      "subtitle": "3 achievements",
+      "achievements": [
+        {"id": "ach-agent", "name": "Welcome Back, 007", "gs": 40, "req": "Complete the GoldenEye story on Agent difficulty.", "how": "Complete the story (the first 18 levels, Dam through Cradle) on Agent difficulty."},
+        {"id": "ach-secret", "name": "Loyal to the Mission", "gs": 50, "req": "Complete the GoldenEye story on Secret Agent difficulty.", "how": "Complete the story (the first 18 levels, Dam through Cradle) on Secret Agent difficulty."},
+        {"id": "ach-00agent", "name": "Bond... James Bond", "gs": 60, "req": "Complete the GoldenEye story on 00 Agent difficulty.", "how": "Complete the story (the first 18 levels, Dam through Cradle) on 00 Agent difficulty."}
+      ]
+    },
+    {
+      "id": "cheats",
+      "filter_label": "Cheat times",
+      "title": "Cheat time trials",
+      "subtitle": "21 achievements",
+      "achievements": [
+        {"id": "ach-paintball", "name": "Splash Damage", "gs": 10, "req": "Unlock Paintball Mode by completing Dam on Secret Agent in 2:40 or less.", "how": "Beat Dam on Secret Agent in 2:40 or less to unlock Paintball Mode."},
+        {"id": "ach-invincibility", "name": "I AM INVINCIBLE!", "gs": 10, "req": "Unlock Invincibility by completing Facility on 00 Agent in 2:05 or less.", "how": "Beat Facility on 00 Agent in 2:05 or less to unlock Invincibility."},
+        {"id": "ach-dk", "name": "Chest-Pounding Goodness", "gs": 10, "req": "Unlock DK Mode by completing Runway on Agent in 5:00 or less.", "how": "Beat Runway on Agent in 5:00 or less to unlock DK Mode."},
+        {"id": "ach-grenade-launchers", "name": "The Art of Boom", "gs": 10, "req": "Unlock 2x Grenade Launchers by completing Surface 1 on Secret Agent in 3:30 or less.", "how": "Beat Surface 1 on Secret Agent in 3:30 or less to unlock 2x Grenade Launchers."},
+        {"id": "ach-rockets", "name": "Who Needs Stealth?", "gs": 10, "req": "Unlock 2x Rocket Launchers by completing Bunker 1 on 00 Agent in 4:00 or less.", "how": "Beat Bunker 1 on 00 Agent in 4:00 or less to unlock 2x Rocket Launchers."},
+        {"id": "ach-knives", "name": "Target Acquired!", "gs": 10, "req": "Unlock 2x Throwing Knives by completing Bunker 2 on Agent in 1:30 or less.", "how": "Beat Bunker 2 on Agent in 1:30 or less to unlock 2x Throwing Knives."},
+        {"id": "ach-turbo", "name": "Booster!", "gs": 10, "req": "Unlock Turbo Mode by completing Silo on Agent in 3:00 or less.", "how": "Beat Silo on Agent in 3:00 or less to unlock Turbo Mode."},
+        {"id": "ach-noradar", "name": "Screen Cheater!", "gs": 10, "req": "Unlock No Radar (Multi) by completing Frigate on Secret Agent in 4:30 or less.", "how": "Beat Frigate on Secret Agent in 4:30 or less to unlock No Radar (Multi)."},
+        {"id": "ach-tinybond", "name": "Everyone is Odd!", "gs": 10, "req": "Unlock Tiny Bond by completing Surface 2 on 00 Agent in 4:15 or less.", "how": "Beat Surface 2 on 00 Agent in 4:15 or less to unlock Tiny Bond."},
+        {"id": "ach-fastanim", "name": "Here They Come!", "gs": 10, "req": "Unlock Fast Animation by completing Statue on Secret Agent in 3:15 or less.", "how": "Beat Statue Park on Secret Agent in 3:15 or less to unlock Fast Animation."},
+        {"id": "ach-invisibility", "name": "Cheater!", "gs": 10, "req": "Unlock Invisibility by completing Archives on 00 Agent in 1:20 or less.", "how": "Beat Archives on 00 Agent in 1:20 or less to unlock Invisibility."},
+        {"id": "ach-enemyrockets", "name": "DUCK!", "gs": 10, "req": "Unlock Enemy Rockets by completing Streets on Agent in 1:45 or less.", "how": "Beat Streets on Agent in 1:45 or less to unlock Enemy Rockets."},
+        {"id": "ach-slowanim", "name": "So Much Drama!", "gs": 10, "req": "Unlock Slow Animation by completing Depot on Secret Agent in 1:40 or less.", "how": "Beat Depot on Secret Agent in 1:40 or less to unlock Slow Animation."},
+        {"id": "ach-silverpp7", "name": "A Silver Lining", "gs": 10, "req": "Unlock Silver PP7 by completing Train on 00 Agent in 5:25 or less.", "how": "Beat Train on 00 Agent in 5:25 or less to unlock Silver PP7."},
+        {"id": "ach-huntingknives", "name": "Double-Cut", "gs": 10, "req": "Unlock 2x Hunting Knives by completing Jungle on Agent in 3:45 or less.", "how": "Beat Jungle on Agent in 3:45 or less to unlock 2x Hunting Knives."},
+        {"id": "ach-infiniteammo", "name": "Who's Counting?", "gs": 10, "req": "Unlock Infinite Ammo by completing Control on Secret Agent in 10:00 or less.", "how": "Beat Control on Secret Agent in 10:00 or less to unlock Infinite Ammo."},
+        {"id": "ach-rcp90", "name": "Better Than 2x Klobbs", "gs": 10, "req": "Unlock 2x RC-P90s by completing Caverns on 00 Agent in 9:30 or less.", "how": "Beat Caverns on 00 Agent in 9:30 or less to unlock 2x RC-P90s."},
+        {"id": "ach-goldpp7", "name": "Best in Class", "gs": 10, "req": "Unlock Gold PP7 by completing Cradle on Agent in 2:15 or less.", "how": "Beat Cradle on Agent in 2:15 or less to unlock Gold PP7."},
+        {"id": "ach-lasers", "name": "Double ZZZZAP!", "gs": 10, "req": "Unlock 2x Lasers by completing Aztec on Secret Agent in 9:00 or less.", "how": "Beat Aztec on Secret Agent in 9:00 or less to unlock 2x Lasers."},
+        {"id": "ach-allguns", "name": "Full Arsenal!", "gs": 10, "req": "Unlock All Guns by completing Egyptian on 00 Agent in 6:00 or less.", "how": "Beat Egyptian on 00 Agent in 6:00 or less to unlock All Guns."},
+        {"id": "ach-goldengun", "name": "One Shot, Just One…", "gs": 10, "req": "Unlock Golden Gun by completing Egyptian on any difficulty.", "how": "Complete Egyptian on any difficulty to unlock the Golden Gun — no time limit on this one."}
+      ]
+    },
+    {
+      "id": "multiplayer",
+      "filter_label": "Multiplayer",
+      "title": "Multiplayer",
+      "subtitle": "11 achievements",
+      "achievements": [
+        {"id": "ach-worldtour", "name": "World Tour", "gs": 20, "req": "Play a multiplayer match on every map.", "how": "Play a match on every map — most can be done by starting a match, pausing, and exiting. Egyptian needs Egyptian on 00 Agent in single player first.", "steps": [{"id": "step-map-0", "label": "Complex"}, {"id": "step-map-1", "label": "Temple"}, {"id": "step-map-2", "label": "Caves"}, {"id": "step-map-3", "label": "Library"}, {"id": "step-map-4", "label": "Basement"}, {"id": "step-map-5", "label": "Stack"}, {"id": "step-map-6", "label": "Facility"}, {"id": "step-map-7", "label": "Bunker"}, {"id": "step-map-8", "label": "Archives"}, {"id": "step-map-9", "label": "Caverns"}, {"id": "step-map-10", "label": "Egyptian"}]},
+        {"id": "ach-decimated", "name": "Decimated", "gs": 20, "req": "Play 10 multiplayer matches.", "how": "Play 10 multiplayer matches.", "counters": [{"group": "matches", "target": 10}]},
+        {"id": "ach-qbranch", "name": "Q Branch Specialist", "gs": 20, "req": "Play a multiplayer match using every weapon set.", "how": "Play a match with every weapon set, sticking to one map and swapping the set each time.", "steps": [{"id": "step-weapon-0", "label": "Pistols"}, {"id": "step-weapon-1", "label": "Throwing Knives"}, {"id": "step-weapon-2", "label": "Automatics"}, {"id": "step-weapon-3", "label": "Power Weapons"}, {"id": "step-weapon-4", "label": "Sniper Rifles"}, {"id": "step-weapon-5", "label": "Grenades"}, {"id": "step-weapon-6", "label": "Remote Mines"}, {"id": "step-weapon-7", "label": "Grenade Launchers"}, {"id": "step-weapon-8", "label": "Timed Mines"}, {"id": "step-weapon-9", "label": "Proximity Mines"}, {"id": "step-weapon-10", "label": "Rockets"}, {"id": "step-weapon-11", "label": "Lasers"}, {"id": "step-weapon-12", "label": "Golden Gun"}, {"id": "step-weapon-13", "label": "Slappers Only"}]},
+        {"id": "ach-rules", "name": "Playing By the Rules", "gs": 20, "req": "Play each type of multiplayer scenario at least once.", "how": "Play each scenario at least once — start a match, pause, and exit counts.", "steps": [{"id": "step-scenario-0", "label": "Normal"}, {"id": "step-scenario-1", "label": "You Only Live Twice"}, {"id": "step-scenario-2", "label": "The Living Daylights"}, {"id": "step-scenario-3", "label": "The Man With the Golden Gun"}, {"id": "step-scenario-4", "label": "Team 2v1"}, {"id": "step-scenario-5", "label": "Team 2v2"}, {"id": "step-scenario-6", "label": "Team 3v1"}]},
+        {"id": "ach-multistreak", "name": "Multi-streak", "gs": 20, "req": "Play five back-to-back multiplayer matches.", "how": "Play five multiplayer matches back to back — it pops while working through the scenarios."},
+        {"id": "ach-unheroic", "name": "Unheroic", "gs": 20, "req": "Kill a player while they're unarmed.", "how": "Set up 2 players, Licence to Kill, Complex, Slappers Only, as Oddjob, and slap the unarmed opponent until they die."},
+        {"id": "ach-licence", "name": "Licence to Kill", "gs": 20, "req": "Score 100 kills in multiplayer matches over time.", "how": "Score 100 kills across matches — Licence to Kill (one-shot kills), Basement, Turbo Mode on. A second controller keeps respawns flowing; with one controller, repeat short matches.", "counters": [{"group": "kills", "target": 100}]},
+        {"id": "ach-treehouse", "name": "A Treehouse Classic", "gs": 20, "req": "Play a match: Remote Mines, on Complex.", "how": "Play a match with Remote Mines on Complex."},
+        {"id": "ach-slapstick", "name": "Slapstick Comedy", "gs": 20, "req": "Play a match: Slappers Only, on Complex, Licence to Kill.", "how": "Play a match with Slappers Only on Complex, Licence to Kill."},
+        {"id": "ach-guide", "name": "Should Use a Guide", "gs": 20, "req": "Earn the 'Mostly Harmless' multiplayer award.", "how": "Earn the 'Mostly Harmless' post-match award — it comes naturally while working through the other multiplayer matches."},
+        {"id": "ach-oddjob", "name": "Unusual Work", "gs": 20, "req": "Play as Oddjob in a multiplayer match.", "how": "Play a match as Oddjob — he unlocks by completing Cradle on Agent in single player."}
+      ]
+    }
+  ]
+}

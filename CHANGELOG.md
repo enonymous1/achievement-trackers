@@ -4,6 +4,28 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Game #7: GoldenEye 007
+
+### Added
+
+- GoldenEye 007 — all 55 achievements / 1,000G, the
+  full game in walkthrough order across four
+  sections: 20 story missions (18 story + Aztec and
+  Egyptian bonus missions), 3 difficulty completions,
+  21 cheat time trials (each with its mission,
+  difficulty, and par time), and 11 multiplayer
+  achievements with step checklists for the 11 maps,
+  14 weapon sets, and 7 scenarios, plus counters for
+  the 10 matches and 100 kills. No missables; about
+  15–20 hours across 3 playthroughs plus the
+  split-screen cleanup. Note: TrueAchievements
+  blocked direct fetches while this game was being
+  built, so the achievement list came from its cached
+  pages and Gamerscore values were cross-checked
+  against the Pure Xbox list (linked in the page
+  sources). Library totals now 7 games · 220
+  achievements · 7,250G.
+
 ## 2026-11-04 — Game #6: 1000xRESIST
 
 ### Added
