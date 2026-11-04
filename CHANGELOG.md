@@ -34,6 +34,13 @@ versioned; the git log is the release history.
   total, with the annotated location shot cached at both
   sizes. A test guards the slideshow opening on that shot
   so it can't be dropped again.
+- The slideshow then gained a 6th slide: the van sequence
+  had ended at "work through the dialogue" without the
+  collect-and-shoot-back beat — collecting the TOGETHA
+  phrase, shooting it back at the deputy question instead
+  of nodding, then the snack-break phrase and the
+  automatic exit. The guard test now also checks the last
+  slide carries that beat.
 
 ## 2026-11-04 — Walkthrough shots open in an on-page viewer
 

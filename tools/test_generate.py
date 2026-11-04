@@ -240,7 +240,8 @@ class TestXboxValidation(unittest.TestCase):
             a for s in game["sections"] for a in s["achievements"]
             if a["id"] == "ach-inspekta")
         slides = inspekta["slideshow"]
-        self.assertEqual(len(slides), 5)
+        self.assertEqual(len(slides), 6)
+        self.assertIn("TOGETHA", slides[-1]["caption"])
         self.assertTrue(slides[0]["src"].endswith("lumber-jacqueline-location.jpg"))
         self.assertTrue(slides[1]["src"].endswith("lumber-jacqueline-location.jpg"))
 
