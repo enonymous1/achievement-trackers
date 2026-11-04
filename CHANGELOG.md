@@ -4,6 +4,38 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Privacy Dashboard import (live on every game page)
+
+### Added
+
+- An "Import from a Microsoft export" card on every game page, with
+  step-by-step instructions for getting the file: sign in at
+  account.microsoft.com/privacy, "Download your data" → "Create new
+  archive" with the gaming/activity types ticked, download under
+  "Archives" before it expires, extract the ZIP, and pick its JSON
+  files (or the whole folder) here. Files are read with FileReader
+  in the browser only; nothing is uploaded.
+- Import analysis + mapping, before anything is ticked: the parser
+  walks whatever JSON (or CSV) the user picks and collects
+  achievement-like records — Microsoft documents no filename or
+  field list, so it accepts Xbox-style shapes (`progressState`,
+  `progression.timeUnlocked`, `titleAssociations`) and generic
+  name/date/Gamerscore shapes, and reports files read, records
+  found, and unreadable files. Matches are split into confident
+  (the file attributes the record to this game — exact title or a
+  known edition suffix, so "Minecraft Dungeons II" never counts),
+  possible (no game shown — held back unless the user ticks the
+  box), ambiguous (one name, several tracker cards — never
+  applied), unmatched records for this game (likely later DLC),
+  other-game records (never applied even when a name matches), and
+  tracker achievements not found in the export. Confirm then ticks
+  through the same shared preview/apply path as Xbox sync: newly
+  unlocked achievements and their sub-steps only, never unticks,
+  never touches notes or counters.
+- The Xbox sync preview/apply code is now shared machinery used by
+  both import cards (same plan, preview, and Confirm path); the
+  sync browser test was re-run after the refactor and still passes.
+
 ## 2026-11-04 — Xbox sync support (built, dormant until a game is mapped)
 
 ### Added

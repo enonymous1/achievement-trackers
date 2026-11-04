@@ -13,6 +13,7 @@ from pathlib import Path
 from generate import (
     render_demos,
     render_how,
+    render_privacy_import_card,
     render_sections,
     render_xbox_sync_card,
     sidebar_how_href,
@@ -139,6 +140,15 @@ class TestXboxValidation(unittest.TestCase):
         game["sections"][0]["achievements"][0]["xbox_id"] = "7"
         with self.assertRaises(SystemExit):
             validate_game("test.json", game)
+
+    def test_privacy_import_card_on_every_game(self):
+        card = render_privacy_import_card(make_game())
+        self.assertIn('id="privacy-import"', card)
+        self.assertIn('data-game-title="Test"', card)
+        self.assertIn('id="privacy-files"', card)
+        self.assertIn('account.microsoft.com/privacy', card)
+        template = (Path(__file__).parent / "template.html").read_text()
+        self.assertIn("@@PRIVACY_IMPORT_CARD@@", template)
 
     def test_sync_card_only_for_synced_games(self):
         self.assertEqual(render_xbox_sync_card(make_game()), "")
