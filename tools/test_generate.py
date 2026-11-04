@@ -11,6 +11,7 @@ import unittest
 from pathlib import Path
 
 from generate import (
+    render_achievement,
     render_demos,
     render_game,
     render_how,
@@ -140,6 +141,39 @@ class TestXboxValidation(unittest.TestCase):
         game["sections"][0]["achievements"][0]["xbox_id"] = "7"
         with self.assertRaises(SystemExit):
             validate_game("test.json", game)
+
+    def test_missable_badge_and_media_render(self):
+        base = {"id": "a1", "name": "A", "gs": 10, "req": "R", "how": "H"}
+        plain = render_achievement(dict(base), 1)
+        self.assertNotIn("Missable", plain)
+        self.assertNotIn("ach-media", plain)
+        flagged = render_achievement(dict(base, missable=True), 1)
+        self.assertIn("Missable", flagged)
+        self.assertIn("can be passed without popping", flagged)
+        media = render_achievement(dict(base, media=[
+            {"type": "image", "src": "assets/media/x.png", "alt": "Alt", "caption": "Cap"},
+            {"type": "video", "src": "assets/media/x.mp4"},
+            {"type": "video", "src": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
+        ]), 1)
+        self.assertIn('<img src="../assets/media/x.png" alt="Alt"', media)
+        self.assertIn("<figcaption", media)
+        self.assertIn('<video controls', media)
+        self.assertIn("youtube-nocookie.com/embed/dQw4w9WgXcQ", media)
+
+    def test_bad_missable_and_media_fail_validation(self):
+        game = make_game()
+        game["sections"][0]["achievements"][0]["missable"] = "yes"
+        with self.assertRaises(SystemExit):
+            validate_game("test.json", game)
+        for bad in (
+            {"type": "audio", "src": "assets/media/x.mp3"},
+            {"type": "image", "src": "/tmp/x.png"},
+            {"type": "video", "src": "https://example.com/page"},
+        ):
+            game = make_game()
+            game["sections"][0]["achievements"][0]["media"] = [bad]
+            with self.assertRaises(SystemExit):
+                validate_game("test.json", game)
 
     def test_no_privacy_import_on_game_pages(self):
         # The Microsoft export import was removed (the archive holds

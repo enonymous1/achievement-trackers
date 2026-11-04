@@ -202,6 +202,13 @@ Schema, per game file:
   achievements, and different achievements in one group may have
   different targets (one shared value, several thresholds — e.g.
   mobs defeated feeds both a 50 and a 2,500 target).
+  Optional `missable: true` renders a Missable pill (a choice or
+  one-time window). Optional `media` lists screenshots/clips under
+  the route note: `type` image/video, `src` an `assets/` path
+  (files live under `assets/media/<slug>/`, referenced as
+  `assets/...` in the JSON) or an `https://` URL; a remote video
+  must be a media file or a YouTube URL (embedded
+  privacy-enhanced). Media must be real captures, never mocked.
 - `step_cards`: walkthrough steps that are *not* achievements
   themselves (secret missions, runes) — `title`, `how`, `steps`.
 - Filter buttons: each section may carry its own `filter_label`

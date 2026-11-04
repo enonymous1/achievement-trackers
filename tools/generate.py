@@ -179,6 +179,24 @@ def validate_game(filename, game):
                       and counter.get("group")
                       and _is_positive_int(counter.get("target")),
                       f"{ach['id']}: bad counter {counter!r}")
+            if "missable" in ach:
+                check(isinstance(ach["missable"], bool),
+                      f"{ach['id']}: missable must be true/false, not {ach['missable']!r}")
+            for entry in ach.get("media", []):
+                check(isinstance(entry, dict)
+                      and entry.get("type") in ("image", "video")
+                      and isinstance(entry.get("src"), str) and entry["src"],
+                      f"{ach['id']}: bad media entry {entry!r}")
+                check(entry["src"].startswith("assets/")
+                      or entry["src"].startswith("https://"),
+                      f"{ach['id']}: media src must be an assets/ path or https:// URL, not {entry['src']!r}")
+                for field in ("alt", "caption"):
+                    check(field not in entry or isinstance(entry[field], str),
+                          f"{ach['id']}: media {field} must be a string")
+                if entry["type"] == "video" and entry["src"].startswith("https://"):
+                    check(entry["src"].lower().endswith((".mp4", ".webm", ".ogg"))
+                          or _youtube_id(entry["src"]),
+                          f"{ach['id']}: remote video must be a media file or a YouTube URL, not {entry['src']!r}")
         for card in section.get("step_cards", []):
             check(isinstance(card, dict)
                   and card.get("title") and card.get("how") and card.get("steps"),
@@ -293,6 +311,64 @@ def render_step_bar(ach):
     return _fill(_fragment("step_bar"), {"PARENT": esc(ach["id"])})
 
 
+def _youtube_id(src):
+    """YouTube video id from a watch or youtu.be URL, else None."""
+    from urllib.parse import urlparse, parse_qs
+
+    try:
+        u = urlparse(src)
+    except ValueError:
+        return None
+    if u.netloc in ("www.youtube.com", "youtube.com", "m.youtube.com"):
+        vid = parse_qs(u.query).get("v", [None])[0]
+        return vid or None
+    if u.netloc == "youtu.be":
+        return u.path.strip("/") or None
+    return None
+
+
+def _media_src(src):
+    """Page-relative URL for a media src: repo files live under
+    assets/ (one level up from a game page); remote URLs pass
+    through unchanged."""
+    if src.startswith("assets/"):
+        return "../" + src
+    return src
+
+
+def render_media(ach):
+    """Media block for one achievement card, under the route note.
+
+    Images render as <img> (lazy); clips render as <video> when the
+    src is a media file, or as a privacy-enhanced YouTube embed
+    when it is a YouTube URL. Anything else is rejected by
+    validate_game, so this never has to guess.
+    """
+    parts = []
+    for entry in ach.get("media", []):
+        src = entry["src"]
+        if entry["type"] == "image":
+            alt = esc(entry.get("alt") or ach["name"])
+            fig = f'<img src="{esc(_media_src(src))}" alt="{alt}" loading="lazy" class="img-fluid rounded">'
+            if entry.get("caption"):
+                fig += f'<figcaption class="figure-caption">{esc(entry["caption"])}</figcaption>'
+            parts.append(f'<figure class="ach-media mt-2 mb-0">{fig}</figure>')
+        else:
+            if src.lower().endswith((".mp4", ".webm", ".ogg")):
+                parts.append(
+                    f'<video controls preload="none" class="ach-media w-100 rounded mt-2">'
+                    f'<source src="{esc(_media_src(src))}"></video>'
+                )
+            else:
+                vid = _youtube_id(src)
+                parts.append(
+                    f'<div class="ach-media ratio ratio-16x9 mt-2"><iframe '
+                    f'src="https://www.youtube-nocookie.com/embed/{esc(vid)}" '
+                    f'title="{esc(ach["name"])}" loading="lazy" allowfullscreen></iframe></div>'
+                )
+    return "".join(parts)
+
+
 def render_achievement(ach, number, wrap=True):
     """Render one achievement card.
 
@@ -309,6 +385,12 @@ def render_achievement(ach, number, wrap=True):
     counters = "".join(render_counter(c) for c in ach.get("counters", []))
     counter_bars = "".join(render_counter_bar(c) for c in ach.get("counters", []))
     step_bar = render_step_bar(ach)
+    missable = (
+        '<span class="badge text-bg-danger-subtle text-danger-emphasis '
+        'border border-danger-subtle ms-2" '
+        'title="Missable: can be passed without popping">Missable</span>'
+        if ach.get("missable") else ""
+    )
     article = _fill(_fragment("achievement"), {
         "ID": esc(ach["id"]),
         "GS": str(ach["gs"]),
@@ -316,6 +398,8 @@ def render_achievement(ach, number, wrap=True):
         "NAME": esc(ach["name"]),
         "REQ": esc(ach["req"]),
         "HOW": esc(ach["how"]),
+        "MISSABLE": missable,
+        "MEDIA": render_media(ach),
         "STEPS": render_steps(ach.get("steps", []), parent_id=ach["id"]),
         "COUNTERS": counters,
         "COUNTER_BARS": counter_bars,

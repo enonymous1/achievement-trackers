@@ -4,6 +4,23 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Missable pills and card media
+
+### Added
+
+- `missable: true` on an achievement renders a red Missable pill
+  in the header (a choice or one-time window); the How page
+  explains it. Great God Grove flags its two deputy answers, the
+  only missables the walkthrough identifies (the cloud-save trick
+  covers both in one run); Dungeons flags none.
+- `media` on an achievement renders screenshots/clips under the
+  route note: images as lazy `<img>`, clips as `<video>` for media
+  files or a privacy-enhanced YouTube embed for YouTube URLs.
+  Sources are `assets/` paths (files under `assets/media/<slug>/`)
+  or `https://` URLs, enforced by the generator. No media ships
+  yet — captures must be real, never mocked, so cards gain media
+  as genuine screenshots/clips are added.
+
 ## 2026-11-04 — Microsoft export import removed, explained on How page
 
 ### Removed
