@@ -212,8 +212,8 @@ Schema, per game file:
   the image; guide images carry their source as credit, and a
   failed load swaps in a placeholder explaining why instead of a
   broken-image icon. `full` (optional) is a larger version the
-  image links to, opening in a new tab. Media must be real
-  captures, never mocked.
+  image opens in an on-page viewer (a new tab if scripts are
+  off). Media must be real captures, never mocked.
 - `step_cards`: walkthrough steps that are *not* achievements
   themselves (secret missions, runes) — `title`, `how`, `steps`.
 - Filter buttons: each section may carry its own `filter_label`

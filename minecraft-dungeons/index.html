@@ -253,6 +253,13 @@
 <script src="../assets/vendor/adminlte.min.js"></script>
 <script src="../assets/js/theme-toggle.js"></script>
 <script src="../assets/js/sidebar-state.js"></script>
+<dialog id="media-modal" aria-label="Image viewer">
+  <div class="media-modal-inner">
+    <button type="button" class="media-modal-close" aria-label="Close image viewer">×</button>
+    <img id="media-modal-img" alt="">
+    <p id="media-modal-caption" class="media-modal-caption"></p>
+  </div>
+</dialog>
 <script>
 /* Tracker progress. The hub never writes progress, only reads it;
    this script is the single writer for a game page. */
@@ -746,6 +753,35 @@
     if(img.complete && img.naturalWidth === 0) swap();
     else img.addEventListener('error', swap);
   });
+  /* Walkthrough shots open their full-size version in an
+     on-page viewer instead of a new tab. The link's href is
+     kept, so without scripts (or on a browser too old for
+     <dialog>) the click still opens the image in a new tab,
+     per target=_blank. Escape and tapping outside close it;
+     the close event clears the image so it stops loading. */
+  var modal = document.getElementById('media-modal');
+  var modalImg = document.getElementById('media-modal-img');
+  var modalCap = document.getElementById('media-modal-caption');
+  if(modal){
+    modal.addEventListener('close', function(){ modalImg.removeAttribute('src'); });
+    modal.addEventListener('click', function(e){ if(e.target === modal) modal.close(); });
+    var modalClose = modal.querySelector('.media-modal-close');
+    if(modalClose) modalClose.addEventListener('click', function(){ modal.close(); });
+    document.querySelectorAll('.ach-media a').forEach(function(a){
+      a.addEventListener('click', function(e){
+        if(!modal.showModal) return;
+        e.preventDefault();
+        var img = a.querySelector('img');
+        var fig = a.closest('figure');
+        var cap = fig ? fig.querySelector('figcaption') : null;
+        modalImg.src = a.getAttribute('href');
+        modalImg.alt = img ? img.alt : '';
+        modalCap.textContent = cap ? cap.textContent : '';
+        modalCap.style.display = cap ? '' : 'none';
+        modal.showModal();
+      });
+    });
+  }
   load(); updateProgress(); applyFilters();
 })();
 </script>

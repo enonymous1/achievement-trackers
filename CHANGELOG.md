@@ -4,6 +4,19 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Walkthrough shots open in an on-page viewer
+
+### Changed
+
+- Tapping a walkthrough shot now opens its full-size version
+  in a modal viewer on the same page (native `<dialog>`,
+  captioned, closable by the close button, Escape, or tapping
+  outside) instead of a new tab. The link itself is kept, so
+  without scripts the shot still opens in a new tab. A test
+  guards the dialog sitting before the page script that wires
+  it up — the first placement put it after the script, where
+  the wiring would have found nothing.
+
 ## 2026-11-04 — Icons removed, walkthrough shots open full-size
 
 ### Removed

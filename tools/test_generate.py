@@ -172,6 +172,10 @@ class TestXboxValidation(unittest.TestCase):
         template = (Path(__file__).parent / "template.html").read_text()
         self.assertIn("ach-media-fallback", template)
         self.assertIn("Guide image unavailable", template)
+        # The viewer dialog must sit before the page script that
+        # wires it up, or getElementById finds nothing.
+        self.assertLess(template.index('<dialog id="media-modal"'),
+                        template.index("modal.showModal"))
 
     def test_bad_missable_and_media_fail_validation(self):
         game = make_game()

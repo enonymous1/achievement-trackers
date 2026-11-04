@@ -162,3 +162,11 @@ button.task[aria-pressed="true"] .task-state::after {
 
 /* Placeholder swapped in for a guide image that fails to load. */
 .ach-media-fallback{border:1px dashed var(--bs-border-color);border-radius:.375rem;padding:.75rem;color:var(--bs-secondary-color);font-size:.875rem}
+
+/* On-page image viewer for walkthrough shots. */
+#media-modal{border:0;padding:0;background:transparent;max-width:95vw;max-height:95vh}
+#media-modal::backdrop{background:rgba(0,0,0,.85)}
+.media-modal-inner{position:relative}
+#media-modal-img{display:block;max-width:95vw;max-height:85vh;width:auto;height:auto;margin:0 auto;border-radius:.375rem}
+.media-modal-close{position:absolute;top:.5rem;right:.5rem;width:44px;height:44px;border:0;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:1.5rem;line-height:1;cursor:pointer}
+.media-modal-caption{color:#fff;text-align:center;margin:.5rem 0 0}
