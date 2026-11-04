@@ -174,6 +174,7 @@ achievement-trackers/
   how-it-works/index.html     # How it works page (generated)
   assets/vendor/              # AdminLTE shell, vendored — no CDN
   assets/css/sidebar.css      # shared left-sidebar layout
+  assets/css/tracker-cards.css # shared card language (game + How demos)
   assets/js/theme-toggle.js   # shared theme toggle (see below)
   assets/js/sidebar-state.js  # sidebar collapsed/open persistence
   assets/favicon.svg          # trophy favicon
@@ -233,7 +234,12 @@ to show per-game progress. Card markup lives in HTML fragments under
 repo URL live in `tools/config.py`, and the tracker JS is inline in
 each generated page while the theme toggle and sidebar-state
 persistence are shared files (`assets/js/theme-toggle.js`,
-`assets/js/sidebar-state.js`) loaded by all three templates.
+`assets/js/sidebar-state.js`) loaded by all three templates. The
+card styling itself is shared too (`assets/css/tracker-cards.css`),
+so the How page's live demo cards — real cards rendered from the
+Dungeons data through the same fragments, with demo-prefixed ids
+and a sandboxed demo script that never touches localStorage — look
+exactly like the real ones.
 
 ## Deployment
 

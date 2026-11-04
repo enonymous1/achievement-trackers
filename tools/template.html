@@ -26,42 +26,12 @@
 <link rel="stylesheet" href="@@ASSET_PREFIX@@vendor/bootstrap-icons.min.css">
 <link rel="stylesheet" href="@@ASSET_PREFIX@@vendor/adminlte.min.css">
 <link rel="stylesheet" href="@@ASSET_PREFIX@@css/sidebar.css">
+<link rel="stylesheet" href="@@ASSET_PREFIX@@css/tracker-cards.css">
 <style>
-  /* Tracker specifics on top of AdminLTE: the v2 card language —
-     moss green + gold on a contained column — kept inside the
-     AdminLTE shell (navbar, theme toggle, cards) rather than
-     reverting to the standalone page. */
-  :root{--at-green:#2e7d32;--at-gold:#8a6d00;--at-header-bg:rgba(46,125,50,.10);--at-header-bg-pressed:rgba(46,125,50,.20);--at-header-border:rgba(46,125,50,.35)}
-  [data-bs-theme="dark"]{--at-green:#7bc950;--at-gold:#e8b93c;--at-header-bg:rgba(123,201,80,.13);--at-header-bg-pressed:rgba(123,201,80,.22);--at-header-border:rgba(123,201,80,.35)}
+  /* Page rules only: the card language itself lives in
+     assets/css/tracker-cards.css, shared with the How page demos. */
   /* v2's contained column, not AdminLTE's full-width fluid layout. */
   .app-main .container-fluid{max-width:1100px;margin-left:auto;margin-right:auto}
-  /* Cards are grid columns: kill the card's own bottom margin so the
-     row gutter is the only vertical spacing, and unify the header
-     with the body (v2 had no divider strip inside a card). */
-  /* overflow:hidden clips the tinted header to the card's rounded
-     corners, instead of its square corners poking out at the top. */
-  .ach{margin-bottom:0;border-radius:12px;overflow:hidden}
-  /* Colorized headers: a green-tinted header with a green rule stands
-     out against the plain card body, instead of blending into it as
-     the old transparent header did. Pressed cards get a stronger tint. */
-  .ach .card-header{background:var(--at-header-bg);border-bottom:1px solid var(--at-header-border);padding-bottom:0}
-  .ach .card-body{padding-top:.5rem}
-  .ach:has(button.task[aria-pressed="true"]){border-color:var(--at-green)}
-  .ach:has(button.task[aria-pressed="true"]) .card-header{background:var(--at-header-bg-pressed)}
-  /* The whole achievement header is the toggle: a button, not a small
-     checkbox. The state box is only an indicator — the clickable area
-     is the full header (name + Gamerscore), and the button's text
-     content ("#1 Happy Camper 10G") is its accessible name. */
-  .ach-head{padding:0}
-  /* Header elements are vertically centered with each other: state
-     box, number, title and Gamerscore pill share one middle line,
-     instead of all sitting on the top edge. */
-  .ach-head button.task{display:flex;gap:.5rem;align-items:center;width:100%;text-align:left;background:transparent;border:0;padding:.75rem 1rem .75rem;color:inherit;cursor:pointer}
-  .ach-head button.task:focus-visible{outline:2px solid var(--at-green);outline-offset:2px;border-radius:6px}
-  .task-state{width:20px;height:20px;flex:none;border:1px solid var(--bs-border-color);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;line-height:1}
-  button.task[aria-pressed="true"] .task-state{background:var(--at-green);border-color:var(--at-green);color:#12140f}
-  button.task[aria-pressed="true"] .task-state::after{content:"✓"}
-  .ach-name{font-size:1.05rem;line-height:1.3;font-weight:600;flex:1 1 auto}
   /* Only the progress bar card is pinned: the slim card holding the
      Gamerscore title, counts and bar sticks to the top of the
      viewport while scrolling (the top header scrolls away in this
@@ -76,24 +46,6 @@
      the card sticks to the viewport scroll, as it did in the
      top-nav layout. */
   .sidebar-expand-lg.layout-fixed .app-main{overflow:visible}
-  /* Gold outline pill, as in v2 — not Bootstrap's solid warning badge. */
-  .ach .gs{background:transparent !important;color:var(--at-gold) !important;border:1px solid var(--at-gold);border-radius:99px;padding:2px 10px;font-weight:700;white-space:nowrap}
-  .steps{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-  .steps label{display:flex;gap:6px;align-items:center;background:var(--bs-body-bg);border:1px solid var(--bs-border-color);border-radius:99px;padding:5px 10px;font-size:.88rem;cursor:pointer}
-  .steps label:has(input:checked){border-color:var(--at-green)}
-  .steps input{accent-color:var(--at-green)}
-  .counter input[type=number]{width:110px}
-  /* Stepper buttons replace the tiny native number spinner, which is
-     hard to tap and duplicates the new -/+ buttons. */
-  .counter input[type=number]{-moz-appearance:textfield;appearance:textfield}
-  .counter input[type=number]::-webkit-outer-spin-button,.counter input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-  .counter-btn{min-width:38px;font-weight:700}
-  /* Step cards (secrets & runes) are short signposts, not lists to
-     scan: their header title and description text are centered.
-     The step pills themselves stay left-aligned so the checklist
-     still reads normally. */
-  .step-card .card-header h3{text-align:center}
-  .step-card .how{text-align:center}
   /* Sections read as a group again (v2's card background), not as a
      bare bordered box on the page background. */
   details{background:var(--bs-card-bg);border:1px solid var(--bs-border-color);border-radius:12px;margin-bottom:1rem;overflow:hidden}

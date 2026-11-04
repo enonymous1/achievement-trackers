@@ -28,6 +28,7 @@ exists to catch exactly that drift in CI).
 """
 
 import argparse
+import copy
 import html
 import json
 import re
@@ -273,7 +274,7 @@ def render_step_bar(ach):
     return _fill(_fragment("step_bar"), {"PARENT": esc(ach["id"])})
 
 
-def render_achievement(ach, number):
+def render_achievement(ach, number, wrap=True):
     """Render one achievement card.
 
     ``number`` is the running 1-based position in typical unlock order
@@ -281,13 +282,15 @@ def render_achievement(ach, number):
     carry ``data-parent`` so the tracker JS can auto-tick the
     achievement when every step is ticked; counters are rendered once
     per achievement that uses them, and the JS syncs all inputs that
-    share a ``data-counter`` group to one value.
+    share a ``data-counter`` group to one value. The fragment itself
+    is just the article; the grid-column wrapper lives here, and
+    ``wrap=False`` returns the bare article for the How page demos,
+    which supply their own caption + column wrapper.
     """
     counters = "".join(render_counter(c) for c in ach.get("counters", []))
     counter_bars = "".join(render_counter_bar(c) for c in ach.get("counters", []))
     step_bar = render_step_bar(ach)
-    return _fill(_fragment("achievement"), {
-        "DATA_NAME": esc(f"{ach['name']} {ach['req']} {ach['how']}"),
+    article = _fill(_fragment("achievement"), {
         "ID": esc(ach["id"]),
         "GS": str(ach["gs"]),
         "NUMBER": str(number),
@@ -299,16 +302,29 @@ def render_achievement(ach, number):
         "COUNTER_BARS": counter_bars,
         "STEP_BAR": step_bar,
     })
+    if not wrap:
+        return article
+    data_name = esc(f"{ach['name']} {ach['req']} {ach['how']}")
+    return (f'<div class="item col-12 col-md-6 col-xl-4" '
+            f'data-name="{data_name}">{article}</div>')
 
 
-def render_step_card(card):
-    """Render a walkthrough step card (not an achievement itself)."""
-    return _fill(_fragment("step_card"), {
-        "DATA_NAME": esc(f"{card['title']} {card['how']}"),
+def render_step_card(card, wrap=True):
+    """Render a walkthrough step card (not an achievement itself).
+
+    ``wrap`` works as in render_achievement: the tracker grid gets
+    the column wrapper, the How page demos get the bare article.
+    """
+    article = _fill(_fragment("step_card"), {
         "TITLE": esc(card["title"]),
         "HOW": esc(card["how"]),
         "STEPS": render_steps(card["steps"]),
     })
+    if not wrap:
+        return article
+    data_name = esc(f"{card['title']} {card['how']}")
+    return (f'<div class="item col-12 col-md-6 col-xl-4" '
+            f'data-name="{data_name}">{article}</div>')
 
 
 def render_sections(game):
@@ -492,6 +508,104 @@ def render_hub(games):
     return _fill(template, replacements)
 
 
+def _demo_copy_achievement(ach):
+    """Deep copy of an achievement with demo-prefixed ids, so demo
+    cards on the How page can never collide with real tracker ids
+    or be mistaken for saved progress."""
+    demo = copy.deepcopy(ach)
+    demo["id"] = f"demo-{ach['id']}"
+    for step in demo.get("steps", []):
+        step["id"] = f"demo-{step['id']}"
+    return demo
+
+
+def _demo_copy_step_card(card):
+    demo = copy.deepcopy(card)
+    for step in demo.get("steps", []):
+        step["id"] = f"demo-{step['id']}"
+    return demo
+
+
+def _find_achievement(game, ach_id):
+    number = 0
+    for section in game["sections"]:
+        for ach in section.get("achievements", []):
+            number += 1
+            if ach["id"] == ach_id:
+                return ach, number
+    return None, None
+
+
+def render_demos(all_games):
+    """Live demo cards for the How page, rendered from the real
+    Minecraft Dungeons data through the same fragments as the
+    tracker itself. Failing loudly if that game (or a demo card)
+    is gone keeps the How page from shipping empty demo slots."""
+    dungeons = next(
+        (g for g in all_games if g["slug"] == "minecraft-dungeons"), None
+    )
+    if dungeons is None:
+        fail("How page demos need the minecraft-dungeons game")
+
+    demos = []
+
+    def demo_ach(ach_id, caption):
+        ach, number = _find_achievement(dungeons, ach_id)
+        if ach is None:
+            fail(f"How page demo achievement missing: {ach_id}")
+        article = render_achievement(
+            _demo_copy_achievement(ach), number, wrap=False
+        )
+        demos.append(
+            f'<div class="col-12 col-md-6 col-xl-4">'
+            f'<p class="small text-secondary">{caption}</p>{article}</div>'
+        )
+
+    def demo_card(title, caption):
+        card = next(
+            (
+                c
+                for s in dungeons["sections"]
+                for c in s.get("step_cards", [])
+                if c["title"] == title
+            ),
+            None,
+        )
+        if card is None:
+            fail(f"How page demo step card missing: {title}")
+        article = render_step_card(_demo_copy_step_card(card), wrap=False)
+        demos.append(
+            f'<div class="col-12 col-md-6 col-xl-4">'
+            f'<p class="small text-secondary">{caption}</p>{article}</div>'
+        )
+
+    demo_ach(
+        "ach-happy",
+        "<strong>Simple achievement.</strong> Click the header to "
+        "tick it. Every achievement at its simplest: name, "
+        "Gamerscore, requirement, route.",
+    )
+    demo_ach(
+        "ach-highdry",
+        "<strong>Multi-step achievement.</strong> Tick the steps "
+        "and watch the bar under the header fill. Ticking all "
+        "three ticks the achievement itself.",
+    )
+    demo_ach(
+        "ach-wooden",
+        "<strong>Counter achievement.</strong> Tap −/+ or type a "
+        "number. The bar under the header shows progress toward "
+        "50; on the real page this counter is shared with Diamond Sword.",
+    )
+    demo_card(
+        "Creepy Crypt — secret mission",
+        "<strong>Step card, not an achievement.</strong> No "
+        "Gamerscore, no header toggle. These are walkthrough "
+        "steps, like the secret missions and runes.",
+    )
+    return "\n".join(demos)
+
+
 def render_how(all_games):
     """Render the standalone How it works page (no game data)."""
     template = (TOOLS_DIR / "how_template.html").read_text(encoding="utf-8")
@@ -501,6 +615,7 @@ def render_how(all_games):
         "SIDEBAR_PREFIX": "../",
         "HOW_HREF": sidebar_how_href("../", "how"),
         "HOW_ACTIVE": " active",
+        "DEMO_CARDS": render_demos(all_games),
         "REPO_URL": REPO_URL,
     }
     for key in replacements:

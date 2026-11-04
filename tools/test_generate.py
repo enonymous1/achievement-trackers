@@ -9,7 +9,14 @@ dependencies, and this file must not become the first one.
 
 import unittest
 
-from generate import render_sections, sidebar_how_href, sidebar_menu, validate_game
+from generate import (
+    render_demos,
+    render_how,
+    render_sections,
+    sidebar_how_href,
+    sidebar_menu,
+    validate_game,
+)
 
 
 def make_game(**overrides):
@@ -156,6 +163,42 @@ class TestRender(unittest.TestCase):
             {"id": "s1", "label": "Only"}
         ]
         self.assertNotIn("step-bar", render_sections(game2))
+
+    def test_how_page_demos(self):
+        # Demos are rendered from the real Dungeons data, with
+        # demo-prefixed ids, and a missing source game fails loudly
+        # instead of shipping empty demo slots.
+        game = make_game(slug="minecraft-dungeons")
+        ach = game["sections"][0]["achievements"][0]
+        ach["id"] = "ach-happy"
+        game["sections"][0]["achievements"].append({
+            "id": "ach-highdry", "name": "High", "gs": 80,
+            "req": "R", "how": "H",
+            "steps": [{"id": "s1", "label": "One"},
+                      {"id": "s2", "label": "Two"},
+                      {"id": "s3", "label": "Three"}],
+        })
+        game["sections"][0]["achievements"].append({
+            "id": "ach-wooden", "name": "Wood", "gs": 10,
+            "req": "R", "how": "H",
+            "counters": [{"group": "mobs", "target": 50}],
+        })
+        game["sections"].append({
+            "id": "secrets", "title": "Secrets", "filter_label": "Secrets",
+            "step_cards": [{"title": "Creepy Crypt — secret mission",
+                           "how": "How",
+                           "steps": [{"id": "sc1", "label": "Go"}]}],
+        })
+        html = render_demos([game])
+        self.assertIn('id="demo-ach-happy"', html)
+        self.assertIn('data-step-parent="demo-ach-highdry"', html)
+        self.assertIn('data-counter="mobs"', html)
+        self.assertIn("Creepy Crypt", html)
+        self.assertNotIn('id="ach-happy"', html)
+        with self.assertRaises(SystemExit):
+            render_demos([make_game()])
+        with self.assertRaises(SystemExit):
+            render_how([make_game()])
 
     def test_achievement_header_is_a_toggle_button(self):
         # The whole header toggles via aria-pressed; there is no

@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="../assets/vendor/bootstrap-icons.min.css">
 <link rel="stylesheet" href="../assets/vendor/adminlte.min.css">
 <link rel="stylesheet" href="../assets/css/sidebar.css">
+<link rel="stylesheet" href="../assets/css/tracker-cards.css">
 <style>
   /* Same contained column as the hub and game pages. */
   .app-main .container-fluid{max-width:1100px;margin-left:auto;margin-right:auto}
@@ -93,6 +94,19 @@
         </div>
 
         <div class="card mb-3">
+          <div class="card-header"><h3 class="card-title">The cards, up close</h3></div>
+          <div class="card-body">
+            <p class="mb-3">These are live copies of real cards, not pictures. Try them: click a header, tick steps, tap −/+. They are sandboxed — they save nothing, they cannot change your real progress, and reloading this page resets them.</p>
+            <div class="row g-3" id="card-demos">
+<div class="col-12 col-md-6 col-xl-4"><p class="small text-secondary"><strong>Simple achievement.</strong> Click the header to tick it. Every achievement at its simplest: name, Gamerscore, requirement, route.</p><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="demo-ach-happy" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#1</span><span class="ach-name">Happy Camper</span><span class="gs badge text-bg-warning ms-auto">10G</span></button></div><div class="card-body"><p class="req text-secondary">Complete Squid Coast and set up camp.</p><p class="how">Finish the tutorial mission. Camp unlocks after it — this is the first achievement most players pop.</p></div></article></div>
+<div class="col-12 col-md-6 col-xl-4"><p class="small text-secondary"><strong>Multi-step achievement.</strong> Tick the steps and watch the bar under the header fill. Ticking all three ticks the achievement itself.</p><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="demo-ach-highdry" data-gs="80" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#10</span><span class="ach-name">High and Dry</span><span class="gs badge text-bg-warning ms-auto">80G</span></button></div><div class="progress step-bar mx-3 mt-2" style="height:10px" data-step-parent="demo-ach-highdry"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Complete Desert Temple, Fiery Forge and Highblock Halls.</p><p class="how">Pops at Highblock Halls. Desert boss: The Nameless One, use columns for cover. Fiery boss: Redstone Monstrosity, lure it into a core-explosion channel. Highblock: do not run past the final Arch-Illager raid — the exit only opens after it is cleared.</p><div class="steps"><label><input type="checkbox" class="step" id="demo-step-highdry-desert" data-parent="demo-ach-highdry"> Desert Temple</label><label><input type="checkbox" class="step" id="demo-step-highdry-fiery" data-parent="demo-ach-highdry"> Fiery Forge</label><label><input type="checkbox" class="step" id="demo-step-highdry-highblock" data-parent="demo-ach-highdry"> Highblock Halls</label></div></div></article></div>
+<div class="col-12 col-md-6 col-xl-4"><p class="small text-secondary"><strong>Counter achievement.</strong> Tap −/+ or type a number. The bar under the header shows progress toward 50; on the real page this counter is shared with Diamond Sword.</p><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="demo-ach-wooden" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#3</span><span class="ach-name">Wooden Sword</span><span class="gs badge text-bg-warning ms-auto">10G</span></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="mobs" data-target="50"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Defeat 50 mobs.</p><p class="how">Comes naturally in the first couple of missions. This counter is shared with Diamond Sword below — update it once and both track.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease mobs counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="mobs" data-target="50" min="0" value="0" aria-label="mobs counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase mobs counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="col-12 col-md-6 col-xl-4"><p class="small text-secondary"><strong>Step card, not an achievement.</strong> No Gamerscore, no header toggle. These are walkthrough steps, like the secret missions and runes.</p><article class="ach step-card card h-100"><div class="card-header"><h3 class="fs-6 mb-0">Creepy Crypt — secret mission</h3></div><div class="card-body"><p class="how">In Creeper Woods after rescuing the first villager: west path, stone structure, glowing red block / button, scroll on the plinth inside. Best emerald/chest farm in the guide.</p><div class="steps"><label><input type="checkbox" class="step" id="demo-step-secret-creepy-unlocked"> Unlocked</label><label><input type="checkbox" class="step" id="demo-step-secret-creepy-done"> Completed</label></div></div></article></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-3">
           <div class="card-header"><h3 class="card-title">Using a tracker</h3></div>
           <div class="card-body">
             <p class="mb-1"><strong>Tick an achievement</strong> by clicking its whole header — number, name and Gamerscore pill included. The header's state box fills green when it is done.</p>
@@ -130,5 +144,70 @@
 <script src="../assets/vendor/adminlte.min.js"></script>
 <script src="../assets/js/theme-toggle.js"></script>
 <script src="../assets/js/sidebar-state.js"></script>
+<script>
+/* Demo cards: sandboxed copies of real tracker cards. They toggle,
+   tick and count exactly like the real ones, but this script never
+   touches localStorage, so trying them cannot change your saved
+   progress. Reloading the page resets them. Scoped to #card-demos
+   so it cannot interfere with the sidebar or theme toggle. */
+(function(){
+  var root=document.getElementById('card-demos');
+  if(!root) return;
+  function updateCounter(input){
+    var wrap=input.closest('.counter');
+    var card=input.closest('.ach');
+    var val=parseInt(input.value,10)||0;
+    var target=parseInt(input.getAttribute('data-target'),10)||0;
+    var pct=target?Math.min(100,Math.round(val/target*100)):0;
+    var txt=wrap?wrap.querySelector('.count-text'):null;
+    if(txt) txt.textContent=' '+val.toLocaleString('en-US')+' / '+target.toLocaleString('en-US')+' ('+pct+'%)';
+    var barEl=card?card.querySelector('.counter-bar'):null;
+    var bar=barEl?barEl.querySelector('.progress-bar'):null;
+    if(bar) bar.style.width=pct+'%';
+  }
+  function updateStepBars(){
+    root.querySelectorAll('.step-bar').forEach(function(barEl){
+      var parent=barEl.getAttribute('data-step-parent');
+      var sibs=[].slice.call(root.querySelectorAll('.step[data-parent="'+parent+'"]'));
+      var done=sibs.filter(function(s){return s.checked;}).length;
+      var pct=sibs.length?Math.round(done/sibs.length*100):0;
+      var bar=barEl.querySelector('.progress-bar');
+      if(bar) bar.style.width=pct+'%';
+    });
+  }
+  root.querySelectorAll('button.task').forEach(function(t){
+    t.addEventListener('click',function(){
+      t.setAttribute('aria-pressed', t.getAttribute('aria-pressed')==='true' ? 'false' : 'true');
+    });
+  });
+  root.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.classList.contains('step')&&t.getAttribute('data-parent')){
+      var parent=document.getElementById(t.getAttribute('data-parent'));
+      if(parent){
+        var sibs=[].slice.call(root.querySelectorAll('.step[data-parent="'+t.getAttribute('data-parent')+'"]'));
+        if(sibs.length&&sibs.every(function(s){return s.checked;})) parent.setAttribute('aria-pressed','true');
+      }
+      updateStepBars();
+    }
+  });
+  root.addEventListener('click',function(e){
+    var btn=e.target.closest ? e.target.closest('.counter-btn') : null;
+    if(!btn) return;
+    var wrap=btn.closest('.counter');
+    var input=wrap?wrap.querySelector('input.count'):null;
+    if(!input) return;
+    var val=parseInt(input.value,10)||0;
+    val=Math.max(0, val + (parseInt(btn.getAttribute('data-step'),10)||0));
+    input.value=val;
+    updateCounter(input);
+  });
+  root.addEventListener('input',function(e){
+    if(e.target.classList.contains('count')) updateCounter(e.target);
+  });
+  root.querySelectorAll('input.count').forEach(updateCounter);
+  updateStepBars();
+})();
+</script>
 </body>
 </html>

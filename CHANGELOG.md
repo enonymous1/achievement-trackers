@@ -4,6 +4,34 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Live demo cards on the How page
+
+### Added
+
+- The How page now has a "The cards, up close" section with four
+  live demo cards, rendered from the real Minecraft Dungeons data
+  through the same fragments as the tracker: a simple achievement
+  (Happy Camper), a multi-step achievement (High and Dry), a
+  counter achievement (Wooden Sword), and a step card (Creepy
+  Crypt), each with a caption saying what to try. They toggle,
+  tick and count exactly like the real cards, but the demo script
+  is sandboxed — it never touches localStorage, so trying them
+  cannot change saved progress, and reloading resets them.
+
+### Changed
+
+- The tracker card styling moved out of the game template into
+  `assets/css/tracker-cards.css`, loaded by both the game pages
+  and the How page, so the demos cannot drift from the real
+  cards. Card fragments are now bare articles; the grid-column
+  wrapper is added by the generator, which lets the demos supply
+  their own caption + column wrapper. Game pages look identical;
+  their HTML is simply smaller because the card CSS now loads as
+  a file instead of sitting inline.
+- `check_js.py` no longer special-cases the How page: it now has
+  its own inline script (the demo handler), so a template edit
+  that deleted it would fail the check like any other page.
+
 ## 2026-11-03 — Centered step cards, step progress bars
 
 ### Changed
