@@ -4,6 +4,23 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Icons removed, walkthrough shots open full-size
+
+### Removed
+
+- The 42 achievement icons from Grove cards (entries and the
+  `assets/media/great-god-grove/icons/` files). They identified
+  the cards but did not help with the guide; the walkthrough
+  screenshots are the images that matter.
+
+### Added
+
+- Media entries gain an optional `full` field: the displayed
+  image links to a larger version, opening in a new tab. All
+  15 Grove walkthrough shots now link to their 1920×1080
+  originals under `assets/media/great-god-grove/walkthrough/full/`
+  (3MB total), so tapping a shot shows the full scene.
+
 ## 2026-11-04 — Inline walkthrough screenshots on Grove cards
 
 ### Added

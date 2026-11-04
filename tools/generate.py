@@ -190,6 +190,10 @@ def validate_game(filename, game):
                 check(entry["src"].startswith("assets/")
                       or entry["src"].startswith("https://"),
                       f"{ach['id']}: bad media src {entry['src']!r}")
+                if entry.get("full"):
+                    check(entry["full"].startswith("assets/")
+                          or entry["full"].startswith("https://"),
+                          f"{ach['id']}: bad media full {entry['full']!r}")
                 for field in ("alt", "caption", "credit"):
                     check(field not in entry or isinstance(entry[field], str),
                           f"{ach['id']}: media {field} must be a string")
@@ -349,8 +353,12 @@ def render_media(ach):
         src = entry["src"]
         if entry["type"] == "image":
             alt = esc(entry.get("alt") or ach["name"])
-            fig = (f'<img src="{esc(_media_src(src))}" alt="{alt}"'
+            img = (f'<img src="{esc(_media_src(src))}" alt="{alt}"'
                    f' loading="lazy" class="img-fluid rounded">')
+            if entry.get("full"):
+                img = (f'<a href="{esc(_media_src(entry["full"]))}" target="_blank" '
+                       f'rel="noopener" title="Open larger version">{img}</a>')
+            fig = img
             cap = []
             if entry.get("caption"):
                 cap.append(esc(entry["caption"]))

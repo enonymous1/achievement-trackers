@@ -161,6 +161,12 @@ class TestXboxValidation(unittest.TestCase):
         self.assertIn("<figcaption", media)
         self.assertIn("Image: Guide", media)
         self.assertIn('<img src="https://example.com/i.jpg"', media)
+        linked = render_achievement(dict(base, media=[
+            {"type": "image", "src": "assets/media/x.png",
+             "full": "assets/media/x-full.png"},
+        ]), 1)
+        self.assertIn('<a href="../assets/media/x-full.png" target="_blank"', linked)
+        self.assertIn('title="Open larger version"', linked)
         self.assertIn('<video controls', media)
         self.assertIn("youtube-nocookie.com/embed/dQw4w9WgXcQ", media)
         template = (Path(__file__).parent / "template.html").read_text()
@@ -176,6 +182,7 @@ class TestXboxValidation(unittest.TestCase):
             {"type": "audio", "src": "assets/media/x.mp3"},
             {"type": "image", "src": "/tmp/x.png"},
             {"type": "image", "src": "assets/media/x.png", "credit": 5},
+            {"type": "image", "src": "assets/media/x.png", "full": "/tmp/x.png"},
             {"type": "video", "src": "https://example.com/page"},
         ):
             game = make_game()

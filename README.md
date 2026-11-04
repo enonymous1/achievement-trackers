@@ -211,7 +211,9 @@ Schema, per game file:
   privacy-enhanced). `credit` renders an "Image: …" line under
   the image; guide images carry their source as credit, and a
   failed load swaps in a placeholder explaining why instead of a
-  broken-image icon. Media must be real captures, never mocked.
+  broken-image icon. `full` (optional) is a larger version the
+  image links to, opening in a new tab. Media must be real
+  captures, never mocked.
 - `step_cards`: walkthrough steps that are *not* achievements
   themselves (secret missions, runes) — `title`, `how`, `steps`.
 - Filter buttons: each section may carry its own `filter_label`
