@@ -4,6 +4,36 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Xbox sync support (built, dormant until a game is mapped)
+
+### Added
+
+- A per-game "Sync from Xbox" card and script, rendered only for
+  games whose JSON carries `xbox_title_id` and an `xbox_id` per
+  achievement. The user pastes their own OpenXBL key (browser only,
+  under a separate `at-xbox` key that Export never writes); sync
+  fetches via OpenXBL, shows a preview, and applies only on Confirm.
+  It ticks newly unlocked achievements and their sub-steps, and
+  never unticks, never touches notes or counters. A paste-JSON
+  fallback covers browsers where the direct fetch is blocked.
+- `tools/map_xbox.py`: fills `xbox_title_id` + all `xbox_id`
+  values in a game JSON from a saved OpenXBL per-title response,
+  matched by name at build time (exact, then punctuation-insensitive,
+  Gamerscore as tiebreak), refusing to write on any unmatched or
+  ambiguous achievement. The runtime sync still matches by Xbox id
+  only. The generator now rejects partial or duplicate Xbox
+  mappings, and the sync card's config travels as data attributes
+  (a JSON `<script>` block would fail `check_js.py`).
+
+### Not yet live
+
+- No game JSON carries a mapping yet, so no page shows the sync
+  card today. Activation for Dungeons is: fetch the OpenXBL
+  per-title response with your own key, run
+  `python3 tools/map_xbox.py --title-id <id> response.json`,
+  review the diff, regenerate, and commit. The title id and the 34
+  Xbox ids are still unfilled and are never guessed.
+
 ## 2026-11-04 — Live demo cards on the How page
 
 ### Added

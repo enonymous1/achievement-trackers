@@ -65,7 +65,7 @@
   .filter.active{background:var(--at-green) !important;border-color:var(--at-green) !important;font-weight:700}
   [data-bs-theme="dark"] .filter.active{color:#12140f !important}
   .hidden{display:none !important}
-  @media print{.app-header,.controls{display:none !important}.progress-card{position:static}details{break-inside:avoid}}
+  @media print{.app-header,.controls,#xbox-sync{display:none !important}.progress-card{position:static}details{break-inside:avoid}}
 </style>
 </head>
 <body class="layout-fixed sidebar-expand-lg">
@@ -156,6 +156,8 @@
             <p class="text-secondary mb-0"><strong>Scope:</strong> The 34 achievements from the linked walkthrough — base game (24, 1,000G) + Jungle Awakens (5, 130G) + Creeping Winter (5, 120G) = 1,250G. The full game now has 104 achievements / 3,000G; later DLC is not in this tracker.</p>
           </div>
         </div>
+
+
 
 <details open data-cat="story">
 <summary>Phase 1 · First run — Default difficulty <small>11 achievements · <span class="sec-progress" data-section="story"></span></small></summary>
@@ -460,6 +462,233 @@
     };
     r.readAsText(f);
   });
+  /* Xbox sync via OpenXBL (user-supplied key). The sync card is only
+     rendered for games whose JSON carries xbox_title_id and an
+     xbox_id per achievement; without the card this block is a no-op.
+     Sync is additive and previewed: it ticks newly unlocked
+     achievements (and their sub-steps) and never unticks, never
+     touches notes or counters. The key and gamertag live under the
+     separate 'at-xbox' localStorage key, so Export/Import — which
+     only read and write the progress key above — can never leak
+     them. Response shapes are handled tolerantly (see the extract
+     helpers): OpenXBL's published spec documents endpoints but no
+     response schema, so the first live response may still refine
+     these, and anything unrecognised fails loudly instead of
+     guessing a tick. */
+  var syncCard=document.getElementById('xbox-sync');
+  if(syncCard){
+    var XBOX_API='https://api.xbl.io/api/v2';
+    var XBOX_META_KEY='at-xbox';
+    var syncMap={};
+    try{ syncMap=JSON.parse(syncCard.getAttribute('data-xbox-map')||'{}'); }catch(e){ syncMap={}; }
+    var syncTitleId=syncCard.getAttribute('data-xbox-title-id')||'';
+    var gtInput=document.getElementById('xbox-gamertag');
+    var keyInput=document.getElementById('xbox-key');
+    var syncBtn=document.getElementById('xbox-sync-btn');
+    var clearKeyBtn=document.getElementById('xbox-clear-key');
+    var statusEl=document.getElementById('xbox-status');
+    var previewEl=document.getElementById('xbox-preview');
+    var previewBody=document.getElementById('xbox-preview-body');
+    var confirmBtn=document.getElementById('xbox-confirm');
+    var cancelBtn=document.getElementById('xbox-cancel');
+    var pasteInput=document.getElementById('xbox-paste');
+    var pasteBtn=document.getElementById('xbox-paste-btn');
+    var pending=null;
+    function metaLoad(){ try{ return JSON.parse(localStorage.getItem(XBOX_META_KEY)||'{}'); }catch(e){ return {}; } }
+    function metaSave(m){ try{ localStorage.setItem(XBOX_META_KEY,JSON.stringify(m)); }catch(e){} }
+    var xboxMeta=metaLoad();
+    if(xboxMeta.gamertag) gtInput.value=xboxMeta.gamertag;
+    if(xboxMeta.key) keyInput.value=xboxMeta.key;
+    function setStatus(msg){ statusEl.textContent=msg; }
+    function hidePreview(){ previewEl.classList.add('hidden'); pending=null; }
+    function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function persistInputs(){
+      var m=metaLoad();
+      var gt=gtInput.value.trim();
+      if(m.gamertag!==gt) m.xuid='';
+      m.gamertag=gt; m.key=keyInput.value.trim(); metaSave(m); xboxMeta=m;
+    }
+    gtInput.addEventListener('change',persistInputs);
+    keyInput.addEventListener('change',persistInputs);
+    function xboxFetch(path,key){
+      return fetch(XBOX_API+path,{headers:{'X-Authorization':key,'Accept':'application/json'}}).then(function(r){
+        if(!r.ok){ var err=new Error('HTTP '+r.status); err.status=r.status; throw err; }
+        return r.json();
+      });
+    }
+    /* Shape tolerance: the gamertag endpoint documents a flat
+       {xuid, gamertag, gamerscore} body, while profile endpoints
+       return profileUsers[0].id. Accept both, plus a bare array. */
+    function extractXuid(data){
+      if(!data) return null;
+      if(typeof data==='string') return data;
+      if(data.xuid) return String(data.xuid);
+      if(data.profileUsers&&data.profileUsers[0]&&data.profileUsers[0].id) return String(data.profileUsers[0].id);
+      if(Array.isArray(data)&&data[0]) return extractXuid(data[0]);
+      return null;
+    }
+    function extractAchievements(data){
+      if(!data) return null;
+      if(Array.isArray(data)) return data;
+      if(Array.isArray(data.achievements)) return data.achievements;
+      return null;
+    }
+    function isUnlocked(a){
+      return a.progressState==='Achieved'||!!(a.progression&&a.progression.timeUnlocked);
+    }
+    function fetchTitlePages(xuid,key){
+      var entries=[], token='', prevToken=null, pages=0;
+      function next(){
+        if(pages>=5) return Promise.reject(new Error('too many pages'));
+        pages++;
+        var url='/achievements/player/'+encodeURIComponent(xuid)+'/title/'+encodeURIComponent(syncTitleId);
+        if(token) url+='?continuationToken='+encodeURIComponent(token);
+        return xboxFetch(url,key).then(function(data){
+          var list=extractAchievements(data);
+          if(!list) throw new Error('unexpected response shape');
+          entries=entries.concat(list);
+          var t=(data.pagingInfo&&data.pagingInfo.continuationToken)||data.continuationToken||'';
+          if(!t) return entries;
+          if(t===prevToken) throw new Error('pagination loop');
+          prevToken=token; token=t; return next();
+        });
+      }
+      return next();
+    }
+    function buildPreview(entries,warnings){
+      var unlocked=[], skipped=0, seenIds={};
+      entries.forEach(function(a){
+        var id=(a&&a.id!==undefined)?String(a.id):null;
+        if(id===null){ skipped++; return; }
+        if(seenIds[id]) return; seenIds[id]=true;
+        if(isUnlocked(a)) unlocked.push(id);
+      });
+      var mapped=[], unmapped=0;
+      unlocked.forEach(function(id){
+        if(syncMap[id]) mapped.push(syncMap[id]); else unmapped++;
+      });
+      var isPressed=function(achId){ var b=document.getElementById(achId); return b&&b.getAttribute('aria-pressed')==='true'; };
+      var itemName=function(achId){ var b=document.getElementById(achId); var n=b?b.querySelector('.ach-name'):null; return n?n.textContent.trim():achId; };
+      var newAch=[], already=0;
+      mapped.forEach(function(achId){ if(isPressed(achId)) already++; else newAch.push(achId); });
+      var stepIds=[], stepNames=[];
+      newAch.forEach(function(achId){
+        [].slice.call(document.querySelectorAll('.step[data-parent="'+achId+'"]')).forEach(function(s){
+          if(!s.checked){ stepIds.push(s.id); stepNames.push((s.parentNode?s.parentNode.textContent:'').trim()); }
+        });
+      });
+      var counterNames=[];
+      newAch.forEach(function(achId){
+        var b=document.getElementById(achId); var it=b?b.closest('.item'):null;
+        if(it&&it.querySelector('input.count')) counterNames.push(itemName(achId));
+      });
+      var lockedCount=tasks.length-mapped.length;
+      var html='';
+      warnings.forEach(function(w){ html+='<p class="text-warning mb-2">'+escHtml(w)+'</p>'; });
+      if(newAch.length){
+        html+='<p><strong>'+newAch.length+' new achievement'+(newAch.length===1?'':'s')+' will be ticked:</strong></p><ul>';
+        newAch.forEach(function(achId){ html+='<li>'+escHtml(itemName(achId))+'</li>'; });
+        html+='</ul>';
+      } else {
+        html+='<p>Nothing new — every achievement Xbox reports unlocked is already ticked here.</p>';
+      }
+      if(stepNames.length){
+        html+='<p><strong>'+stepNames.length+' sub-step'+(stepNames.length===1?'':'s')+' will also be ticked</strong> (they are the route to the achievements above):</p><ul>';
+        stepNames.forEach(function(n){ html+='<li>'+escHtml(n)+'</li>'; });
+        html+='</ul>';
+      }
+      if(counterNames.length){
+        html+='<p class="text-secondary">Counters stay manual: Xbox does not report raw counts, so the counters for '+counterNames.map(escHtml).join(', ')+' are left as they are.</p>';
+      }
+      html+='<p class="text-secondary mb-0">Already ticked: '+already+' · Xbox achievements not in this tracker: '+unmapped+' · Tracker achievements Xbox does not report unlocked (left exactly as they are, including manual ticks from other platforms): '+lockedCount+(skipped?' · Entries without an id, ignored: '+skipped:'')+'.</p>';
+      previewBody.innerHTML=html;
+      previewEl.classList.remove('hidden');
+      confirmBtn.style.display=newAch.length?'':'none';
+      pending={achIds:newAch,stepIds:stepIds};
+      setStatus('Preview ready — nothing has changed yet. Confirm to apply, or Cancel.');
+    }
+    function syncError(e){
+      hidePreview();
+      if(e&&e.status===401) setStatus('That key was rejected — check it at xbl.io, or create a new one.');
+      else if(e&&e.status===429) setStatus('OpenXBL rate limit — wait a while and try again.');
+      else if(e&&e.status===403) setStatus('Xbox returned no data for this title — check your Xbox privacy settings (achievement history) or that you have played this game on Xbox.');
+      else if(e&&e.status===404) setStatus('No Xbox profile or title data found — check the gamertag spelling and that you have played this game on Xbox.');
+      else if(e&&e.message==='gamertag not found') setStatus('No Xbox profile found for that gamertag — check the spelling.');
+      else if(e&&e.message==='too many pages') setStatus('OpenXBL paginated this title beyond what this page follows — sync stopped rather than applying a partial result.');
+      else if(e&&e.message==='pagination loop') setStatus('OpenXBL returned the same page twice — sync stopped rather than applying a partial result.');
+      else if(e&&e.message==='unexpected response shape') setStatus('OpenXBL returned a response this page does not recognise — sync stopped, nothing changed.');
+      else if(e instanceof TypeError) setStatus('The browser could not reach OpenXBL — check your connection, or use the paste-JSON option below.');
+      else setStatus('Sync failed — nothing changed. ('+(e&&e.message?e.message:'unknown error')+')');
+    }
+    syncBtn.addEventListener('click',function(){
+      var key=keyInput.value.trim(), gt=gtInput.value.trim();
+      if(!gt){ setStatus('Enter a gamertag first.'); return; }
+      if(!key){ setStatus('Paste your OpenXBL API key first.'); return; }
+      persistInputs();
+      hidePreview();
+      setStatus('Fetching…');
+      syncBtn.disabled=true;
+      var warnings=[];
+      var xuidPromise;
+      if(xboxMeta.xuid&&xboxMeta.gamertag===gt){
+        xuidPromise=Promise.resolve(xboxMeta.xuid);
+      } else {
+        xuidPromise=xboxFetch('/player/gamertag/'+encodeURIComponent(gt),key).then(function(prof){
+          var xuid=extractXuid(prof);
+          if(!xuid) throw new Error('gamertag not found');
+          return xboxFetch('/account',key).then(function(acct){
+            var acctXuid=extractXuid(acct);
+            if(acctXuid&&acctXuid!==xuid) warnings.push('This key belongs to a different gamertag — sync may return public-only data.');
+            xboxMeta.xuid=xuid; metaSave(xboxMeta);
+            return xuid;
+          });
+        });
+      }
+      xuidPromise.then(function(xuid){
+        return fetchTitlePages(xuid,key);
+      }).then(function(entries){
+        buildPreview(entries,warnings);
+      }).catch(syncError).then(function(){ syncBtn.disabled=false; });
+    });
+    pasteBtn.addEventListener('click',function(){
+      var text=pasteInput.value.trim();
+      if(!text){ setStatus('Paste an OpenXBL JSON response first.'); return; }
+      hidePreview();
+      try{
+        var entries=extractAchievements(JSON.parse(text));
+        if(!entries) throw new Error('shape');
+        buildPreview(entries,['Pasted JSON — no gamertag or key was used.']);
+      }catch(e){
+        hidePreview();
+        setStatus('That text did not look like an OpenXBL achievements response.');
+      }
+    });
+    confirmBtn.addEventListener('click',function(){
+      if(!pending) return;
+      pending.achIds.forEach(function(achId){
+        var b=document.getElementById(achId);
+        if(b) b.setAttribute('aria-pressed','true');
+      });
+      pending.stepIds.forEach(function(stepId){
+        var s=document.getElementById(stepId);
+        if(s) s.checked=true;
+      });
+      var n=pending.achIds.length;
+      hidePreview();
+      save(); updateProgress(); applyFilters();
+      var m=metaLoad(); m.lastSyncAt=new Date().toISOString(); metaSave(m); xboxMeta=m;
+      setStatus('Synced '+n+' new achievement'+(n===1?'':'s')+' from Xbox at '+new Date().toLocaleString()+'.');
+    });
+    cancelBtn.addEventListener('click',function(){
+      hidePreview();
+      setStatus('Sync cancelled — nothing changed.');
+    });
+    clearKeyBtn.addEventListener('click',function(){
+      keyInput.value='';
+      var m=metaLoad(); m.key=''; metaSave(m); xboxMeta=m;
+      setStatus('Key cleared from this browser.');
+    });
+  }
   load(); updateProgress(); applyFilters();
 })();
 </script>

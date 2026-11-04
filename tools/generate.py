@@ -120,8 +120,17 @@ def validate_game(filename, game):
               and source.get("url", "").startswith("https://"),
               f"bad source entry: {source!r}")
 
-    task_ids, step_ids = set(), set()
+    task_ids, step_ids, xbox_ids = set(), set(), set()
     achievements, total_gs = [], 0
+    # Xbox sync is opt-in per game: a game with xbox_title_id must map
+    # every achievement, and a game without it must map none. A partial
+    # mapping would silently leave some achievements unsyncable, so it
+    # fails here instead of shipping.
+    has_xbox = "xbox_title_id" in game
+    if has_xbox:
+        check(isinstance(game["xbox_title_id"], str)
+              and re.fullmatch(r"[0-9]+", game["xbox_title_id"]),
+              "xbox_title_id must be a string of digits")
     for section in game["sections"]:
         check(isinstance(section, dict)
               and section.get("id") and section.get("title"),
@@ -140,6 +149,16 @@ def validate_game(filename, game):
             task_ids.add(ach["id"])
             check(_is_positive_int(ach.get("gs")),
                   f"{ach['id']}: gs must be a positive integer")
+            xid = ach.get("xbox_id")
+            if has_xbox:
+                check(isinstance(xid, str) and xid,
+                      f"{ach['id']}: missing xbox_id for a synced game")
+                check(xid not in xbox_ids,
+                      f"duplicate xbox_id {xid!r}")
+                xbox_ids.add(xid)
+            else:
+                check(not xid,
+                      f"{ach['id']}: xbox_id without xbox_title_id")
             total_gs += ach["gs"]
             for field in ("name", "req", "how"):
                 check(ach.get(field), f"{ach['id']}: missing/empty {field!r}")
@@ -371,6 +390,25 @@ def render_sections(game):
     return "\n".join(out)
 
 
+def render_xbox_sync_card(game):
+    """Sync card for games with an Xbox mapping, else nothing.
+
+    The card carries the title id and the xbox_id -> achievement id
+    map as data attributes (not a JSON <script> block: check_js.py
+    syntax-checks every inline script without src, and a JSON object
+    literal is not valid JS at statement position). Games without a
+    mapping get no card, so the sync script in the template stays a
+    no-op for them.
+    """
+    if "xbox_title_id" not in game:
+        return ""
+    mapping = {a["xbox_id"]: a["id"] for a in game["_achievements"]}
+    return _fill(_fragment("xbox_sync"), {
+        "TITLE_ID": esc(game["xbox_title_id"]),
+        "XBOX_MAP_JSON": esc(json.dumps(mapping, sort_keys=True)),
+    })
+
+
 def sidebar_menu(all_games, prefix, current, include_notes=False):
     """Sidebar menu items: Home, a Games header, then the games flat
     under it (no dropdown — the list is short for now, and the user
@@ -442,6 +480,7 @@ def render_game(game, all_games):
         "TOTAL_GS": str(game["_total_gs"]),
         "TOTAL_COUNT": str(game["_total_count"]),
         "FILTER_BUTTONS": "\n".join(filters),
+        "XBOX_SYNC_CARD": render_xbox_sync_card(game),
         "SECTIONS_HTML": render_sections(game),
         "SOURCES_HTML": sources,
         "SHELL_TEXT": SHELL_TEXT,

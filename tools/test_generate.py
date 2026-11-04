@@ -8,14 +8,23 @@ dependencies, and this file must not become the first one.
 """
 
 import unittest
+from pathlib import Path
 
 from generate import (
     render_demos,
     render_how,
     render_sections,
+    render_xbox_sync_card,
     sidebar_how_href,
     sidebar_menu,
     validate_game,
+)
+from map_xbox import (
+    MatchError,
+    apply_mapping,
+    entry_gamerscore,
+    extract_achievements,
+    match_entries,
 )
 
 
@@ -94,6 +103,98 @@ class TestValidate(unittest.TestCase):
         game["sources"] = [{"label": "S", "url": "http://example.com"}]
         with self.assertRaises(SystemExit):
             validate_game("test.json", game)
+
+
+def make_xbox_game():
+    game = make_game(xbox_title_id="1234567890")
+    game["sections"][0]["achievements"][0]["xbox_id"] = "7"
+    return game
+
+
+class TestXboxValidation(unittest.TestCase):
+    def test_synced_game_passes(self):
+        game = validate_game("test.json", make_xbox_game())
+        self.assertEqual(game["_achievements"][0]["xbox_id"], "7")
+
+    def test_title_id_must_be_digits(self):
+        with self.assertRaises(SystemExit):
+            validate_game("test.json", make_game(xbox_title_id="abc"))
+
+    def test_missing_xbox_id_fails(self):
+        with self.assertRaises(SystemExit):
+            validate_game("test.json", make_game(xbox_title_id="123"))
+
+    def test_duplicate_xbox_id_fails(self):
+        game = make_xbox_game()
+        game["sections"][0]["achievements"].append(
+            {"id": "a2", "name": "B", "gs": 10, "req": "R", "how": "H",
+             "xbox_id": "7"})
+        game["total_gs"] = 20
+        game["total_count"] = 2
+        with self.assertRaises(SystemExit):
+            validate_game("test.json", game)
+
+    def test_xbox_id_without_title_fails(self):
+        game = make_game()
+        game["sections"][0]["achievements"][0]["xbox_id"] = "7"
+        with self.assertRaises(SystemExit):
+            validate_game("test.json", game)
+
+    def test_sync_card_only_for_synced_games(self):
+        self.assertEqual(render_xbox_sync_card(make_game()), "")
+        game = validate_game("test.json", make_xbox_game())
+        card = render_xbox_sync_card(game)
+        self.assertIn('data-xbox-title-id="1234567890"', card)
+        self.assertIn('&quot;7&quot;: &quot;a1&quot;', card)
+        template = (Path(__file__).parent / "template.html").read_text()
+        self.assertIn("@@XBOX_SYNC_CARD@@", template)
+
+
+class TestMapXbox(unittest.TestCase):
+    def test_extract_shapes(self):
+        entries = [{"id": "1", "name": "A"}]
+        self.assertEqual(extract_achievements(entries), entries)
+        self.assertEqual(
+            extract_achievements({"achievements": entries}), entries)
+        self.assertIsNone(extract_achievements({"titles": []}))
+
+    def test_gamerscore_from_rewards(self):
+        entry = {"rewards": [{"name": "Gamerscore", "value": "30"},
+                             {"name": "Other", "value": "5"}]}
+        self.assertEqual(entry_gamerscore(entry), 30)
+        self.assertEqual(entry_gamerscore({"gamerscore": 10}), 10)
+        self.assertIsNone(entry_gamerscore({}))
+
+    def test_match_exact_then_normalized(self):
+        achs = [{"id": "a1", "name": "Cha-ching!", "gs": 30},
+                {"id": "a2", "name": "Wooden Sword", "gs": 10}]
+        entries = [{"id": "9", "name": "Cha-ching!",
+                    "rewards": [{"name": "Gamerscore", "value": "30"}]},
+                   {"id": "3", "name": "Wooden Sword "}]
+        mapping, report = match_entries(achs, entries)
+        self.assertEqual(mapping, {"a1": "9", "a2": "3"})
+        self.assertEqual(report[1][2], "normalized")
+
+    def test_match_unmatched_and_ambiguous_fail(self):
+        achs = [{"id": "a1", "name": "Missing", "gs": 10}]
+        with self.assertRaises(MatchError):
+            match_entries(achs, [{"id": "1", "name": "Other"}])
+        achs = [{"id": "a1", "name": "Same", "gs": 10}]
+        entries = [{"id": "1", "name": "Same"}, {"id": "2", "name": "Same"}]
+        with self.assertRaises(MatchError):
+            match_entries(achs, entries)
+
+    def test_apply_mapping_is_surgical(self):
+        game = validate_game("test.json", make_game())
+        text = ('{\n  "slug": "test",\n  "sections": [],\n'
+                '  "ach": {"id": "a1", "name": "A", "gs": 10}\n}\n')
+        out = apply_mapping(text, game, "123", {"a1": "7"})
+        self.assertIn('"xbox_title_id": "123"', out)
+        self.assertIn('{"id": "a1", "xbox_id": "7",', out)
+        self.assertEqual(out.count("xbox_id"), 1)
+        game2 = validate_game("test.json", make_xbox_game())
+        with self.assertRaises(MatchError):
+            apply_mapping(text, game2, "123", {"a1": "7"})
 
 
 class TestRender(unittest.TestCase):
