@@ -88,6 +88,12 @@
   .counter input[type=number]{-moz-appearance:textfield;appearance:textfield}
   .counter input[type=number]::-webkit-outer-spin-button,.counter input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   .counter-btn{min-width:38px;font-weight:700}
+  /* Step cards (secrets & runes) are short signposts, not lists to
+     scan: their header title and description text are centered.
+     The step pills themselves stay left-aligned so the checklist
+     still reads normally. */
+  .step-card .card-header h3{text-align:center}
+  .step-card .how{text-align:center}
   /* Sections read as a group again (v2's card background), not as a
      bare bordered box on the page background. */
   details{background:var(--bs-card-bg);border:1px solid var(--bs-border-color);border-radius:12px;margin-bottom:1rem;overflow:hidden}
@@ -316,6 +322,18 @@
         var bar=barEl.querySelector('.progress-bar');
         if(bar) bar.style.width=pct+'%';
       });
+    });
+    /* Step progress bars under the headers of multi-step
+       achievements: the bar shows how many of that achievement's
+       sub-steps are ticked. Step cards have no parent, so they
+       carry no bar — this is only for achievement cards. */
+    document.querySelectorAll('.step-bar').forEach(function(barEl){
+      var parent=barEl.getAttribute('data-step-parent');
+      var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+parent+'"]'));
+      var done=sibs.filter(function(s){return s.checked;}).length;
+      var pct=sibs.length?Math.round(done/sibs.length*100):0;
+      var bar=barEl.querySelector('.progress-bar');
+      if(bar) bar.style.width=pct+'%';
     });
   }
   /* applyFilters hides whole sections, not just cards: a section with

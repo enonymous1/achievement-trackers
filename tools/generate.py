@@ -259,6 +259,20 @@ def render_steps(steps, parent_id=None):
     return '<div class="steps">' + "".join(items) + "</div>"
 
 
+def render_step_bar(ach):
+    """Progress bar for a multi-step achievement, under its header.
+
+    Only achievements with two or more sub-steps get one: a single
+    step's bar would just mirror the achievement's own tick. Step
+    cards get none — they are not achievements, and their steps
+    carry no parent id to count against.
+    """
+    steps = ach.get("steps", [])
+    if len(steps) < 2:
+        return ""
+    return _fill(_fragment("step_bar"), {"PARENT": esc(ach["id"])})
+
+
 def render_achievement(ach, number):
     """Render one achievement card.
 
@@ -271,6 +285,7 @@ def render_achievement(ach, number):
     """
     counters = "".join(render_counter(c) for c in ach.get("counters", []))
     counter_bars = "".join(render_counter_bar(c) for c in ach.get("counters", []))
+    step_bar = render_step_bar(ach)
     return _fill(_fragment("achievement"), {
         "DATA_NAME": esc(f"{ach['name']} {ach['req']} {ach['how']}"),
         "ID": esc(ach["id"]),
@@ -282,6 +297,7 @@ def render_achievement(ach, number):
         "STEPS": render_steps(ach.get("steps", []), parent_id=ach["id"]),
         "COUNTERS": counters,
         "COUNTER_BARS": counter_bars,
+        "STEP_BAR": step_bar,
     })
 
 

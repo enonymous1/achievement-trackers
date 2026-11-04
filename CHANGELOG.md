@@ -4,6 +4,24 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-03 — Centered step cards, step progress bars
+
+### Changed
+
+- Secrets & runes step cards now center their header title and
+  description text. The step pills themselves stay left-aligned so
+  the checklist still reads normally.
+
+### Added
+
+- Achievements with two or more sub-step checkboxes now show a
+  progress bar right under the card header, like the counter bars:
+  it fills as sub-steps are ticked (High and Dry: 0% → 33% → 67% →
+  100%, auto-ticking the achievement at 100%) and survives reload.
+  Single-step achievements get no bar — it would just mirror the
+  achievement's own tick — and step cards get none either, since
+  their steps carry no parent to count against.
+
 ## 2026-11-03 — Left sidebar, How page
 
 ### Changed

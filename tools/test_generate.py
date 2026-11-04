@@ -133,6 +133,30 @@ class TestRender(unittest.TestCase):
         self.assertEqual(sidebar_how_href("../", "test"), "../how-it-works/")
         self.assertEqual(sidebar_how_href("../", "how"), "./")
 
+    def test_step_bar_and_step_card_centering(self):
+        # Multi-step achievements get a step bar under the header,
+        # matched to their steps by parent id; step cards get the
+        # centering class instead of a bar.
+        game = make_game()
+        ach = game["sections"][0]["achievements"][0]
+        ach["steps"] = [{"id": "s1", "label": "One"}, {"id": "s2", "label": "Two"}]
+        game["sections"].append({
+            "id": "secrets", "title": "Secrets", "filter_label": "Secrets",
+            "step_cards": [{"title": "Secret", "how": "How",
+                           "steps": [{"id": "sc1", "label": "Go"}]}],
+        })
+        html = render_sections(game)
+        self.assertIn('class="progress step-bar', html)
+        self.assertIn('data-step-parent="a1"', html)
+        self.assertIn('class="ach step-card card', html)
+        # A single step is not enough for a bar: it would just
+        # mirror the achievement's own tick.
+        game2 = make_game()
+        game2["sections"][0]["achievements"][0]["steps"] = [
+            {"id": "s1", "label": "Only"}
+        ]
+        self.assertNotIn("step-bar", render_sections(game2))
+
     def test_achievement_header_is_a_toggle_button(self):
         # The whole header toggles via aria-pressed; there is no
         # checkbox, and the button's text content is its accessible
