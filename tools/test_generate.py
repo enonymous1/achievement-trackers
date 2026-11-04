@@ -161,7 +161,9 @@ class TestXboxValidation(unittest.TestCase):
         ]), 1)
         self.assertIn('<img src="../assets/media/x.png" alt="Alt"', media)
         self.assertIn("<figcaption", media)
-        self.assertIn("Image: Guide", media)
+        # Credit is a hover overlay on the image now, not a
+        # permanent caption line — but it is still rendered.
+        self.assertIn('<span class="media-credit">Image: Guide</span>', media)
         self.assertIn('<img src="https://example.com/i.jpg"', media)
         linked = render_achievement(dict(base, media=[
             {"type": "image", "src": "assets/media/x.png",
@@ -210,7 +212,9 @@ class TestXboxValidation(unittest.TestCase):
         self.assertIn("slideshow-prev", html)
         self.assertIn("slideshow-next", html)
         self.assertIn('<a href="../assets/media/s1-full.png"', html)
-        self.assertIn("Step one Image: Guide", html)
+        self.assertIn("Step one", html)
+        self.assertIn('<span class="media-credit">Image: Guide</span>', html)
+        self.assertNotIn("Step one Image: Guide", html)
         full = render_achievement(dict(base, slideshow=[
             {"src": "assets/media/s1.png", "caption": "Step one"},
         ]), 1)
@@ -466,6 +470,20 @@ class TestRender(unittest.TestCase):
         self.assertIn(".slideshow-slides{display:grid}", css)
         self.assertIn(".slideshow-slide{grid-area:1/1;visibility:hidden}", css)
         self.assertIn(".slideshow-slide.active{visibility:visible}", css)
+
+    def test_viewer_has_slideshow_navigation(self):
+        # The viewer carries Previous/Next for slideshow shots
+        # (hidden for standalone images), and the credit overlay
+        # style exists for the cards.
+        template = (Path(__file__).parent / "template.html").read_text()
+        self.assertIn('id="media-modal-nav"', template)
+        self.assertIn('class="media-modal-prev', template)
+        self.assertIn('class="media-modal-next', template)
+        self.assertIn("modalStep", template)
+        css = (Path(__file__).parent.parent
+               / "assets" / "css" / "tracker-cards.css").read_text()
+        self.assertIn(".media-credit", css)
+        self.assertIn(".media-modal-nav", css)
 
     def test_achievement_header_is_a_toggle_button(self):
         # The whole header toggles via aria-pressed; there is no

@@ -199,3 +199,17 @@ button.task[aria-pressed="true"] .task-state::after {
 #notes-modal::backdrop{background:rgba(0,0,0,.6)}
 .notes-modal-close{border:0;background:transparent;color:inherit;font-size:1.5rem;line-height:1;cursor:pointer;padding:.25rem .5rem}
 #notes-modal-text{width:100%}
+
+/* Image credit: a hover overlay on the image, not a permanent
+   caption line. It never blocks clicks (pointer-events none),
+   and keyboard focus on the image link reveals it too. On touch
+   screens there is no hover, so the viewer caption carries the
+   credit instead. */
+.media-img{position:relative;display:block}
+.media-credit{position:absolute;right:.5rem;bottom:.5rem;opacity:0;transition:opacity .15s;pointer-events:none;background:rgba(0,0,0,.65);color:#fff;padding:.1rem .4rem;border-radius:.25rem;font-size:.75rem}
+figure:hover .media-credit, figure:focus-within .media-credit{opacity:1}
+
+/* Viewer slideshow navigation: shown only for slideshow shots,
+   hidden for standalone images. */
+.media-modal-nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:.5rem}
+.media-modal-count{color:#fff;font-size:.875rem}

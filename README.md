@@ -208,8 +208,9 @@ Schema, per game file:
   (files live under `assets/media/<slug>/`, referenced as
   `assets/...` in the JSON) or an `https://` URL; a remote video
   must be a media file or a YouTube URL (embedded
-  privacy-enhanced). `credit` renders an "Image: …" line under
-  the image; guide images carry their source as credit, and a
+  privacy-enhanced). `credit` renders an "Image: …" overlay
+  on the image, shown on hover (and in the viewer caption);
+  guide images carry their source as credit, and a
   failed load swaps in a placeholder explaining why instead of a
   broken-image icon. `full` (optional) is a larger version the
   image opens in an on-page viewer (a new tab if scripts are
@@ -217,7 +218,8 @@ Schema, per game file:
   Optional `slideshow` is an ordered step-by-step guide for
   the card (same entry shape as media, images only), rendered
   one slide at a time with Previous/Next buttons; slide images
-  open in the same viewer.
+  open in the same viewer, where Previous/Next step through
+  the slideshow too.
 - `step_cards`: walkthrough steps that are *not* achievements
   themselves (secret missions, runes) — `title`, `how`, `steps`.
 - Filter buttons: each section may carry its own `filter_label`

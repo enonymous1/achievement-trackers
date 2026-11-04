@@ -251,6 +251,11 @@
     <button type="button" class="media-modal-close" aria-label="Close image viewer">×</button>
     <img id="media-modal-img" alt="">
     <p id="media-modal-caption" class="media-modal-caption"></p>
+    <div id="media-modal-nav" class="media-modal-nav" style="display:none">
+      <button type="button" class="media-modal-prev btn btn-outline-light btn-sm">← Previous</button>
+      <span id="media-modal-count" class="media-modal-count"></span>
+      <button type="button" class="media-modal-next btn btn-outline-light btn-sm">Next →</button>
+    </div>
   </div>
 </dialog>
 <dialog id="notes-modal" aria-label="Notes">
@@ -759,10 +764,14 @@
     function swap(){
       var fig = img.closest('figure');
       var cap = fig ? fig.querySelector('figcaption') : null;
+      var cred = fig ? fig.querySelector('.media-credit') : null;
+      var capText = cap ? cap.textContent : '';
+      var credText = cred ? cred.textContent : '';
+      var extra = capText + (capText && credText ? ' ' : '') + credText;
       var d = document.createElement('div');
       d.className = 'ach-media-fallback';
       d.textContent = 'Guide image unavailable — it may have moved, or the host may block loading it here. The walkthrough linked in the sources below has the original.'
-        + (cap ? ' (' + cap.textContent + ')' : '');
+        + (extra ? ' (' + extra + ')' : '');
       img.replaceWith(d);
     }
     if(img.complete && img.naturalWidth === 0) swap();
@@ -773,26 +782,80 @@
      kept, so without scripts (or on a browser too old for
      <dialog>) the click still opens the image in a new tab,
      per target=_blank. Escape and tapping outside close it;
-     the close event clears the image so it stops loading. */
+     the close event clears the image so it stops loading.
+     The viewer caption carries the image credit, since the
+     card itself now shows it only on hover. For slideshow
+     shots the viewer also gains Previous/Next: they drive
+     the card's own slideshow buttons, so the card and the
+     viewer never disagree about which slide is current, and
+     arrow keys work too. */
   var modal = document.getElementById('media-modal');
   var modalImg = document.getElementById('media-modal-img');
   var modalCap = document.getElementById('media-modal-caption');
+  var modalNav = document.getElementById('media-modal-nav');
+  var modalCount = document.getElementById('media-modal-count');
+  var modalPrev = modal ? modal.querySelector('.media-modal-prev') : null;
+  var modalNext = modal ? modal.querySelector('.media-modal-next') : null;
+  var modalShow = null;
+  function modalCaption(fig){
+    var cap = fig ? fig.querySelector('figcaption') : null;
+    var cred = fig ? fig.querySelector('.media-credit') : null;
+    var capText = cap ? cap.textContent : '';
+    var credText = cred ? cred.textContent : '';
+    return (capText + (capText && credText ? ' ' : '') + credText).trim();
+  }
+  function modalFromLink(a){
+    var img = a.querySelector('img');
+    var fig = a.closest('figure');
+    modalImg.src = a.getAttribute('href');
+    modalImg.alt = img ? img.alt : '';
+    var text = modalCaption(fig);
+    modalCap.textContent = text;
+    modalCap.style.display = text ? '' : 'none';
+  }
+  function modalSync(){
+    if(!modalShow) return;
+    var ss = modalShow.ss;
+    var active = ss.querySelector('.slideshow-slide.active');
+    var link = active ? active.querySelector('a') : null;
+    if(link) modalFromLink(link);
+    var idx = modalShow.links.indexOf(link);
+    modalCount.textContent = (idx + 1) + ' of ' + modalShow.links.length;
+    modalPrev.disabled = ss.querySelector('.slideshow-prev').disabled;
+    modalNext.disabled = ss.querySelector('.slideshow-next').disabled;
+  }
+  function modalStep(dir){
+    if(!modalShow) return;
+    var btn = modalShow.ss.querySelector(dir < 0 ? '.slideshow-prev' : '.slideshow-next');
+    if(btn) btn.click();
+    modalSync();
+  }
   if(modal){
-    modal.addEventListener('close', function(){ modalImg.removeAttribute('src'); });
+    modal.addEventListener('close', function(){ modalImg.removeAttribute('src'); modalShow = null; });
     modal.addEventListener('click', function(e){ if(e.target === modal) modal.close(); });
     var modalClose = modal.querySelector('.media-modal-close');
     if(modalClose) modalClose.addEventListener('click', function(){ modal.close(); });
+    if(modalPrev) modalPrev.addEventListener('click', function(){ modalStep(-1); });
+    if(modalNext) modalNext.addEventListener('click', function(){ modalStep(1); });
+    modal.addEventListener('keydown', function(e){
+      if(!modalShow) return;
+      if(e.key === 'ArrowLeft') modalStep(-1);
+      else if(e.key === 'ArrowRight') modalStep(1);
+    });
     document.querySelectorAll('.ach-media a, .slideshow a').forEach(function(a){
       a.addEventListener('click', function(e){
         if(!modal.showModal) return;
         e.preventDefault();
-        var img = a.querySelector('img');
-        var fig = a.closest('figure');
-        var cap = fig ? fig.querySelector('figcaption') : null;
-        modalImg.src = a.getAttribute('href');
-        modalImg.alt = img ? img.alt : '';
-        modalCap.textContent = cap ? cap.textContent : '';
-        modalCap.style.display = cap ? '' : 'none';
+        var ss = a.closest('.slideshow');
+        if(ss){
+          modalShow = {ss: ss, links: [].slice.call(ss.querySelectorAll('a'))};
+          modalNav.style.display = '';
+          modalSync();
+        } else {
+          modalShow = null;
+          modalNav.style.display = 'none';
+          modalFromLink(a);
+        }
         modal.showModal();
       });
     });

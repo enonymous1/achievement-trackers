@@ -4,6 +4,24 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Credit on hover, viewer steps through slideshows
+
+### Changed
+
+- "Image: TrueAchievements" no longer sits as a permanent
+  line under every card image: the credit is now a small
+  overlay on the image itself, shown on hover (or keyboard
+  focus) and never blocking the click. It stays in the
+  viewer caption and in the failed-load placeholder, so
+  attribution is not lost — and on touch screens, where
+  there is no hover, the viewer is where the credit is
+  seen.
+- The image viewer gains Previous/Next for slideshow
+  shots (with a "N of M" count and arrow-key support),
+  hidden for standalone images. Viewer navigation drives
+  the card's own slideshow buttons, so the card and the
+  viewer never disagree about which slide is current.
+
 ## 2026-11-04 — Notes move to per-card icons, slideshow stops jumping
 
 ### Changed

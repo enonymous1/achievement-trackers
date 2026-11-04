@@ -370,14 +370,11 @@ def render_media(ach):
             if entry.get("full"):
                 img = (f'<a href="{esc(_media_src(entry["full"]))}" target="_blank" '
                        f'rel="noopener" title="Open larger version">{img}</a>')
-            fig = img
-            cap = []
+            credit = (f'<span class="media-credit">Image: {esc(entry["credit"])}</span>'
+                      if entry.get("credit") else "")
+            fig = f'<span class="media-img">{img}{credit}</span>'
             if entry.get("caption"):
-                cap.append(esc(entry["caption"]))
-            if entry.get("credit"):
-                cap.append(f'Image: {esc(entry["credit"])}')
-            if cap:
-                fig += f'<figcaption class="figure-caption">{" ".join(cap)}</figcaption>'
+                fig += f'<figcaption class="figure-caption">{esc(entry["caption"])}</figcaption>'
             parts.append(f'<figure class="ach-media mt-2 mb-0">{fig}</figure>')
         else:
             if src.lower().endswith((".mp4", ".webm", ".ogg")):
@@ -412,15 +409,14 @@ def render_slideshow(ach):
         if entry.get("full"):
             img = (f'<a href="{esc(_media_src(entry["full"]))}" target="_blank" '
                    f'rel="noopener" title="Open larger version">{img}</a>')
-        cap = []
-        if entry.get("caption"):
-            cap.append(esc(entry["caption"]))
-        if entry.get("credit"):
-            cap.append(f'Image: {esc(entry["credit"])}')
-        figcap = (f'<figcaption class="figure-caption">{" ".join(cap)}</figcaption>'
-                  if cap else "")
+        credit = (f'<span class="media-credit">Image: {esc(entry["credit"])}</span>'
+                  if entry.get("credit") else "")
+        figcap = (f'<figcaption class="figure-caption">{esc(entry["caption"])}</figcaption>'
+                  if entry.get("caption") else "")
         active = " active" if i == 0 else ""
-        parts.append(f'<figure class="slideshow-slide{active}">{img}{figcap}</figure>')
+        parts.append(f'<figure class="slideshow-slide{active}">'
+                     f'<span class="media-img">{img}{credit}</span>'
+                     f'{figcap}</figure>')
     controls = (
         '<div class="slideshow-controls">'
         '<button type="button" class="slideshow-prev btn btn-outline-success btn-sm">'
