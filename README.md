@@ -25,8 +25,8 @@ through a game in order instead of hunting through a flat list.
 The hub is the landing page: a welcome line, a how-it-works card, a
 search box, and one card per game showing its achievement count,
 Gamerscore total, and your saved progress on this browser. The footer
-totals the whole library (currently: 5 games · 133 achievements ·
-5,250G) and links to this repo.
+totals the whole library (currently: 6 games · 165 achievements ·
+6,250G) and links to this repo.
 
 Each game page has a Gamerscore progress bar, search, an
 incomplete-only toggle, phase filters, and export / import / reset for
@@ -120,6 +120,12 @@ Winter Burrow — 32 achievements, 1,000G, the full game in
 walkthrough order across five sections (beginning, owl, recovery,
 rebuilding, furnishings), with counters for the cumulative
 crafting and gathering totals.
+1000xRESIST — 32 achievements, 1,000G, the full game in story
+order: chapters, the Orchard landmarks, the seven talk-to-
+everyone sections (flagged missable), and all seven epilogue
+endings with their light combinations. No TA walkthrough
+exists, so route notes are paraphrased from the Steam 100%
+guide.
 
 ## Prerequisites
 

@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1000xRESIST — Achievement Tracker</title>
+<meta name="description" content="Achievement-first tracker for 1000xRESIST: achievements grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<meta property="og:title" content="1000xRESIST — Achievement Tracker">
+<meta property="og:description" content="Achievement-first tracker for 1000xRESIST: achievements grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<script>
+  /* Theme before first paint: saved choice wins, otherwise follow the
+     system. AdminLTE 4 / Bootstrap 5.3 read data-bs-theme. */
+  (function () {
+    try {
+      var theme = localStorage.getItem("at-theme");
+      if (!theme) {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      document.documentElement.setAttribute("data-bs-theme", theme);
+    } catch (e) {}
+  })();
+</script>
+<link rel="stylesheet" href="../assets/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="../assets/vendor/bootstrap-icons.min.css">
+<link rel="stylesheet" href="../assets/vendor/adminlte.min.css">
+<link rel="stylesheet" href="../assets/css/sidebar.css">
+<link rel="stylesheet" href="../assets/css/tracker-cards.css">
+<style>
+  /* Page rules only: the card language itself lives in
+     assets/css/tracker-cards.css, shared with the How page demos. */
+  /* v2's contained column, not AdminLTE's full-width fluid layout. */
+  .app-main .container-fluid{max-width:1100px;margin-left:auto;margin-right:auto}
+  /* Only the progress bar card is pinned: the slim card holding the
+     Gamerscore title, counts and bar sticks to the top of the
+     viewport while scrolling (the top header scrolls away in this
+     layout, so top: 0 is right). Search, filters and the
+     Order/Scope text live in the card below it and scroll away. */
+  .progress-card{position:sticky;top:0;z-index:1030;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  /* AdminLTE's layout-fixed sets .app-main to overflow:auto (via
+     .sidebar-expand-lg.layout-fixed .app-main), which makes it the
+     sticky element's scrolling ancestor — and since it never
+     scrolls itself, position:sticky on the progress card stops
+     working. Restore visible overflow at the same specificity, so
+     the card sticks to the viewport scroll, as it did in the
+     top-nav layout. */
+  .sidebar-expand-lg.layout-fixed .app-main{overflow:visible}
+  /* Sections read as a group again (v2's card background), not as a
+     bare bordered box on the page background. */
+  details{background:var(--bs-card-bg);border:1px solid var(--bs-border-color);border-radius:12px;margin-bottom:1rem;overflow:hidden}
+  details summary{cursor:pointer;padding:1rem;font-weight:700;font-size:1.1rem}
+  details summary::marker{color:var(--bs-secondary-color)}
+  details summary small{display:block;font-weight:400;color:var(--bs-secondary-color);font-size:.9rem;margin-top:2px}
+  .section-body{padding:0 1rem 1rem}
+  /* Overall progress bar: v2's rounded gradient pill, not the flat
+     Bootstrap bar. The counter bars keep Bootstrap's flat bar. */
+  #overallBar{background:linear-gradient(90deg,var(--at-green),#a8e07a);border-radius:99px}
+  .progress:has(#overallBar){height:14px;border-radius:99px;overflow:hidden}
+  /* Phase filters are separate pills (v2), not a joined button group;
+     the active pill is solid green with dark text, as in v2. */
+  /* Phase pills read as normal text (v2), not Bootstrap's dark-green
+     outline-success text, which is near-illegible on a dark card. */
+  .filter{--bs-btn-color:var(--bs-body-color);--bs-btn-border-color:var(--bs-border-color);--bs-btn-hover-color:var(--bs-body-color);--bs-btn-hover-border-color:var(--at-green);--bs-btn-active-color:var(--bs-body-color)}
+  .filter.active{background:var(--at-green) !important;border-color:var(--at-green) !important;font-weight:700}
+  [data-bs-theme="dark"] .filter.active{color:#12140f !important}
+  .hidden{display:none !important}
+  @media print{.app-header,.controls,#xbox-sync{display:none !important}.progress-card{position:static}details{break-inside:avoid}}
+</style>
+</head>
+<body class="layout-fixed sidebar-expand-lg">
+<script>
+  /* Restore the sidebar's collapsed/open state before AdminLTE's
+     own init runs, so the drawer does not flash open on every page.
+     The observer in assets/js/sidebar-state.js saves each change. */
+  (function(){try{var s=localStorage.getItem('at-sidebar');if(s==='collapsed')document.body.classList.add('sidebar-collapse');if(s==='open')document.body.classList.add('sidebar-open');}catch(e){}})();
+</script>
+<div class="app-wrapper">
+  <nav class="app-header navbar navbar-expand bg-body">
+    <div class="container-fluid">
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" aria-label="Toggle sidebar"><i class="bi bi-list"></i></a></li>
+      </ul>
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item"><span class="nav-link" id="overallTextNav">0 / 32 · 0G</span></li>
+        <li class="nav-item ms-2"><button type="button" id="theme-toggle" class="btn btn-sm btn-outline-secondary" aria-label="Toggle dark mode">Theme</button></li>
+      </ul>
+    </div>
+  </nav>
+  <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+    <div class="sidebar-brand">
+      <a href="../" class="brand-link"><span class="brand-text fw-light">🏆 Achievement Trackers</span></a>
+    </div>
+    <div class="sidebar-wrapper">
+      <nav class="mt-2">
+        <ul class="nav sidebar-menu flex-column" role="menu">
+              <li class="nav-item"><a href="../" class="nav-link"><i class="nav-icon bi bi-house"></i><p>Home</p></a></li>
+              <li class="nav-header">Games</li>
+              <li class="nav-item"><a href="../1000xresist/" class="nav-link active"><i class="nav-icon bi bi-controller"></i><p>1000xRESIST</p></a></li>
+              <li class="nav-item"><a href="../barbie-horse-trails/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Barbie Horse Trails</p></a></li>
+              <li class="nav-item"><a href="../great-god-grove/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Great God Grove</p></a></li>
+              <li class="nav-item"><a href="../minecraft-dungeons/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Minecraft Dungeons</p></a></li>
+              <li class="nav-item"><a href="../pigeon-simulator/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Pigeon Simulator</p></a></li>
+              <li class="nav-item"><a href="../winter-burrow/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Winter Burrow</p></a></li>
+        </ul>
+      </nav>
+      <div class="sidebar-bottom">
+        <ul class="nav sidebar-menu flex-column" role="menu">
+          <li class="nav-item"><a href="../how-it-works/" class="nav-link"><i class="nav-icon bi bi-question-circle"></i><p>How it works</p></a></li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+  <main class="app-main">
+    <div class="app-content-header">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-12">
+            <h3 class="mb-0">1000xRESIST <small class="text-secondary">— Achievement Tracker</small></h3>
+            <p class="text-secondary mb-0">A story of sisters, shells, and the Orchard — talk to everyone before the scene moves on, then choose the future.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="app-content">
+      <div class="container-fluid">
+
+        <div class="card progress-card">
+          <div class="card-header d-flex justify-content-between flex-wrap gap-2">
+            <h3 class="card-title">Gamerscore progress</h3>
+            <span id="overallText">0 / 32 achievements · 0 / 1000G</span>
+          </div>
+          <div class="card-body">
+            <div class="progress" role="progressbar" aria-label="Gamerscore progress">
+              <div class="progress-bar bg-success" id="overallBar" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="controls d-flex flex-wrap gap-2 align-items-center">
+              <input type="search" id="search" class="form-control flex-grow-1" style="min-width:220px" placeholder="Search achievements, missions, gear…" aria-label="Search tracker">
+              <label class="form-check-label"><input type="checkbox" id="incompleteOnly" class="form-check-input me-1"> Incomplete only</label>
+              <button type="button" id="exportBtn" class="btn btn-outline-secondary btn-sm">Export progress</button>
+              <label class="btn btn-outline-secondary btn-sm mb-0" for="importFile">Import progress</label>
+              <input type="file" id="importFile" accept=".json,application/json" class="d-none">
+              <button type="button" id="resetBtn" class="btn btn-outline-danger btn-sm">Reset all</button>
+              <button type="button" class="note-btn" data-note-key="game" title="Game notes" aria-label="Game notes"><i class="bi bi-journal-text"></i></button>
+            </div>
+            <div class="controls d-flex flex-wrap gap-2 mt-2" role="group" aria-label="Filter by phase">
+              <button type="button" class="filter btn btn-outline-success active" data-filter="all">All</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="prologue-ch1">Ch 1</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="ch2-4">Ch 2–4</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="ch5-6">Ch 5–6</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="ch7-x">Ch 7–X</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="endings">Endings</button>
+            </div>
+            <p class="text-secondary mt-3 mb-0"><strong>Order:</strong> In story order, with each chapter&#x27;s talk-to-everyone achievement placed in its chapter and the Orchard landmarks grouped with Chapters 2–4 (they&#x27;re explorable from Chapter 2). The talk achievements must be done before each section&#x27;s confirmation interaction — most characters can&#x27;t be spoken to twice, so sweep with the compass before confirming. Endings are all chosen in the epilogue: view the five An Endings first, then the two Epitaphs; Chapter 10 via chapter select cleans up the rest.</p>
+            <p class="text-secondary mb-0"><strong>Scope:</strong> Full game: all 32 achievements / 1,000G. No TrueAchievements walkthrough exists, so route notes are paraphrased from the Steam 100% guide; about 12–15 hours.</p>
+          </div>
+        </div>
+
+
+
+<details open data-cat="prologue-ch1">
+<summary>Prologue &amp; Chapter 1 <small>3 achievements · <span class="sec-progress" data-section="prologue-ch1"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="I want you to see from the beginning Complete Chapter [REDACTED] Finish the prologue chapter."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-beginning" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#1</span><span class="ach-name">I want you to see from the beginning</span><span class="gs badge text-bg-warning ms-auto">10G</span></button><button type="button" class="note-btn" data-note-key="ach-beginning" title="Notes for I want you to see from the beginning" aria-label="Notes for I want you to see from the beginning"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Chapter [REDACTED]</p><p class="how">Finish the prologue chapter.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Her name was Iris Complete Chapter 1 Finish Chapter 1."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-iris" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#2</span><span class="ach-name">Her name was Iris</span><span class="gs badge text-bg-warning ms-auto">10G</span></button><button type="button" class="note-btn" data-note-key="ach-iris" title="Notes for Her name was Iris" aria-label="Notes for Her name was Iris"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Chapter 1</p><p class="how">Finish Chapter 1.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Saying your goodbyes Talk to all characters in the High School in Chapter 1 Talk to everyone in the High School in both time periods before the chapter moves on — unlock time travel first (Gymnasium, Rooftop, Gym Door, Jiao&#x27;s Picture), then sweep with the compass; Jiao&#x27;s don&#x27;t count, and most people can&#x27;t be spoken to twice. It pops when you start talking to the last person."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-goodbyes" data-gs="40" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#3</span><span class="ach-name">Saying your goodbyes</span><span class="badge text-bg-danger-subtle text-danger-emphasis border border-danger-subtle ms-2" title="Missable: can be passed without popping">Missable</span><span class="gs badge text-bg-warning ms-auto">40G</span></button><button type="button" class="note-btn" data-note-key="ach-goodbyes" title="Notes for Saying your goodbyes" aria-label="Notes for Saying your goodbyes"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Talk to all characters in the High School in Chapter 1</p><p class="how">Talk to everyone in the High School in both time periods before the chapter moves on — unlock time travel first (Gymnasium, Rooftop, Gym Door, Jiao&#x27;s Picture), then sweep with the compass; Jiao&#x27;s don&#x27;t count, and most people can&#x27;t be spoken to twice. It pops when you start talking to the last person.</p></div></article></div>
+</div></div></details>
+<details data-cat="ch2-4">
+<summary>Chapters 2–4 &amp; the Orchard <small>11 achievements · <span class="sec-progress" data-section="ch2-4"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="I&#x27;ve been thinking about family Complete Chapter 2 Finish Chapter 2."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-family" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#4</span><span class="ach-name">I&#x27;ve been thinking about family</span><span class="gs badge text-bg-warning ms-auto">10G</span></button><button type="button" class="note-btn" data-note-key="ach-family" title="Notes for I&#x27;ve been thinking about family" aria-label="Notes for I&#x27;ve been thinking about family"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Chapter 2</p><p class="how">Finish Chapter 2.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Perform your function, Watcher Talk to all characters in the Orchard in Chapter 2 Talk to everyone in the Orchard before moving on — Bang Bang Fire doesn&#x27;t count. Use the compass to find stragglers."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-watcher" data-gs="40" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#5</span><span class="ach-name">Perform your function, Watcher</span><span class="badge text-bg-danger-subtle text-danger-emphasis border border-danger-subtle ms-2" title="Missable: can be passed without popping">Missable</span><span class="gs badge text-bg-warning ms-auto">40G</span></button><button type="button" class="note-btn" data-note-key="ach-watcher" title="Notes for Perform your function, Watcher" aria-label="Notes for Perform your function, Watcher"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Talk to all characters in the Orchard in Chapter 2</p><p class="how">Talk to everyone in the Orchard before moving on — Bang Bang Fire doesn&#x27;t count. Use the compass to find stragglers.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="We were all the new kid once Complete Chapter 3 Finish Chapter 3."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-newkid" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#6</span><span class="ach-name">We were all the new kid once</span><span class="gs badge text-bg-warning ms-auto">10G</span></button><button type="button" class="note-btn" data-note-key="ach-newkid" title="Notes for We were all the new kid once" aria-label="Notes for We were all the new kid once"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Chapter 3</p><p class="how">Finish Chapter 3.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Happy Birthday! Talk to all characters in the Orchard in Chapter 3 Talk to everyone in the Orchard — the Healer doesn&#x27;t count this time."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-birthday" data-gs="40" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#7</span><span class="ach-name">Happy Birthday!</span><span class="badge text-bg-danger-subtle text-danger-emphasis border border-danger-subtle ms-2" title="Missable: can be passed without popping">Missable</span><span class="gs badge text-bg-warning ms-auto">40G</span></button><button type="button" class="note-btn" data-note-key="ach-birthday" title="Notes for Happy Birthday!" aria-label="Notes for Happy Birthday!"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Talk to all characters in the Orchard in Chapter 3</p><p class="how">Talk to everyone in the Orchard — the Healer doesn&#x27;t count this time.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="It&#x27;s a part of growing up Complete Chapter 4 Finish Chapter 4."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-growingup" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#8</span><span class="ach-name">It&#x27;s a part of growing up</span><span class="gs badge text-bg-warning ms-auto">10G</span></button><button type="button" class="note-btn" data-note-key="ach-growingup" title="Notes for It&#x27;s a part of growing up" aria-label="Notes for It&#x27;s a part of growing up"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Chapter 4</p><p class="how">Finish Chapter 4.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="You&#x27;re a Big Sister, now Talk to all characters in the Orchard in Chapter 4 Talk to everyone in the Orchard, but do NOT talk to Helpful Shell/Fixer in The Bar first — that advances the story. You can enter and leave the bar without talking to them."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-bigsister" data-gs="40" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#9</span><span class="ach-name">You&#x27;re a Big Sister, now</span><span class="badge text-bg-danger-subtle text-danger-emphasis border border-danger-subtle ms-2" title="Missable: can be passed without popping">Missable</span><span class="gs badge text-bg-warning ms-auto">40G</span></button><button type="button" class="note-btn" data-note-key="ach-bigsister" title="Notes for You&#x27;re a Big Sister, now" aria-label="Notes for You&#x27;re a Big Sister, now"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Talk to all characters in the Orchard in Chapter 4</p><p class="how">Talk to everyone in the Orchard, but do NOT talk to Helpful Shell/Fixer in The Bar first — that advances the story. You can enter and leave the bar without talking to them.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="In the ground Find &quot;Green Heaven&quot; in the Orchard From the waterfall on Level 1, turn right at sign &#x27;1&#x27; (don&#x27;t take the stairs), pass sign &#x27;C&#x27;, the ALLMOTHER heads, and the alcove; at the spine statue turn left into the &#x27;Grove&#x27; doorway, then left up the escalators."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-greenheaven" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#10</span><span class="ach-name">In the ground</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-greenheaven" title="Notes for In the ground" aria-label="Notes for In the ground"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Find &quot;Green Heaven&quot; in the Orchard</p><p class="how">From the waterfall on Level 1, turn right at sign &#x27;1&#x27; (don&#x27;t take the stairs), pass sign &#x27;C&#x27;, the ALLMOTHER heads, and the alcove; at the spine statue turn left into the &#x27;Grove&#x27; doorway, then left up the escalators.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="How does it make you feel? Find the horse statue in the Orchard Take stairs &#x27;D&#x27; by the waterfall, turn right, and follow the overhead signs to the Horse Lobby."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-horse" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#11</span><span class="ach-name">How does it make you feel?</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-horse" title="Notes for How does it make you feel?" aria-label="Notes for How does it make you feel?"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Find the horse statue in the Orchard</p><p class="how">Take stairs &#x27;D&#x27; by the waterfall, turn right, and follow the overhead signs to the Horse Lobby.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="A prayer room Find the pillar room in the Orchard Left of the waterfall into the glass walkway (Shrine Courtyard), straight past the white arch, right up the wooden spiral stairs, then the grey stairs on the left — don&#x27;t cross the bridge — into the prayer room."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-prayer" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#12</span><span class="ach-name">A prayer room</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-prayer" title="Notes for A prayer room" aria-label="Notes for A prayer room"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Find the pillar room in the Orchard</p><p class="how">Left of the waterfall into the glass walkway (Shrine Courtyard), straight past the white arch, right up the wooden spiral stairs, then the grey stairs on the left — don&#x27;t cross the bridge — into the prayer room.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="I think it&#x27;s a fox Find the skull shrine in the Orchard Left of the waterfall into the Shrine Courtyard, first right through the white arch."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-fox" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#13</span><span class="ach-name">I think it&#x27;s a fox</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-fox" title="Notes for I think it&#x27;s a fox" aria-label="Notes for I think it&#x27;s a fox"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Find the skull shrine in the Orchard</p><p class="how">Left of the waterfall into the Shrine Courtyard, first right through the white arch.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Do some self-reflection Find the mirror shrine in the Orchard Take stairs &#x27;D&#x27; by the waterfall and turn left toward the mirror shrine."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-mirror" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#14</span><span class="ach-name">Do some self-reflection</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-mirror" title="Notes for Do some self-reflection" aria-label="Notes for Do some self-reflection"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Find the mirror shrine in the Orchard</p><p class="how">Take stairs &#x27;D&#x27; by the waterfall and turn left toward the mirror shrine.</p></div></article></div>
+</div></div></details>
+<details data-cat="ch5-6">
+<summary>Chapters 5–6 <small>5 achievements · <span class="sec-progress" data-section="ch5-6"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="I always find you, don&#x27;t I? Complete Chapter 5 Finish Chapter 5."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-findyou" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#15</span><span class="ach-name">I always find you, don&#x27;t I?</span><span class="gs badge text-bg-warning ms-auto">10G</span></button><button type="button" class="note-btn" data-note-key="ach-findyou" title="Notes for I always find you, don&#x27;t I?" aria-label="Notes for I always find you, don&#x27;t I?"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Chapter 5</p><p class="how">Finish Chapter 5.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="I want you to call me Blue Complete Chapter 6 Finish Chapter 6."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-blue" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#16</span><span class="ach-name">I want you to call me Blue</span><span class="gs badge text-bg-warning ms-auto">10G</span></button><button type="button" class="note-btn" data-note-key="ach-blue" title="Notes for I want you to call me Blue" aria-label="Notes for I want you to call me Blue"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Chapter 6</p><p class="how">Finish Chapter 6.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="A clone about town Talk to all characters in Old Town in Chapter 6 Part 1 After seeing the Bartender at The Bar but before returning her ingredients, talk to everyone in Old Town."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-clone" data-gs="40" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#17</span><span class="ach-name">A clone about town</span><span class="badge text-bg-danger-subtle text-danger-emphasis border border-danger-subtle ms-2" title="Missable: can be passed without popping">Missable</span><span class="gs badge text-bg-warning ms-auto">40G</span></button><button type="button" class="note-btn" data-note-key="ach-clone" title="Notes for A clone about town" aria-label="Notes for A clone about town"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Talk to all characters in Old Town in Chapter 6 Part 1</p><p class="how">After seeing the Bartender at The Bar but before returning her ingredients, talk to everyone in Old Town.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Destroy The Provisional Government Destroy The Provisional Government In Chapter 6, after gaining upstairs privileges and finishing the required tasks, take your seat in the audience to complete &#x27;Attend The Play&#x27;."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-destroy" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#18</span><span class="ach-name">Destroy The Provisional Government</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-destroy" title="Notes for Destroy The Provisional Government" aria-label="Notes for Destroy The Provisional Government"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Destroy The Provisional Government</p><p class="how">In Chapter 6, after gaining upstairs privileges and finishing the required tasks, take your seat in the audience to complete &#x27;Attend The Play&#x27;.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Somebody has to tend bar Talk to all characters in Old Town and the Orchard in Chapter 6 Part 3 Talk to everyone in Old Town and the Orchard in Chapter 6 Part 3 — the Red Shells outside the residence don&#x27;t count, but you must speak to at least one Jiao-Type."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-tendbar" data-gs="40" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#19</span><span class="ach-name">Somebody has to tend bar</span><span class="badge text-bg-danger-subtle text-danger-emphasis border border-danger-subtle ms-2" title="Missable: can be passed without popping">Missable</span><span class="gs badge text-bg-warning ms-auto">40G</span></button><button type="button" class="note-btn" data-note-key="ach-tendbar" title="Notes for Somebody has to tend bar" aria-label="Notes for Somebody has to tend bar"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Talk to all characters in Old Town and the Orchard in Chapter 6 Part 3</p><p class="how">Talk to everyone in Old Town and the Orchard in Chapter 6 Part 3 — the Red Shells outside the residence don&#x27;t count, but you must speak to at least one Jiao-Type.</p></div></article></div>
+</div></div></details>
+<details data-cat="ch7-x">
+<summary>Chapters 7–X <small>5 achievements · <span class="sec-progress" data-section="ch7-x"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="噉慢慢爬囉 (Then just slowly crawl) Complete Chapter 7 Finish Chapter 7."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-crawl" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#20</span><span class="ach-name">噉慢慢爬囉 (Then just slowly crawl)</span><span class="gs badge text-bg-warning ms-auto">10G</span></button><button type="button" class="note-btn" data-note-key="ach-crawl" title="Notes for 噉慢慢爬囉 (Then just slowly crawl)" aria-label="Notes for 噉慢慢爬囉 (Then just slowly crawl)"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Chapter 7</p><p class="how">Finish Chapter 7.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Sometimes you don&#x27;t fit in the backpack Complete Chapter 8 Finish Chapter 8."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-backpack" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#21</span><span class="ach-name">Sometimes you don&#x27;t fit in the backpack</span><span class="gs badge text-bg-warning ms-auto">10G</span></button><button type="button" class="note-btn" data-note-key="ach-backpack" title="Notes for Sometimes you don&#x27;t fit in the backpack" aria-label="Notes for Sometimes you don&#x27;t fit in the backpack"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Chapter 8</p><p class="how">Finish Chapter 8.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Our own path to blood Complete Chapter 9 Finish Chapter 9."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-blood" data-gs="10" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#22</span><span class="ach-name">Our own path to blood</span><span class="gs badge text-bg-warning ms-auto">10G</span></button><button type="button" class="note-btn" data-note-key="ach-blood" title="Notes for Our own path to blood" aria-label="Notes for Our own path to blood"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Chapter 9</p><p class="how">Finish Chapter 9.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Pacific 50 Descend Talk to all recordings of members of The 50 in Chapter 9 Talk to every recording of The 50 across floors -16 to -01 in Chapter 9 — the guide lists them floor by floor; use the compass to catch stragglers."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-pacific" data-gs="40" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#23</span><span class="ach-name">Pacific 50 Descend</span><span class="badge text-bg-danger-subtle text-danger-emphasis border border-danger-subtle ms-2" title="Missable: can be passed without popping">Missable</span><span class="gs badge text-bg-warning ms-auto">40G</span></button><button type="button" class="note-btn" data-note-key="ach-pacific" title="Notes for Pacific 50 Descend" aria-label="Notes for Pacific 50 Descend"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Talk to all recordings of members of The 50 in Chapter 9</p><p class="how">Talk to every recording of The 50 across floors -16 to -01 in Chapter 9 — the guide lists them floor by floor; use the compass to catch stragglers.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Let this thread be… Complete Chapter X Finish Chapter X."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-thread" data-gs="20" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#24</span><span class="ach-name">Let this thread be…</span><span class="gs badge text-bg-warning ms-auto">20G</span></button><button type="button" class="note-btn" data-note-key="ach-thread" title="Notes for Let this thread be…" aria-label="Notes for Let this thread be…"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Chapter X</p><p class="how">Finish Chapter X.</p></div></article></div>
+</div></div></details>
+<details data-cat="endings">
+<summary>Endings <small>8 achievements · <span class="sec-progress" data-section="endings"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="An Ending: Scorched Earth An Ending: Scorched Earth In the epilogue, turn off every light (Parents may stay on) and confirm with Secretary."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-scorched" data-gs="40" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#25</span><span class="ach-name">An Ending: Scorched Earth</span><span class="gs badge text-bg-warning ms-auto">40G</span></button><button type="button" class="note-btn" data-note-key="ach-scorched" title="Notes for An Ending: Scorched Earth" aria-label="Notes for An Ending: Scorched Earth"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">An Ending: Scorched Earth</p><p class="how">In the epilogue, turn off every light (Parents may stay on) and confirm with Secretary.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="An Ending: Her Name Is Not Mauve An Ending: Her Name Is Not Mauve In the epilogue, leave Mauve&#x27;s light on and confirm with Secretary."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-mauve" data-gs="40" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#26</span><span class="ach-name">An Ending: Her Name Is Not Mauve</span><span class="gs badge text-bg-warning ms-auto">40G</span></button><button type="button" class="note-btn" data-note-key="ach-mauve" title="Notes for An Ending: Her Name Is Not Mauve" aria-label="Notes for An Ending: Her Name Is Not Mauve"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">An Ending: Her Name Is Not Mauve</p><p class="how">In the epilogue, leave Mauve&#x27;s light on and confirm with Secretary.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="An Ending: The Law An Ending: The Law In the epilogue, turn off Mauve&#x27;s light (Red Guard stays on) and confirm with Secretary."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-law" data-gs="40" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#27</span><span class="ach-name">An Ending: The Law</span><span class="gs badge text-bg-warning ms-auto">40G</span></button><button type="button" class="note-btn" data-note-key="ach-law" title="Notes for An Ending: The Law" aria-label="Notes for An Ending: The Law"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">An Ending: The Law</p><p class="how">In the epilogue, turn off Mauve&#x27;s light (Red Guard stays on) and confirm with Secretary.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="An Ending: Lights Out An Ending: Lights Out In the epilogue, turn off Mauve, Red Guard, and Sisters, then confirm with Secretary."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-lightsout" data-gs="40" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#28</span><span class="ach-name">An Ending: Lights Out</span><span class="gs badge text-bg-warning ms-auto">40G</span></button><button type="button" class="note-btn" data-note-key="ach-lightsout" title="Notes for An Ending: Lights Out" aria-label="Notes for An Ending: Lights Out"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">An Ending: Lights Out</p><p class="how">In the epilogue, turn off Mauve, Red Guard, and Sisters, then confirm with Secretary.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="An Ending: Justice For Jiao An Ending: Justice For Jiao In the epilogue, turn off Mauve, Red Guard, and Jiao (Sisters on), then confirm with Secretary."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-justice" data-gs="40" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#29</span><span class="ach-name">An Ending: Justice For Jiao</span><span class="gs badge text-bg-warning ms-auto">40G</span></button><button type="button" class="note-btn" data-note-key="ach-justice" title="Notes for An Ending: Justice For Jiao" aria-label="Notes for An Ending: Justice For Jiao"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">An Ending: Justice For Jiao</p><p class="how">In the epilogue, turn off Mauve, Red Guard, and Jiao (Sisters on), then confirm with Secretary.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Ending: Epitaphs (Blue) Ending: Epitaphs (Blue) In the epilogue, turn off Mauve, Red Guard, and Principal (Sisters and Jiaos on), then confirm with Secretary."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-blue-end" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#30</span><span class="ach-name">Ending: Epitaphs (Blue)</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-blue-end" title="Notes for Ending: Epitaphs (Blue)" aria-label="Notes for Ending: Epitaphs (Blue)"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Ending: Epitaphs (Blue)</p><p class="how">In the epilogue, turn off Mauve, Red Guard, and Principal (Sisters and Jiaos on), then confirm with Secretary.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Ending: Epitaphs (Red) Ending: Epitaphs (Red) In the epilogue, turn off Mauve and Red Guard only (Sisters, Jiaos, and Principal on), then confirm with Secretary."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-red-end" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#31</span><span class="ach-name">Ending: Epitaphs (Red)</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-red-end" title="Notes for Ending: Epitaphs (Red)" aria-label="Notes for Ending: Epitaphs (Red)"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Ending: Epitaphs (Red)</p><p class="how">In the epilogue, turn off Mauve and Red Guard only (Sisters, Jiaos, and Principal on), then confirm with Secretary.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Hekki Allmo Complete The Game View the epilogue through either Epitaphs ending. Watch all five An Endings first — they return you to the final scene so you can change the lights; after your first finish, Chapter 10 via chapter select lets you collect the rest."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-hekki" data-gs="100" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#32</span><span class="ach-name">Hekki Allmo</span><span class="gs badge text-bg-warning ms-auto">100G</span></button><button type="button" class="note-btn" data-note-key="ach-hekki" title="Notes for Hekki Allmo" aria-label="Notes for Hekki Allmo"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete The Game</p><p class="how">View the epilogue through either Epitaphs ending. Watch all five An Endings first — they return you to the final scene so you can change the lights; after your first finish, Chapter 10 via chapter select lets you collect the rest.</p></div></article></div>
+</div></div></details>
+
+        <div class="card">
+          <div class="card-body text-secondary">
+            <p class="mb-1"><strong>Sources:</strong> achievement names, requirements and Gamerscore from the achievement list linked below; route notes are short paraphrases of the linked walkthrough — the full guide text is not reproduced here. <a href="https://www.trueachievements.com/game/1000xResist/achievements">TrueAchievements — Achievements</a> · <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3248780454&amp;l=turkish">Steam — 100% Achievements Guide</a></p>
+            <p class="mb-0">Unofficial fan tracker, not affiliated with the achievement site, the walkthrough author, or the game's publisher. Shell: AdminLTE 4.10.0 + Bootstrap 5.3.8 + Bootstrap Icons 1.11.3, vendored under <code>assets/vendor/</code> (see <code>THIRD_PARTY_NOTICES.md</code>).</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+  <footer class="app-footer">
+    <strong>Achievement Trackers</strong> — <a href="../">back to all games</a>
+  </footer>
+</div>
+<script src="../assets/vendor/bootstrap.bundle.min.js"></script>
+<script src="../assets/vendor/adminlte.min.js"></script>
+<script src="../assets/js/theme-toggle.js"></script>
+<script src="../assets/js/sidebar-state.js"></script>
+<dialog id="media-modal" aria-label="Image viewer">
+  <div class="media-modal-inner">
+    <button type="button" class="media-modal-close" aria-label="Close image viewer">×</button>
+    <img id="media-modal-img" alt="">
+    <p id="media-modal-caption" class="media-modal-caption"></p>
+    <div id="media-modal-nav" class="media-modal-nav" style="display:none">
+      <button type="button" class="media-modal-prev btn btn-outline-light btn-sm">← Previous</button>
+      <span id="media-modal-count" class="media-modal-count"></span>
+      <button type="button" class="media-modal-next btn btn-outline-light btn-sm">Next →</button>
+    </div>
+  </div>
+</dialog>
+<dialog id="notes-modal" aria-label="Notes">
+  <div class="notes-modal-inner">
+    <div class="d-flex justify-content-between align-items-center gap-3">
+      <h3 id="notes-modal-title" class="mb-0 fs-5">Notes</h3>
+      <button type="button" class="notes-modal-close" aria-label="Close notes">×</button>
+    </div>
+    <textarea id="notes-modal-text" class="form-control mt-2" rows="5" placeholder="Anything you want to remember for this one…"></textarea>
+    <p class="text-secondary mt-2 mb-0">Saved in this browser only, alongside your progress.</p>
+  </div>
+</dialog>
+<script>
+/* Tracker progress. The hub never writes progress, only reads it;
+   this script is the single writer for a game page. */
+(function(){
+  var KEY='resist-tracker-v1';
+  var OLD='';
+  var MIGRATION={};
+  var TOTAL_GS=1000;
+  /* Tasks are now header toggle buttons, not checkboxes: the pressed
+     state lives in aria-pressed, and the id / data-gs contract with
+     save, export and the step auto-tick code is unchanged. */
+  var tasks=[].slice.call(document.querySelectorAll('button.task'));
+  var steps=[].slice.call(document.querySelectorAll('input.step'));
+  var counts=[].slice.call(document.querySelectorAll('input.count'));
+  var notesModal=document.getElementById('notes-modal');
+  var notesModalTitle=document.getElementById('notes-modal-title');
+  var notesModalText=document.getElementById('notes-modal-text');
+  /* Notes are one object, not one string: the game-wide note
+     lives under 'game', each achievement's under its card id.
+     Old saves and exports stored a single string — that was
+     the game-wide note, so it migrates to the 'game' key. */
+  var notesData={};
+  var notesKey=null;
+  var search=document.getElementById('search');
+  var incompleteOnly=document.getElementById('incompleteOnly');
+  var overallText=document.getElementById('overallText');
+  var overallTextNav=document.getElementById('overallTextNav');
+  var overallBar=document.getElementById('overallBar');
+
+  /* Save dedupes shared counters: several achievements render an input
+     for the same group, but localStorage stores one value per group. */
+  function save(){
+    var data={checked:{},steps:{},counters:{},notes:notesData};
+    tasks.forEach(function(t){ if(t.getAttribute('aria-pressed')==='true') data.checked[t.id]=true; });
+    steps.forEach(function(s){ if(s.checked) data.steps[s.id]=true; });
+    var seen={};
+    counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(!seen[g]){ data.counters[g]=c.value; seen[g]=true; } });
+    try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(e){}
+  }
+  function applyData(data){
+    tasks.forEach(function(t){ t.setAttribute('aria-pressed', (data.checked&&data.checked[t.id]) ? 'true' : 'false'); });
+    steps.forEach(function(s){ s.checked=!!(data.steps&&data.steps[s.id]); });
+    counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(data.counters&&data.counters[g]!==undefined) c.value=data.counters[g]; });
+    var n=data.notes;
+    if(typeof n==='string'){ notesData=n?{game:n}:{}; }
+    else if(n&&typeof n==='object'){ notesData=n; }
+    else { notesData={}; }
+    refreshNoteIcons();
+  }
+  /* Migration runs ONLY when no new-format progress exists. If a player
+     already has new progress, legacy data must not overwrite it; the
+     old key is left alone rather than deleted. */
+  function migrateLegacy(){
+    var raw; try{ raw=localStorage.getItem(OLD); }catch(e){ return; }
+    if(!raw||!MIGRATION) return;
+    try{
+      var d=JSON.parse(raw), checked=d.checked||{}, cnts=d.counts||{};
+      var out={checked:{},steps:{},counters:{},notes:{}};
+      Object.keys(MIGRATION.checked_map||{}).forEach(function(k){ if(checked[k]) MIGRATION.checked_map[k].forEach(function(a){ out.checked[a]=true; }); });
+      Object.keys(MIGRATION.step_map||{}).forEach(function(k){ if(checked[k]) out.steps[MIGRATION.step_map[k]]=true; });
+      Object.keys(MIGRATION.counter_map||{}).forEach(function(k){ if(cnts[k]) out.counters[MIGRATION.counter_map[k]]=cnts[k]; });
+      if(Object.keys(out.checked).length||Object.keys(out.steps).length||Object.keys(out.counters).length){
+        try{ localStorage.setItem(KEY,JSON.stringify(out)); }catch(e){}
+        applyData(out);
+      }
+    }catch(e){}
+  }
+  function load(){
+    var raw; try{ raw=localStorage.getItem(KEY); }catch(e){ return; }
+    if(!raw){ migrateLegacy(); return; }
+    try{ applyData(JSON.parse(raw)); }catch(e){}
+  }
+  function syncCounters(source){
+    if(!source) return;
+    var g=source.getAttribute('data-counter');
+    counts.forEach(function(c){ if(c.getAttribute('data-counter')===g) c.value=source.value; });
+  }
+  function updateProgress(){
+    var done=tasks.filter(function(t){return t.getAttribute('aria-pressed')==='true';});
+    var gs=done.reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+    var text=done.length+' / '+tasks.length+' achievements · '+gs.toLocaleString('en-US')+' / '+TOTAL_GS.toLocaleString('en-US')+'G';
+    overallText.textContent=text;
+    if(overallTextNav) overallTextNav.textContent=done.length+' / '+tasks.length+' · '+gs.toLocaleString('en-US')+'G';
+    overallBar.style.width=Math.round(gs/TOTAL_GS*100)+'%';
+    document.querySelectorAll('details[data-cat]').forEach(function(sec){
+      var box=sec.querySelectorAll('button.task');
+      if(!box.length) return;
+      var pressed=function(t){return t.getAttribute('aria-pressed')==='true';};
+      var d=[].slice.call(box).filter(pressed).length;
+      var g=[].slice.call(box).filter(pressed).reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+      var el=sec.querySelector('.sec-progress');
+      if(el) el.textContent=d+' / '+box.length+' · '+g+'G';
+    });
+    counts.forEach(function(c){
+      var target=parseInt(c.getAttribute('data-target'),10)||0;
+      var val=parseInt(c.value,10)||0;
+      var pct=target?Math.min(100,Math.round(val/target*100)):0;
+      var wrap=c.closest('.counter');
+      var txt=wrap?wrap.querySelector('.count-text'):null;
+      if(txt) txt.textContent=' '+val.toLocaleString('en-US')+' / '+target.toLocaleString('en-US')+' ('+pct+'%)';
+      /* Bars live under the card header, not next to the input, and
+         are matched by group AND target: a shared group can feed
+         several thresholds, and each bar must show its own target. */
+      var g=c.getAttribute('data-counter');
+      document.querySelectorAll('.counter-bar[data-counter="'+g+'"][data-target="'+target+'"]').forEach(function(barEl){
+        var bar=barEl.querySelector('.progress-bar');
+        if(bar) bar.style.width=pct+'%';
+      });
+    });
+    /* Step progress bars under the headers of multi-step
+       achievements: the bar shows how many of that achievement's
+       sub-steps are ticked. Step cards have no parent, so they
+       carry no bar — this is only for achievement cards. */
+    document.querySelectorAll('.step-bar').forEach(function(barEl){
+      var parent=barEl.getAttribute('data-step-parent');
+      var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+parent+'"]'));
+      var done=sibs.filter(function(s){return s.checked;}).length;
+      var pct=sibs.length?Math.round(done/sibs.length*100):0;
+      var bar=barEl.querySelector('.progress-bar');
+      if(bar) bar.style.width=pct+'%';
+    });
+  }
+  /* applyFilters hides whole sections, not just cards: a section with
+     no visible cards after filtering must not leave an empty heading
+     and an empty bordered box behind. */
+  function applyFilters(){
+    var q=(search.value||'').toLowerCase().trim();
+    var active=document.querySelector('.filter.active');
+    var cat=active?active.getAttribute('data-filter'):'all';
+    var inc=incompleteOnly.checked;
+    document.querySelectorAll('details[data-cat]').forEach(function(sec){
+      var secCat=sec.getAttribute('data-cat');
+      var catMatch=(cat==='all'||cat===secCat);
+      var visibleItems=0;
+      sec.querySelectorAll('.item').forEach(function(item){
+        var name=(item.getAttribute('data-name')||'')+' '+item.textContent.toLowerCase();
+        var qMatch=!q||name.indexOf(q)>-1;
+        var task=item.querySelector('button.task');
+        var incMatch=!inc||!task||task.getAttribute('aria-pressed')!=='true';
+        var show=catMatch&&qMatch&&incMatch;
+        item.classList.toggle('hidden',!show);
+        if(show) visibleItems++;
+      });
+      var hasItems=sec.querySelectorAll('.item').length>0;
+      sec.classList.toggle('hidden',!catMatch||(hasItems&&visibleItems===0));
+    });
+    fitHeaders();
+  }
+  /* Header normalisation: long names shrink toward a floor
+     (1.05rem to 0.85rem) before they are allowed to wrap, and
+     headers in the same visible row are then equalised to the
+     row's tallest, so card bodies start on one line instead of
+     staggering. Runs after every filter pass (which is also
+     every search, reset and import path), on resize, when a
+     section opens or closes, and once fonts arrive. */
+  function fitHeaders(){
+    document.querySelectorAll('.ach-head').forEach(function(h){ h.style.minHeight = ''; });
+    document.querySelectorAll('.ach-name').forEach(function(n){ n.style.fontSize = ''; });
+    document.querySelectorAll('.ach-name').forEach(function(n){
+      var floors = ['0.95rem', '0.85rem'];
+      for(var i = 0; i < floors.length; i++){
+        var line = parseFloat(getComputedStyle(n).lineHeight);
+        if(n.offsetHeight <= line + 1) break;
+        n.style.fontSize = floors[i];
+      }
+    });
+    var rows = {};
+    document.querySelectorAll('.item').forEach(function(item){
+      if(item.classList.contains('hidden') || !item.offsetParent) return;
+      var head = item.querySelector('.ach-head');
+      if(!head) return;
+      var sec = item.closest('details');
+      var key = (sec ? sec.getAttribute('data-cat') : '') + ':' + item.offsetTop;
+      (rows[key] = rows[key] || []).push(head);
+    });
+    Object.keys(rows).forEach(function(key){
+      var max = 0;
+      rows[key].forEach(function(h){ max = Math.max(max, h.offsetHeight); });
+      rows[key].forEach(function(h){ h.style.minHeight = max + 'px'; });
+    });
+  }
+  var fitTimer = null;
+  window.addEventListener('resize', function(){
+    if(fitTimer) clearTimeout(fitTimer);
+    fitTimer = setTimeout(fitHeaders, 150);
+  });
+  document.querySelectorAll('details[data-cat]').forEach(function(d){
+    d.addEventListener('toggle', fitHeaders);
+  });
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeaders);
+  document.querySelectorAll('.filter').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.filter').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active'); applyFilters();
+    });
+  });
+  /* Header toggle: clicking anywhere in the header flips aria-pressed.
+     Steps still use the change handler below; a button does not fire
+     change, so this click handler is the task toggle. */
+  tasks.forEach(function(t){
+    t.addEventListener('click',function(){
+      t.setAttribute('aria-pressed', t.getAttribute('aria-pressed')==='true' ? 'false' : 'true');
+      save(); updateProgress(); applyFilters();
+    });
+  });
+  /* Counter steppers: -/+ buttons beside the input, clamped at 0.
+     A programmatic value change fires no input event, so sync, save
+     and progress are called explicitly here. */
+  document.addEventListener('click',function(e){
+    var btn=e.target.closest ? e.target.closest('.counter-btn') : null;
+    if(!btn) return;
+    var wrap=btn.closest('.counter');
+    var input=wrap?wrap.querySelector('input.count'):null;
+    if(!input) return;
+    var val=parseInt(input.value,10)||0;
+    val=Math.max(0, val + (parseInt(btn.getAttribute('data-step'),10)||0));
+    input.value=val;
+    syncCounters(input); save(); updateProgress();
+  });
+  document.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.classList.contains('step')&&t.getAttribute('data-parent')){
+      var parent=document.getElementById(t.getAttribute('data-parent'));
+      if(parent){
+        var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+t.getAttribute('data-parent')+'"]'));
+        if(sibs.length&&sibs.every(function(s){return s.checked;})) parent.setAttribute('aria-pressed','true');
+      }
+    }
+    save(); updateProgress(); applyFilters();
+  });
+  document.addEventListener('input',function(e){
+    if(e.target===search){ applyFilters(); return; }
+    if(e.target===incompleteOnly){ applyFilters(); return; }
+    if(e.target.classList.contains('count')) syncCounters(e.target);
+    save(); updateProgress();
+  });
+  document.getElementById('resetBtn').addEventListener('click',function(){
+    if(!confirm('Reset all achievements, steps, counters and notes?')) return;
+    tasks.forEach(function(t){t.setAttribute('aria-pressed','false');});
+    steps.forEach(function(s){s.checked=false;});
+    counts.forEach(function(c){c.value=0;});
+    notesData={}; refreshNoteIcons();
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    updateProgress(); applyFilters();
+  });
+  document.getElementById('exportBtn').addEventListener('click',function(){
+    save();
+    var raw; try{ raw=localStorage.getItem(KEY)||'{}'; }catch(e){ raw='{}'; }
+    var blob=new Blob([raw],{type:'application/json'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='1000xresist-progress.json'; a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); },1000);
+  });
+  document.getElementById('importFile').addEventListener('change',function(e){
+    var f=e.target.files&&e.target.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{
+        var data=JSON.parse(r.result);
+        try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(err){}
+        applyData(data); updateProgress(); applyFilters();
+      }catch(err){ alert('That file did not look like a tracker export.'); }
+    };
+    r.readAsText(f);
+  });
+  /* Shared import preview/apply machinery, used by the Xbox sync
+     card. Only one import preview is live at a time, and Confirm
+     applies whichever is pending. Sync is additive only — it ticks
+     newly unlocked achievements and their sub-steps, and never
+     unticks, never touches notes or counters. */
+  function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function achName(achId){ var b=document.getElementById(achId); var n=b?b.querySelector('.ach-name'):null; return n?n.textContent.trim():achId; }
+  function achHasCounter(achId){ var b=document.getElementById(achId); var it=b?b.closest('.item'):null; return !!(it&&it.querySelector('input.count')); }
+  /* planFor splits a candidate set into what is new, what is
+     already ticked, and the sub-steps/counters that go with the new
+     ones. matchedIds is the wider matched set (for the "left as
+     they are" count); appliedIds is the subset the preview will
+     actually tick. */
+  function planFor(appliedIds, matchedIds){
+    var isPressed=function(achId){ var b=document.getElementById(achId); return b&&b.getAttribute('aria-pressed')==='true'; };
+    var newAch=[], already=0;
+    appliedIds.forEach(function(achId){ if(isPressed(achId)) already++; else newAch.push(achId); });
+    var stepIds=[], stepNames=[];
+    newAch.forEach(function(achId){
+      [].slice.call(document.querySelectorAll('.step[data-parent="'+achId+'"]')).forEach(function(s){
+        if(!s.checked){ stepIds.push(s.id); stepNames.push((s.parentNode?s.parentNode.textContent:'').trim()); }
+      });
+    });
+    var counterNames=[];
+    newAch.forEach(function(achId){ if(achHasCounter(achId)) counterNames.push(achName(achId)); });
+    var matchedSet={};
+    matchedIds.forEach(function(id){ matchedSet[id]=true; });
+    var lockedCount=tasks.filter(function(t){ return !matchedSet[t.id]; }).length;
+    return {newAch:newAch, already:already, stepIds:stepIds, stepNames:stepNames, counterNames:counterNames, lockedCount:lockedCount};
+  }
+  var importPending=null;
+  function hideImportPreviews(){
+    document.querySelectorAll('.import-preview').forEach(function(el){ el.classList.add('hidden'); });
+    importPending=null;
+  }
+  /* opts: bodyEl, previewEl, confirmBtn, plan (from planFor),
+     warnings (strings), dates (achId -> date string), statsHtml
+     (an already rendered stats paragraph, or ''). */
+  function showImportPreview(opts){
+    hideImportPreviews();
+    var plan=opts.plan, html='';
+    (opts.warnings||[]).forEach(function(w){ html+='<p class="text-warning mb-2">'+escHtml(w)+'</p>'; });
+    if(plan.newAch.length){
+      html+='<p><strong>'+plan.newAch.length+' new achievement'+(plan.newAch.length===1?'':'s')+' will be ticked:</strong></p><ul>';
+      plan.newAch.forEach(function(achId){
+        html+='<li>'+escHtml(achName(achId));
+        if(opts.dates&&opts.dates[achId]) html+=' <span class="text-secondary">— unlocked '+escHtml(opts.dates[achId])+'</span>';
+        html+='</li>';
+      });
+      html+='</ul>';
+    } else {
+      html+='<p>Nothing new — every matched achievement is already ticked here.</p>';
+    }
+    if(plan.stepNames.length){
+      html+='<p><strong>'+plan.stepNames.length+' sub-step'+(plan.stepNames.length===1?'':'s')+' will also be ticked</strong> (they are the route to the achievements above):</p><ul>';
+      plan.stepNames.forEach(function(n){ html+='<li>'+escHtml(n)+'</li>'; });
+      html+='</ul>';
+    }
+    if(plan.counterNames.length){
+      html+='<p class="text-secondary">Counters stay manual: the source does not report raw counts, so the counters for '+plan.counterNames.map(escHtml).join(', ')+' are left as they are.</p>';
+    }
+    if(opts.statsHtml) html+=opts.statsHtml;
+    opts.bodyEl.innerHTML=html;
+    opts.previewEl.classList.remove('hidden');
+    opts.confirmBtn.style.display=plan.newAch.length?'':'none';
+    importPending={achIds:plan.newAch, stepIds:plan.stepIds};
+  }
+  /* Applies the pending import through the normal save path and
+     returns how many achievements were ticked (0 if none pending). */
+  function applyImportPending(){
+    if(!importPending) return 0;
+    var n=importPending.achIds.length;
+    importPending.achIds.forEach(function(achId){
+      var b=document.getElementById(achId);
+      if(b) b.setAttribute('aria-pressed','true');
+    });
+    importPending.stepIds.forEach(function(stepId){
+      var s=document.getElementById(stepId);
+      if(s) s.checked=true;
+    });
+    importPending=null;
+    save(); updateProgress(); applyFilters();
+    return n;
+  }
+  /* Xbox sync via OpenXBL (user-supplied key). The sync card is only
+     rendered for games whose JSON carries xbox_title_id and an
+     xbox_id per achievement; without the card this block is a no-op.
+     Sync is additive and previewed: it ticks newly unlocked
+     achievements (and their sub-steps) and never unticks, never
+     touches notes or counters. The key and gamertag live under the
+     separate 'at-xbox' localStorage key, so Export/Import — which
+     only read and write the progress key above — can never leak
+     them. Response shapes are handled tolerantly (see the extract
+     helpers): OpenXBL's published spec documents endpoints but no
+     response schema, so the first live response may still refine
+     these, and anything unrecognised fails loudly instead of
+     guessing a tick. */
+  var syncCard=document.getElementById('xbox-sync');
+  if(syncCard){
+    var XBOX_API='https://api.xbl.io/api/v2';
+    var XBOX_META_KEY='at-xbox';
+    var syncMap={};
+    try{ syncMap=JSON.parse(syncCard.getAttribute('data-xbox-map')||'{}'); }catch(e){ syncMap={}; }
+    var syncTitleId=syncCard.getAttribute('data-xbox-title-id')||'';
+    var gtInput=document.getElementById('xbox-gamertag');
+    var keyInput=document.getElementById('xbox-key');
+    var syncBtn=document.getElementById('xbox-sync-btn');
+    var clearKeyBtn=document.getElementById('xbox-clear-key');
+    var statusEl=document.getElementById('xbox-status');
+    var previewEl=document.getElementById('xbox-preview');
+    var previewBody=document.getElementById('xbox-preview-body');
+    var confirmBtn=document.getElementById('xbox-confirm');
+    var cancelBtn=document.getElementById('xbox-cancel');
+    var pasteInput=document.getElementById('xbox-paste');
+    var pasteBtn=document.getElementById('xbox-paste-btn');
+    function metaLoad(){ try{ return JSON.parse(localStorage.getItem(XBOX_META_KEY)||'{}'); }catch(e){ return {}; } }
+    function metaSave(m){ try{ localStorage.setItem(XBOX_META_KEY,JSON.stringify(m)); }catch(e){} }
+    var xboxMeta=metaLoad();
+    if(xboxMeta.gamertag) gtInput.value=xboxMeta.gamertag;
+    if(xboxMeta.key) keyInput.value=xboxMeta.key;
+    function setStatus(msg){ statusEl.textContent=msg; }
+    function persistInputs(){
+      var m=metaLoad();
+      var gt=gtInput.value.trim();
+      if(m.gamertag!==gt) m.xuid='';
+      m.gamertag=gt; m.key=keyInput.value.trim(); metaSave(m); xboxMeta=m;
+    }
+    gtInput.addEventListener('change',persistInputs);
+    keyInput.addEventListener('change',persistInputs);
+    function xboxFetch(path,key){
+      return fetch(XBOX_API+path,{headers:{'X-Authorization':key,'Accept':'application/json'}}).then(function(r){
+        if(!r.ok){ var err=new Error('HTTP '+r.status); err.status=r.status; throw err; }
+        return r.json();
+      });
+    }
+    /* Shape tolerance: the gamertag endpoint documents a flat
+       {xuid, gamertag, gamerscore} body, while profile endpoints
+       return profileUsers[0].id. Accept both, plus a bare array. */
+    function extractXuid(data){
+      if(!data) return null;
+      if(typeof data==='string') return data;
+      if(data.xuid) return String(data.xuid);
+      if(data.profileUsers&&data.profileUsers[0]&&data.profileUsers[0].id) return String(data.profileUsers[0].id);
+      if(Array.isArray(data)&&data[0]) return extractXuid(data[0]);
+      return null;
+    }
+    function extractAchievements(data){
+      if(!data) return null;
+      if(Array.isArray(data)) return data;
+      if(Array.isArray(data.achievements)) return data.achievements;
+      return null;
+    }
+    function isUnlocked(a){
+      return a.progressState==='Achieved'||!!(a.progression&&a.progression.timeUnlocked);
+    }
+    function fetchTitlePages(xuid,key){
+      var entries=[], token='', prevToken=null, pages=0;
+      function next(){
+        if(pages>=5) return Promise.reject(new Error('too many pages'));
+        pages++;
+        var url='/achievements/player/'+encodeURIComponent(xuid)+'/title/'+encodeURIComponent(syncTitleId);
+        if(token) url+='?continuationToken='+encodeURIComponent(token);
+        return xboxFetch(url,key).then(function(data){
+          var list=extractAchievements(data);
+          if(!list) throw new Error('unexpected response shape');
+          entries=entries.concat(list);
+          var t=(data.pagingInfo&&data.pagingInfo.continuationToken)||data.continuationToken||'';
+          if(!t) return entries;
+          if(t===prevToken) throw new Error('pagination loop');
+          prevToken=token; token=t; return next();
+        });
+      }
+      return next();
+    }
+    function buildPreview(entries,warnings){
+      var unlocked=[], skipped=0, seenIds={};
+      entries.forEach(function(a){
+        var id=(a&&a.id!==undefined)?String(a.id):null;
+        if(id===null){ skipped++; return; }
+        if(seenIds[id]) return; seenIds[id]=true;
+        if(isUnlocked(a)) unlocked.push(id);
+      });
+      var mapped=[], unmapped=0;
+      unlocked.forEach(function(id){
+        if(syncMap[id]) mapped.push(syncMap[id]); else unmapped++;
+      });
+      var plan=planFor(mapped,mapped);
+      showImportPreview({
+        bodyEl:previewBody, previewEl:previewEl, confirmBtn:confirmBtn,
+        warnings:warnings, plan:plan,
+        statsHtml:'<p class="text-secondary mb-0">Already ticked: '+plan.already+' · Xbox achievements not in this tracker: '+unmapped+' · Tracker achievements Xbox does not report unlocked (left exactly as they are, including manual ticks from other platforms): '+plan.lockedCount+(skipped?' · Entries without an id, ignored: '+skipped:'')+'.</p>'
+      });
+      setStatus('Preview ready — nothing has changed yet. Confirm to apply, or Cancel.');
+    }
+    function syncError(e){
+      hideImportPreviews();
+      if(e&&e.status===401) setStatus('That key was rejected — check it at xbl.io, or create a new one.');
+      else if(e&&e.status===429) setStatus('OpenXBL rate limit — wait a while and try again.');
+      else if(e&&e.status===403) setStatus('Xbox returned no data for this title — check your Xbox privacy settings (achievement history) or that you have played this game on Xbox.');
+      else if(e&&e.status===404) setStatus('No Xbox profile or title data found — check the gamertag spelling and that you have played this game on Xbox.');
+      else if(e&&e.message==='gamertag not found') setStatus('No Xbox profile found for that gamertag — check the spelling.');
+      else if(e&&e.message==='too many pages') setStatus('OpenXBL paginated this title beyond what this page follows — sync stopped rather than applying a partial result.');
+      else if(e&&e.message==='pagination loop') setStatus('OpenXBL returned the same page twice — sync stopped rather than applying a partial result.');
+      else if(e&&e.message==='unexpected response shape') setStatus('OpenXBL returned a response this page does not recognise — sync stopped, nothing changed.');
+      else if(e instanceof TypeError) setStatus('The browser could not reach OpenXBL — check your connection, or use the paste-JSON option below.');
+      else setStatus('Sync failed — nothing changed. ('+(e&&e.message?e.message:'unknown error')+')');
+    }
+    syncBtn.addEventListener('click',function(){
+      var key=keyInput.value.trim(), gt=gtInput.value.trim();
+      if(!gt){ setStatus('Enter a gamertag first.'); return; }
+      if(!key){ setStatus('Paste your OpenXBL API key first.'); return; }
+      persistInputs();
+      hideImportPreviews();
+      setStatus('Fetching…');
+      syncBtn.disabled=true;
+      var warnings=[];
+      var xuidPromise;
+      if(xboxMeta.xuid&&xboxMeta.gamertag===gt){
+        xuidPromise=Promise.resolve(xboxMeta.xuid);
+      } else {
+        xuidPromise=xboxFetch('/player/gamertag/'+encodeURIComponent(gt),key).then(function(prof){
+          var xuid=extractXuid(prof);
+          if(!xuid) throw new Error('gamertag not found');
+          return xboxFetch('/account',key).then(function(acct){
+            var acctXuid=extractXuid(acct);
+            if(acctXuid&&acctXuid!==xuid) warnings.push('This key belongs to a different gamertag — sync may return public-only data.');
+            xboxMeta.xuid=xuid; metaSave(xboxMeta);
+            return xuid;
+          });
+        });
+      }
+      xuidPromise.then(function(xuid){
+        return fetchTitlePages(xuid,key);
+      }).then(function(entries){
+        buildPreview(entries,warnings);
+      }).catch(syncError).then(function(){ syncBtn.disabled=false; });
+    });
+    pasteBtn.addEventListener('click',function(){
+      var text=pasteInput.value.trim();
+      if(!text){ setStatus('Paste an OpenXBL JSON response first.'); return; }
+      hideImportPreviews();
+      try{
+        var entries=extractAchievements(JSON.parse(text));
+        if(!entries) throw new Error('shape');
+        buildPreview(entries,['Pasted JSON — no gamertag or key was used.']);
+      }catch(e){
+        hideImportPreviews();
+        setStatus('That text did not look like an OpenXBL achievements response.');
+      }
+    });
+    confirmBtn.addEventListener('click',function(){
+      var n=applyImportPending();
+      hideImportPreviews();
+      var m=metaLoad(); m.lastSyncAt=new Date().toISOString(); metaSave(m); xboxMeta=m;
+      setStatus('Synced '+n+' new achievement'+(n===1?'':'s')+' from Xbox at '+new Date().toLocaleString()+'.');
+    });
+    cancelBtn.addEventListener('click',function(){
+      hideImportPreviews();
+      setStatus('Sync cancelled — nothing changed.');
+    });
+    clearKeyBtn.addEventListener('click',function(){
+      keyInput.value='';
+      var m=metaLoad(); m.key=''; metaSave(m); xboxMeta=m;
+      setStatus('Key cleared from this browser.');
+    });
+  }
+  /* Guide images that fail to load (moved, or the host blocks
+     loading them here) are swapped for a placeholder that says
+     why, instead of a broken-image icon. Images already broken
+     when this runs are swapped immediately. */
+  document.querySelectorAll('.ach-media img').forEach(function(img){
+    function swap(){
+      var fig = img.closest('figure');
+      var cap = fig ? fig.querySelector('figcaption') : null;
+      var cred = fig ? fig.querySelector('.media-credit') : null;
+      var capText = cap ? cap.textContent : '';
+      var credText = cred ? cred.textContent : '';
+      var extra = capText + (capText && credText ? ' ' : '') + credText;
+      var d = document.createElement('div');
+      d.className = 'ach-media-fallback';
+      d.textContent = 'Guide image unavailable — it may have moved, or the host may block loading it here. The walkthrough linked in the sources below has the original.'
+        + (extra ? ' (' + extra + ')' : '');
+      img.replaceWith(d);
+    }
+    if(img.complete && img.naturalWidth === 0) swap();
+    else img.addEventListener('error', swap);
+  });
+  /* Walkthrough shots open their full-size version in an
+     on-page viewer instead of a new tab. The link's href is
+     kept, so without scripts (or on a browser too old for
+     <dialog>) the click still opens the image in a new tab,
+     per target=_blank. Escape and tapping outside close it;
+     the close event clears the image so it stops loading.
+     The viewer caption carries the image credit, since the
+     card itself now shows it only on hover. For slideshow
+     shots the viewer also gains Previous/Next: they drive
+     the card's own slideshow buttons, so the card and the
+     viewer never disagree about which slide is current, and
+     arrow keys work too. */
+  var modal = document.getElementById('media-modal');
+  var modalImg = document.getElementById('media-modal-img');
+  var modalCap = document.getElementById('media-modal-caption');
+  var modalNav = document.getElementById('media-modal-nav');
+  var modalCount = document.getElementById('media-modal-count');
+  var modalPrev = modal ? modal.querySelector('.media-modal-prev') : null;
+  var modalNext = modal ? modal.querySelector('.media-modal-next') : null;
+  var modalShow = null;
+  function modalCaption(fig){
+    var cap = fig ? fig.querySelector('figcaption') : null;
+    var cred = fig ? fig.querySelector('.media-credit') : null;
+    var capText = cap ? cap.textContent : '';
+    var credText = cred ? cred.textContent : '';
+    return (capText + (capText && credText ? ' ' : '') + credText).trim();
+  }
+  function modalFromLink(a){
+    var img = a.querySelector('img');
+    var fig = a.closest('figure');
+    modalImg.src = a.getAttribute('href');
+    modalImg.alt = img ? img.alt : '';
+    var text = modalCaption(fig);
+    modalCap.textContent = text;
+    modalCap.style.display = text ? '' : 'none';
+  }
+  function modalSync(){
+    if(!modalShow) return;
+    var ss = modalShow.ss;
+    var active = ss.querySelector('.slideshow-slide.active');
+    var link = active ? active.querySelector('a') : null;
+    if(link) modalFromLink(link);
+    var idx = modalShow.links.indexOf(link);
+    modalCount.textContent = (idx + 1) + ' of ' + modalShow.links.length;
+    modalPrev.disabled = ss.querySelector('.slideshow-prev').disabled;
+    modalNext.disabled = ss.querySelector('.slideshow-next').disabled;
+  }
+  function modalStep(dir){
+    if(!modalShow) return;
+    var btn = modalShow.ss.querySelector(dir < 0 ? '.slideshow-prev' : '.slideshow-next');
+    if(btn) btn.click();
+    modalSync();
+  }
+  if(modal){
+    modal.addEventListener('close', function(){
+      modalImg.removeAttribute('src'); modalShow = null;
+      modal.classList.remove('media-modal-slideshow');
+    });
+    modal.addEventListener('click', function(e){ if(e.target === modal) modal.close(); });
+    var modalClose = modal.querySelector('.media-modal-close');
+    if(modalClose) modalClose.addEventListener('click', function(){ modal.close(); });
+    if(modalPrev) modalPrev.addEventListener('click', function(){ modalStep(-1); });
+    if(modalNext) modalNext.addEventListener('click', function(){ modalStep(1); });
+    modal.addEventListener('keydown', function(e){
+      if(!modalShow) return;
+      if(e.key === 'ArrowLeft') modalStep(-1);
+      else if(e.key === 'ArrowRight') modalStep(1);
+    });
+    /* Tapping the left or right side of a slideshow image steps
+       it too: the buttons underneath stay the discoverable
+       control, this is the faster path for repeat viewing. */
+    modalImg.addEventListener('click', function(e){
+      if(!modalShow) return;
+      var r = modalImg.getBoundingClientRect();
+      if(!r.width) return;
+      modalStep(e.clientX - r.left < r.width / 2 ? -1 : 1);
+    });
+    document.querySelectorAll('.ach-media a, .slideshow a').forEach(function(a){
+      a.addEventListener('click', function(e){
+        if(!modal.showModal) return;
+        e.preventDefault();
+        var ss = a.closest('.slideshow');
+        if(ss){
+          modalShow = {ss: ss, links: [].slice.call(ss.querySelectorAll('a'))};
+          modalNav.style.display = '';
+          modal.classList.add('media-modal-slideshow');
+          modalSync();
+        } else {
+          modalShow = null;
+          modalNav.style.display = 'none';
+          modal.classList.remove('media-modal-slideshow');
+          modalFromLink(a);
+        }
+        modal.showModal();
+      });
+    });
+  }
+  /* Notes live behind the note icons: one icon per card, one on
+     the filter card for game-wide notes. The popup saves as you
+     type, so closing it (button, Escape, outside tap) loses
+     nothing; the icon swaps to a check when its note is set. */
+  function refreshNoteIcons(){
+    document.querySelectorAll('.note-btn').forEach(function(b){
+      var key=b.getAttribute('data-note-key');
+      var has=!!(notesData[key]||'').trim();
+      var icon=b.querySelector('i');
+      if(icon){
+        icon.classList.toggle('bi-journal-check', has);
+        icon.classList.toggle('bi-journal-text', !has);
+      }
+      b.classList.toggle('has-note', has);
+    });
+  }
+  function openNotes(key, title){
+    notesKey=key;
+    notesModalTitle.textContent=title;
+    notesModalText.value=notesData[key]||'';
+    if(notesModal.showModal) notesModal.showModal();
+  }
+  if(notesModal){
+    notesModalText.addEventListener('input', function(){
+      if(notesKey===null) return;
+      var v=notesModalText.value;
+      if(v) notesData[notesKey]=v; else delete notesData[notesKey];
+      save(); refreshNoteIcons();
+    });
+    var notesModalClose=notesModal.querySelector('.notes-modal-close');
+    if(notesModalClose) notesModalClose.addEventListener('click', function(){ notesModal.close(); });
+    notesModal.addEventListener('click', function(e){ if(e.target===notesModal) notesModal.close(); });
+    document.querySelectorAll('.note-btn').forEach(function(b){
+      b.addEventListener('click', function(){
+        var art=b.closest('article');
+        var title=art ? 'Notes: '+art.querySelector('.ach-name').textContent : 'Game notes';
+        openNotes(b.getAttribute('data-note-key'), title);
+      });
+    });
+  }
+  /* Slideshow cards: Previous/Next walk through the guide
+     slides; only one slide shows at a time, and the ends
+     disable their button. Hidden slides are also pulled out
+     of tab order, since they are visibility-hidden, not gone. */
+  document.querySelectorAll('.slideshow').forEach(function(ss){
+    var slides = ss.querySelectorAll('.slideshow-slide');
+    var prev = ss.querySelector('.slideshow-prev');
+    var next = ss.querySelector('.slideshow-next');
+    var count = ss.querySelector('.slideshow-count');
+    var cur = 0;
+    function show(i){
+      cur = Math.max(0, Math.min(slides.length - 1, i));
+      slides.forEach(function(s, j){
+        var on = j === cur;
+        s.classList.toggle('active', on);
+        s.setAttribute('aria-hidden', on ? 'false' : 'true');
+        s.querySelectorAll('a').forEach(function(a){
+          if(on){ a.removeAttribute('tabindex'); } else { a.setAttribute('tabindex', '-1'); }
+        });
+      });
+      count.textContent = (cur + 1) + ' of ' + slides.length;
+      prev.disabled = cur === 0;
+      next.disabled = cur === slides.length - 1;
+    }
+    prev.addEventListener('click', function(){ show(cur - 1); });
+    next.addEventListener('click', function(){ show(cur + 1); });
+    show(0);
+  });
+  load(); updateProgress(); applyFilters();
+})();
+</script>
+</body>
+</html>

@@ -4,6 +4,26 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Game #6: 1000xRESIST
+
+### Added
+
+- 1000xRESIST — all 32 achievements / 1,000G, the full
+  game in story order across five sections: prologue
+  and Chapter 1, Chapters 2–4 with the Orchard
+  landmarks, Chapters 5–6, Chapters 7–X, and the
+  endings. The seven talk-to-everyone achievements are
+  flagged missable (they must be done before each
+  section's confirmation interaction, and most
+  characters can't be spoken to twice), the five
+  Orchard landmarks carry navigation from the Level 1
+  waterfall, and each ending carries its epilogue
+  light combination. No TrueAchievements walkthrough
+  exists, so route notes are paraphrased from the
+  Steam 100% guide (linked in the page sources).
+  Library totals now 6 games · 165 achievements ·
+  6,250G.
+
 ## 2026-11-04 — Game #5: Winter Burrow
 
 ### Added

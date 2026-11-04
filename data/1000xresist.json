@@ -1,0 +1,85 @@
+{
+  "slug": "1000xresist",
+  "title": "1000xRESIST",
+  "tagline": "A story of sisters, shells, and the Orchard — talk to everyone before the scene moves on, then choose the future.",
+  "order_note": "In story order, with each chapter's talk-to-everyone achievement placed in its chapter and the Orchard landmarks grouped with Chapters 2–4 (they're explorable from Chapter 2). The talk achievements must be done before each section's confirmation interaction — most characters can't be spoken to twice, so sweep with the compass before confirming. Endings are all chosen in the epilogue: view the five An Endings first, then the two Epitaphs; Chapter 10 via chapter select cleans up the rest.",
+  "scope_note": "Full game: all 32 achievements / 1,000G. No TrueAchievements walkthrough exists, so route notes are paraphrased from the Steam 100% guide; about 12–15 hours.",
+  "total_gs": 1000,
+  "total_count": 32,
+  "storage_key": "resist-tracker-v1",
+  "sources": [{"label": "TrueAchievements — Achievements", "url": "https://www.trueachievements.com/game/1000xResist/achievements"}, {"label": "Steam — 100% Achievements Guide", "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3248780454&l=turkish"}],
+  "sections": [
+    {
+      "id": "prologue-ch1",
+      "filter_label": "Ch 1",
+      "title": "Prologue & Chapter 1",
+      "subtitle": "3 achievements",
+      "achievements": [
+        {"id": "ach-beginning", "name": "I want you to see from the beginning", "gs": 10, "req": "Complete Chapter [REDACTED]", "how": "Finish the prologue chapter."},
+        {"id": "ach-iris", "name": "Her name was Iris", "gs": 10, "req": "Complete Chapter 1", "how": "Finish Chapter 1."},
+        {"id": "ach-goodbyes", "name": "Saying your goodbyes", "gs": 40, "req": "Talk to all characters in the High School in Chapter 1", "how": "Talk to everyone in the High School in both time periods before the chapter moves on — unlock time travel first (Gymnasium, Rooftop, Gym Door, Jiao's Picture), then sweep with the compass; Jiao's don't count, and most people can't be spoken to twice. It pops when you start talking to the last person.", "missable": true}
+      ]
+    },
+    {
+      "id": "ch2-4",
+      "filter_label": "Ch 2–4",
+      "title": "Chapters 2–4 & the Orchard",
+      "subtitle": "11 achievements",
+      "achievements": [
+        {"id": "ach-family", "name": "I've been thinking about family", "gs": 10, "req": "Complete Chapter 2", "how": "Finish Chapter 2."},
+        {"id": "ach-watcher", "name": "Perform your function, Watcher", "gs": 40, "req": "Talk to all characters in the Orchard in Chapter 2", "how": "Talk to everyone in the Orchard before moving on — Bang Bang Fire doesn't count. Use the compass to find stragglers.", "missable": true},
+        {"id": "ach-newkid", "name": "We were all the new kid once", "gs": 10, "req": "Complete Chapter 3", "how": "Finish Chapter 3."},
+        {"id": "ach-birthday", "name": "Happy Birthday!", "gs": 40, "req": "Talk to all characters in the Orchard in Chapter 3", "how": "Talk to everyone in the Orchard — the Healer doesn't count this time.", "missable": true},
+        {"id": "ach-growingup", "name": "It's a part of growing up", "gs": 10, "req": "Complete Chapter 4", "how": "Finish Chapter 4."},
+        {"id": "ach-bigsister", "name": "You're a Big Sister, now", "gs": 40, "req": "Talk to all characters in the Orchard in Chapter 4", "how": "Talk to everyone in the Orchard, but do NOT talk to Helpful Shell/Fixer in The Bar first — that advances the story. You can enter and leave the bar without talking to them.", "missable": true},
+        {"id": "ach-greenheaven", "name": "In the ground", "gs": 30, "req": "Find \"Green Heaven\" in the Orchard", "how": "From the waterfall on Level 1, turn right at sign '1' (don't take the stairs), pass sign 'C', the ALLMOTHER heads, and the alcove; at the spine statue turn left into the 'Grove' doorway, then left up the escalators."},
+        {"id": "ach-horse", "name": "How does it make you feel?", "gs": 30, "req": "Find the horse statue in the Orchard", "how": "Take stairs 'D' by the waterfall, turn right, and follow the overhead signs to the Horse Lobby."},
+        {"id": "ach-prayer", "name": "A prayer room", "gs": 30, "req": "Find the pillar room in the Orchard", "how": "Left of the waterfall into the glass walkway (Shrine Courtyard), straight past the white arch, right up the wooden spiral stairs, then the grey stairs on the left — don't cross the bridge — into the prayer room."},
+        {"id": "ach-fox", "name": "I think it's a fox", "gs": 30, "req": "Find the skull shrine in the Orchard", "how": "Left of the waterfall into the Shrine Courtyard, first right through the white arch."},
+        {"id": "ach-mirror", "name": "Do some self-reflection", "gs": 30, "req": "Find the mirror shrine in the Orchard", "how": "Take stairs 'D' by the waterfall and turn left toward the mirror shrine."}
+      ]
+    },
+    {
+      "id": "ch5-6",
+      "filter_label": "Ch 5–6",
+      "title": "Chapters 5–6",
+      "subtitle": "5 achievements",
+      "achievements": [
+        {"id": "ach-findyou", "name": "I always find you, don't I?", "gs": 10, "req": "Complete Chapter 5", "how": "Finish Chapter 5."},
+        {"id": "ach-blue", "name": "I want you to call me Blue", "gs": 10, "req": "Complete Chapter 6", "how": "Finish Chapter 6."},
+        {"id": "ach-clone", "name": "A clone about town", "gs": 40, "req": "Talk to all characters in Old Town in Chapter 6 Part 1", "how": "After seeing the Bartender at The Bar but before returning her ingredients, talk to everyone in Old Town.", "missable": true},
+        {"id": "ach-destroy", "name": "Destroy The Provisional Government", "gs": 50, "req": "Destroy The Provisional Government", "how": "In Chapter 6, after gaining upstairs privileges and finishing the required tasks, take your seat in the audience to complete 'Attend The Play'."},
+        {"id": "ach-tendbar", "name": "Somebody has to tend bar", "gs": 40, "req": "Talk to all characters in Old Town and the Orchard in Chapter 6 Part 3", "how": "Talk to everyone in Old Town and the Orchard in Chapter 6 Part 3 — the Red Shells outside the residence don't count, but you must speak to at least one Jiao-Type.", "missable": true}
+      ]
+    },
+    {
+      "id": "ch7-x",
+      "filter_label": "Ch 7–X",
+      "title": "Chapters 7–X",
+      "subtitle": "5 achievements",
+      "achievements": [
+        {"id": "ach-crawl", "name": "噉慢慢爬囉 (Then just slowly crawl)", "gs": 10, "req": "Complete Chapter 7", "how": "Finish Chapter 7."},
+        {"id": "ach-backpack", "name": "Sometimes you don't fit in the backpack", "gs": 10, "req": "Complete Chapter 8", "how": "Finish Chapter 8."},
+        {"id": "ach-blood", "name": "Our own path to blood", "gs": 10, "req": "Complete Chapter 9", "how": "Finish Chapter 9."},
+        {"id": "ach-pacific", "name": "Pacific 50 Descend", "gs": 40, "req": "Talk to all recordings of members of The 50 in Chapter 9", "how": "Talk to every recording of The 50 across floors -16 to -01 in Chapter 9 — the guide lists them floor by floor; use the compass to catch stragglers.", "missable": true},
+        {"id": "ach-thread", "name": "Let this thread be…", "gs": 20, "req": "Complete Chapter X", "how": "Finish Chapter X."}
+      ]
+    },
+    {
+      "id": "endings",
+      "filter_label": "Endings",
+      "title": "Endings",
+      "subtitle": "8 achievements",
+      "achievements": [
+        {"id": "ach-scorched", "name": "An Ending: Scorched Earth", "gs": 40, "req": "An Ending: Scorched Earth", "how": "In the epilogue, turn off every light (Parents may stay on) and confirm with Secretary."},
+        {"id": "ach-mauve", "name": "An Ending: Her Name Is Not Mauve", "gs": 40, "req": "An Ending: Her Name Is Not Mauve", "how": "In the epilogue, leave Mauve's light on and confirm with Secretary."},
+        {"id": "ach-law", "name": "An Ending: The Law", "gs": 40, "req": "An Ending: The Law", "how": "In the epilogue, turn off Mauve's light (Red Guard stays on) and confirm with Secretary."},
+        {"id": "ach-lightsout", "name": "An Ending: Lights Out", "gs": 40, "req": "An Ending: Lights Out", "how": "In the epilogue, turn off Mauve, Red Guard, and Sisters, then confirm with Secretary."},
+        {"id": "ach-justice", "name": "An Ending: Justice For Jiao", "gs": 40, "req": "An Ending: Justice For Jiao", "how": "In the epilogue, turn off Mauve, Red Guard, and Jiao (Sisters on), then confirm with Secretary."},
+        {"id": "ach-blue-end", "name": "Ending: Epitaphs (Blue)", "gs": 50, "req": "Ending: Epitaphs (Blue)", "how": "In the epilogue, turn off Mauve, Red Guard, and Principal (Sisters and Jiaos on), then confirm with Secretary."},
+        {"id": "ach-red-end", "name": "Ending: Epitaphs (Red)", "gs": 50, "req": "Ending: Epitaphs (Red)", "how": "In the epilogue, turn off Mauve and Red Guard only (Sisters, Jiaos, and Principal on), then confirm with Secretary."},
+        {"id": "ach-hekki", "name": "Hekki Allmo", "gs": 100, "req": "Complete The Game", "how": "View the epilogue through either Epitaphs ending. Watch all five An Endings first — they return you to the final scene so you can change the lights; after your first finish, Chapter 10 via chapter select lets you collect the rest."}
+      ]
+    }
+  ]
+}
