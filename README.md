@@ -208,7 +208,10 @@ Schema, per game file:
   (files live under `assets/media/<slug>/`, referenced as
   `assets/...` in the JSON) or an `https://` URL; a remote video
   must be a media file or a YouTube URL (embedded
-  privacy-enhanced). Media must be real captures, never mocked.
+  privacy-enhanced). `credit` renders an "Image: …" line under
+  the image; guide images carry their source as credit, and a
+  failed load swaps in a placeholder explaining why instead of a
+  broken-image icon. Media must be real captures, never mocked.
 - `step_cards`: walkthrough steps that are *not* achievements
   themselves (secret missions, runes) — `title`, `how`, `steps`.
 - Filter buttons: each section may carry its own `filter_label`

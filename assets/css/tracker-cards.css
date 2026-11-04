@@ -159,3 +159,6 @@ button.task[aria-pressed="true"] .task-state::after {
 .step-card .how {
   text-align: center;
 }
+
+/* Placeholder swapped in for a guide image that fails to load. */
+.ach-media-fallback{border:1px dashed var(--bs-border-color);border-radius:.375rem;padding:.75rem;color:var(--bs-secondary-color);font-size:.875rem}

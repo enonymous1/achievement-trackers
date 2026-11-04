@@ -4,6 +4,29 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Guide images on Grove cards, with credit and fallback
+
+### Added
+
+- Every Great God Grove card now shows its achievement icon
+  under the route note, matched by exact achievement name +
+  Gamerscore (all 42 verified, no guessing) and cached in the
+  repo under `assets/media/great-god-grove/icons/` (64px, 168K
+  total). Hotlinking was tried first and does not work:
+  TrueAchievements serves an icon fine direct (HTTP 200) but
+  blocks it embedded in another page (0 of 42 loaded in a real
+  browser, all swapped to the placeholder). Each icon is
+  credited ("Image: TrueAchievements") under the image, and
+  the page's sources link the walkthrough itself. Images are
+  lazy-loaded (`loading="lazy"`, so off-screen cards cost
+  nothing until scrolled to) and served from the site itself,
+  so they cache with the rest of the page.
+- Media entries gain an optional `credit` field, rendered as an
+  "Image: …" line. A guide image that fails to load (moved, or
+  the host blocks loading it here) is swapped by page script for
+  a dashed placeholder explaining why, instead of a
+  broken-image icon.
+
 ## 2026-11-04 — Hub card spacing + CI ruff fix
 
 ### Fixed

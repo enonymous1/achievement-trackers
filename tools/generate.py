@@ -190,7 +190,7 @@ def validate_game(filename, game):
                 check(entry["src"].startswith("assets/")
                       or entry["src"].startswith("https://"),
                       f"{ach['id']}: bad media src {entry['src']!r}")
-                for field in ("alt", "caption"):
+                for field in ("alt", "caption", "credit"):
                     check(field not in entry or isinstance(entry[field], str),
                           f"{ach['id']}: media {field} must be a string")
                 if entry["type"] == "video" and entry["src"].startswith("https://"):
@@ -351,8 +351,13 @@ def render_media(ach):
             alt = esc(entry.get("alt") or ach["name"])
             fig = (f'<img src="{esc(_media_src(src))}" alt="{alt}"'
                    f' loading="lazy" class="img-fluid rounded">')
+            cap = []
             if entry.get("caption"):
-                fig += f'<figcaption class="figure-caption">{esc(entry["caption"])}</figcaption>'
+                cap.append(esc(entry["caption"]))
+            if entry.get("credit"):
+                cap.append(f'Image: {esc(entry["credit"])}')
+            if cap:
+                fig += f'<figcaption class="figure-caption">{" ".join(cap)}</figcaption>'
             parts.append(f'<figure class="ach-media mt-2 mb-0">{fig}</figure>')
         else:
             if src.lower().endswith((".mp4", ".webm", ".ogg")):

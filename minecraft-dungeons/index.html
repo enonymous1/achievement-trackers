@@ -729,6 +729,23 @@
       setStatus('Key cleared from this browser.');
     });
   }
+  /* Guide images that fail to load (moved, or the host blocks
+     loading them here) are swapped for a placeholder that says
+     why, instead of a broken-image icon. Images already broken
+     when this runs are swapped immediately. */
+  document.querySelectorAll('.ach-media img').forEach(function(img){
+    function swap(){
+      var fig = img.closest('figure');
+      var cap = fig ? fig.querySelector('figcaption') : null;
+      var d = document.createElement('div');
+      d.className = 'ach-media-fallback';
+      d.textContent = 'Guide image unavailable — it may have moved, or the host may block loading it here. The walkthrough linked in the sources below has the original.'
+        + (cap ? ' (' + cap.textContent + ')' : '');
+      img.replaceWith(d);
+    }
+    if(img.complete && img.naturalWidth === 0) swap();
+    else img.addEventListener('error', swap);
+  });
   load(); updateProgress(); applyFilters();
 })();
 </script>

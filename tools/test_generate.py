@@ -153,13 +153,19 @@ class TestXboxValidation(unittest.TestCase):
         self.assertIn("can be passed without popping", flagged)
         media = render_achievement(dict(base, media=[
             {"type": "image", "src": "assets/media/x.png", "alt": "Alt", "caption": "Cap"},
+            {"type": "image", "src": "https://example.com/i.jpg", "credit": "Guide"},
             {"type": "video", "src": "assets/media/x.mp4"},
             {"type": "video", "src": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
         ]), 1)
         self.assertIn('<img src="../assets/media/x.png" alt="Alt"', media)
         self.assertIn("<figcaption", media)
+        self.assertIn("Image: Guide", media)
+        self.assertIn('<img src="https://example.com/i.jpg"', media)
         self.assertIn('<video controls', media)
         self.assertIn("youtube-nocookie.com/embed/dQw4w9WgXcQ", media)
+        template = (Path(__file__).parent / "template.html").read_text()
+        self.assertIn("ach-media-fallback", template)
+        self.assertIn("Guide image unavailable", template)
 
     def test_bad_missable_and_media_fail_validation(self):
         game = make_game()
@@ -169,6 +175,7 @@ class TestXboxValidation(unittest.TestCase):
         for bad in (
             {"type": "audio", "src": "assets/media/x.mp3"},
             {"type": "image", "src": "/tmp/x.png"},
+            {"type": "image", "src": "assets/media/x.png", "credit": 5},
             {"type": "video", "src": "https://example.com/page"},
         ):
             game = make_game()
