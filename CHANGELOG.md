@@ -4,6 +4,21 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Game #4: Pigeon Simulator
+
+### Added
+
+- Pigeon Simulator — all 10 achievements / 1,000G, the full
+  game in walkthrough order (MarkLaing07 on
+  TrueAchievements): cheese the three tutorial gadgets
+  first (Revealer 30, Stabilizer 20, Seal 10 — each with
+  its own counter), then the first missions including
+  the deliberate day-1 failure, then the grind to 50
+  anomalies and all $27,860 of upgrades in one life
+  (the four upgrade categories as steps). No missables;
+  about 1–2 hours. Library totals now 4 games · 101
+  achievements · 4,250G.
+
 ## 2026-11-04 — Even card headers, viewer side-tap
 
 ### Changed

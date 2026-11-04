@@ -1,0 +1,47 @@
+{
+  "slug": "pigeon-simulator",
+  "title": "Pigeon Simulator",
+  "tagline": "Collect anomalies, fail once on purpose, then grind every upgrade in a single life.",
+  "order_note": "In walkthrough order: the three tutorial gadgets first (they can be cheesed on the spot), then the first missions — including one deliberate failure — then the upgrade grind. Pops may vary slightly with the order you take days.",
+  "scope_note": "Full game: all 10 achievements / 1,000G. No missables; about 1–2 hours in a single playthrough.",
+  "total_gs": 1000,
+  "total_count": 10,
+  "storage_key": "ps-tracker-v1",
+  "sources": [{"label": "TrueAchievements — Walkthrough by MarkLaing07", "url": "https://www.trueachievements.com/game/Pigeon-Simulator/walkthrough"}, {"label": "TrueAchievements — Achievements", "url": "https://www.trueachievements.com/game/Pigeon-Simulator/achievements"}],
+  "sections": [
+    {
+      "id": "tutorial",
+      "filter_label": "Tutorial",
+      "title": "Tutorial",
+      "subtitle": "Cheese the three gadgets before leaving the tutorial",
+      "achievements": [
+        {"id": "ach-crime", "name": "Crime investigator!", "gs": 125, "req": "Use the Anomaly Revealer device 30 times", "how": "In the tutorial, buy the Anomaly Revealer when prompted, then use it 30 times in a row.", "counters": [{"group": "revealer", "target": 30}]},
+        {"id": "ach-stop", "name": "Stop! Don't Move!", "gs": 145, "req": "Use the Chaos Stabilizer 20 times", "how": "In the next tutorial room, buy the Chaos Stabilizer and press use 20 times — each press counts even where it says you can't use it here.", "counters": [{"group": "stabilizer", "target": 20}]},
+        {"id": "ach-portal", "name": "Portal Wrapper!", "gs": 165, "req": "Use the Dimensional Seal device 10 times", "how": "Buy the Dimensional Seal and use it 10 times. If presses don't count where you bought it, carry it to the rift, close the rift with it, then use it 9 more times.", "counters": [{"group": "seal", "target": 10}]}
+      ]
+    },
+    {
+      "id": "missions",
+      "filter_label": "Missions",
+      "title": "First missions",
+      "subtitle": "One upgrade, one start, one deliberate failure, then a clean day 1",
+      "achievements": [
+        {"id": "ach-taste", "name": "Taste of power!", "gs": 75, "req": "Upgrade pigeon for the first time", "how": "From the main menu choose Play to reach the mission start area, then buy any upgrade at the computer in front of you."},
+        {"id": "ach-welcome", "name": "Welcome, Pigeon!", "gs": 20, "req": "Start the mission", "how": "Climb into the van on the right of the mission start area and start a mission."},
+        {"id": "ach-fired", "name": "You are fired!", "gs": 55, "req": "Fail to collect the quota and fail the mission", "how": "On day 1, do nothing: leave the van, wait for chaos to build, and let a moving, attacking anomaly kill you — don't deliver anything to the collection area first. Dying resets your upgrades and drops you back to day 1, which is exactly what the route wants."},
+        {"id": "ach-experienced", "name": "Experienced customer!", "gs": 90, "req": "Buy any piece of equipment in the shop for the first time", "how": "After the reset, buy the chaos echo sensor from the item stand on the left of the mission start area. Equip the echo locator in the van before your next run — it helps find anomalies."},
+        {"id": "ach-collector", "name": "Collector!", "gs": 35, "req": "Fulfill the minimum quota on the mission", "how": "Complete day 1 properly: collect anomalies (aim for around $1,000 worth, over the quota), then go into the van and hit the leave button — leaving takes about 30 seconds."}
+      ]
+    },
+    {
+      "id": "grind",
+      "filter_label": "Grind",
+      "title": "The grind",
+      "subtitle": "50 anomalies and every upgrade in one life",
+      "achievements": [
+        {"id": "ach-dutiful", "name": "Dutiful agent!", "gs": 110, "req": "Send 50 Anomalies for analysis", "how": "Keep sending anomalies for analysis across runs until you've sent 50 in total.", "counters": [{"group": "anomalies", "target": 50}]},
+        {"id": "ach-eagle", "name": "You are an eagle now!", "gs": 180, "req": "Fully upgrade the pigeon", "how": "Buy every upgrade in a single life, without dying — $27,860 in total. If you die on a day, dashboard and quit the game at once to roll back to before that day. Prioritize movement speed, grab the bread helmet/hat (it heals you while stood still — sit in the van to recover), switch to the Outskirts map on the second computer, and aim for $2,000–3,000 a day; expect around 10–15 runs. Some upgrades sit off-screen — scroll right to see them all.", "steps": [{"id": "step-ground", "label": "Ground movement — $3,310"}, {"id": "step-flying", "label": "Flying movement — $12,650"}, {"id": "step-shooting", "label": "Shooting — $5,890"}, {"id": "step-environment", "label": "Environment — $6,010"}]}
+      ]
+    }
+  ]
+}
