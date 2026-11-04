@@ -4,6 +4,31 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Inline walkthrough screenshots on Grove cards
+
+### Added
+
+- 13 inline screenshots from the TrueAchievements walkthrough,
+  as 15 media entries on 15 Grove cards (the bakery and
+  barracks TV-and-bunny shots each illustrate two cards: the
+  video and the bunny). Each sits after the card's icon, with
+  a caption naming what it shows and "Image:
+  TrueAchievements" credit. Mapping rule, kept strict: only
+  shots that directly show an achievement's trigger or
+  location were attached (the entrance-gate bunny for him, the
+  TVs for each video, the historian, the haircut, the sneeze,
+  the Clicky Tower video, the HobbyHoo bunny, the click-clack
+  editing, the prom dance, the final rift toss). The
+  walkthrough's other ~90 inline shots are route aids for
+  phrases and steps, or sequences whose achievement trigger
+  could not be pinned down, so they were left out rather than
+  guessed — the media mechanism supports adding more later.
+  Shots are the 820w versions (674K total), cached in the
+  repo under `assets/media/great-god-grove/walkthrough/`, so
+  they load from the site itself like the icons. The icons
+  from the previous commit stay: they identify the cards,
+  these shots show how to get them.
+
 ## 2026-11-04 — Guide images on Grove cards, with credit and fallback
 
 ### Added
