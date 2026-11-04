@@ -4,6 +4,21 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Great God Grove (game #2)
+
+### Added
+
+- `data/great-god-grove.json` + generated `great-god-grove/` page:
+  all 42 achievements / 1,000G in walkthrough order across 5
+  chapters (Grove Cove, Milldread, HobbyHoo, BuzzHuzz, the finale),
+  with the hub now listing 2 games (76 achievements, 2,250G). No
+  counters, sub-steps, or step cards — every achievement is a single
+  card. Route notes are short paraphrases of the TrueAchievements
+  walkthrough; a few miscellaneous pop points (the four rabbits as
+  the him chain, the beach ball, the pig) are placed at the
+  walkthrough moment that triggers them, and the page's order note
+  says chapter-end pops may vary slightly.
+
 ## 2026-11-04 — Xbox sync setup documented
 
 ### Added

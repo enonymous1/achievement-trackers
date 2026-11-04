@@ -25,8 +25,8 @@ through a game in order instead of hunting through a flat list.
 The hub is the landing page: a welcome line, a how-it-works card, a
 search box, and one card per game showing its achievement count,
 Gamerscore total, and your saved progress on this browser. The footer
-totals the whole library (currently: 1 game · 34 achievements ·
-1,250G) and links to this repo.
+totals the whole library (currently: 2 games · 76 achievements ·
+2,250G) and links to this repo.
 
 Each game page has a Gamerscore progress bar, search, an
 incomplete-only toggle, phase filters, and export / import / reset for
@@ -112,6 +112,8 @@ committed rather than built on deploy.
 (base game 24 / 1,000G + Jungle Awakens 5 / 130G + Creeping Winter 5 /
 120G). The full game now has 104 achievements / 3,000G; later DLC is
 deliberately out of scope for this tracker, and the page says so.
+Great God Grove — 42 achievements, 1,000G, the full game in
+walkthrough order (Grove Cove through the finale).
 
 ## Prerequisites
 
