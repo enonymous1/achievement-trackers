@@ -24,6 +24,17 @@ versioned; the git log is the release history.
   is exactly the gap a slideshow fills. Route-note text
   stays paraphrased; game phrases stay exact.
 
+### Fixed
+
+- The INSPEKTA slideshow first shipped starting at Vib,
+  dropping the opening of the chain: it now starts with
+  the Bug Wurth / Lumber Jacqueline lead-up (free Bug
+  Wurth, deliver his letter, bring back the crush phrase
+  to cross her bridge, past the BizzyBoys) for 5 slides
+  total, with the annotated location shot cached at both
+  sizes. A test guards the slideshow opening on that shot
+  so it can't be dropped again.
+
 ## 2026-11-04 — Walkthrough shots open in an on-page viewer
 
 ### Changed

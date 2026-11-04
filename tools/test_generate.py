@@ -11,6 +11,7 @@ import unittest
 from pathlib import Path
 
 from generate import (
+    load_games,
     render_achievement,
     render_demos,
     render_game,
@@ -229,6 +230,19 @@ class TestXboxValidation(unittest.TestCase):
             game["sections"][0]["achievements"][0]["slideshow"] = [bad]
             with self.assertRaises(SystemExit):
                 validate_game("test.json", game)
+
+    def test_inspekta_slideshow_starts_with_bug_wurth(self):
+        """The INSPEKTA slideshow must open with the Bug Wurth /
+        Lumber Jacqueline lead-up: dropping it strands the
+        reader at Vib with no route to the van."""
+        game = next(g for g in load_games() if g["slug"] == "great-god-grove")
+        inspekta = next(
+            a for s in game["sections"] for a in s["achievements"]
+            if a["id"] == "ach-inspekta")
+        slides = inspekta["slideshow"]
+        self.assertEqual(len(slides), 5)
+        self.assertTrue(slides[0]["src"].endswith("lumber-jacqueline-location.jpg"))
+        self.assertTrue(slides[1]["src"].endswith("lumber-jacqueline-location.jpg"))
 
     def test_hub_game_cards_are_nested_in_columns(self):
         # Regression: a card that IS the column touches its
