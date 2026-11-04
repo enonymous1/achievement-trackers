@@ -1,0 +1,36 @@
+{
+  "slug": "barbie-horse-trails",
+  "title": "Barbie Horse Trails",
+  "tagline": "An open-world ride through Canterbury Trails Park with Lucky.",
+  "order_note": "In story/roadmap order: most unlock naturally as you finish the main and side quests, so later pops may vary with the order you take side quests.",
+  "scope_note": "Full game: all 15 achievements / 1,000G. No missables; about 2–4 hours.",
+  "total_gs": 1000,
+  "total_count": 15,
+  "storage_key": "bht-tracker-v1",
+  "sources": [{"label": "TrueAchievements — Achievements", "url": "https://www.trueachievements.com/game/Barbie-Horse-Trails/achievements"}, {"label": "ScorpioOfShadows — Trophy Guide", "url": "https://scorpioofshadows.com/post/barbie-horse-trails"}, {"label": "Knoef — Trophy Guide", "url": "https://knoef.info/trophy-guides/ps5/barbie-horse-trails-trophy-guide/"}],
+  "sections": [
+    {
+      "id": "full-game",
+      "filter_label": "Full game",
+      "title": "Canterbury Trails",
+      "subtitle": "All 15 achievements in story order",
+      "achievements": [
+        {"id": "ach-welcome", "name": "Welcome to Canterbury Trails", "gs": 25, "req": "Complete the Prologue", "how": "Finish the prologue at the stable."},
+        {"id": "ach-snapshot", "name": "Snapshot", "gs": 25, "req": "Complete the photography tutorial", "how": "Start the Scenic Photography 101 mission with Barbie's father and finish the photography tutorial."},
+        {"id": "ach-well-done", "name": "Well Done", "gs": 50, "req": "Congratulate Lucky on a job well done", "how": "After Scenic Photography 101, use the special pet on Lucky (\"super pet\") at least once after finishing a quest."},
+        {"id": "ach-new-look", "name": "New Look", "gs": 50, "req": "Enter a changing station and change your outfit", "how": "Step into a changing station at the Ranger Station or any stable and change any piece of clothing. Outfits come from tasks, boxes lying around, and horse level-ups."},
+        {"id": "ach-first-place", "name": "1st Place", "gs": 100, "req": "Win first place in a race", "how": "Win the story horse race in first place. Other races are marked with a checkered flag on the map, and only one race is mandatory."},
+        {"id": "ach-mustang", "name": "Silver Canyon Mustang", "gs": 100, "req": "Find the Silver Canyon Mustang", "how": "Finish Dr. Potts' Mystery Horse questline, through the second artifact, the backpack quest, and the website pictures to the final artifact and the thrilling conclusion."},
+        {"id": "ach-ranger-quinn", "name": "Ranger Duty II", "gs": 50, "req": "Complete a mission for Ranger Quinn", "how": "Finish your first quest for Ranger Quinn (Trail Trek)."},
+        {"id": "ach-ranger-rory", "name": "Ranger Duty", "gs": 50, "req": "Complete a mission for Ranger Rory", "how": "Finish your first quest for Ranger Rory."},
+        {"id": "ach-green-thumb", "name": "Green Thumb", "gs": 50, "req": "Complete a mission for Dr. Green", "how": "Finish your first quest for Dr. Green."},
+        {"id": "ach-bonded", "name": "Bonded", "gs": 100, "req": "Reach max level for Horse Bond", "how": "Raise Lucky's bond to max level 11: pet her when she asks, brush her, feed her everything you receive, and keep her clean.", "counters": [{"group": "bond", "target": 11}]},
+        {"id": "ach-star-search", "name": "Star Search", "gs": 50, "req": "Complete a mission for Stella", "how": "For Stella, recreate the Big Dipper constellation at her site."},
+        {"id": "ach-friends-in-need", "name": "Friends in Need", "gs": 100, "req": "Complete all the missions for Barbie's friends", "how": "Finish every side quest. They are the \"!\" markers on the map; press Options to track one (blue marker)."},
+        {"id": "ach-park-progress", "name": "Park Progress", "gs": 100, "req": "Complete the park packet", "how": "Fill the park packet with main and side quests and photos of animals, people, and viewpoints. If the story stalls on the packet bar, clear side quests first, then return to the main quests."},
+        {"id": "ach-golden-moments", "name": "Golden Moments", "gs": 50, "req": "Get together for the big group photo", "how": "Story mission near the end: just follow the quest marker to the big group photo."},
+        {"id": "ach-best-friends", "name": "Best Friends Forever", "gs": 100, "req": "Complete the game", "how": "Finish the game: go to Barbie on the last quest and let the conversation play out."}
+      ]
+    }
+  ]
+}

@@ -4,6 +4,24 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Game #3: Barbie Horse Trails
+
+### Added
+
+- Barbie Horse Trails: all 15 achievements / 1,000G in
+  story/roadmap order, one section, one counter (Horse
+  Bond level, target 11, on Bonded). No missables, no
+  steps, no media: no walkthrough screenshots were
+  captured, and none were lifted from the guides.
+- No TrueAchievements walkthrough exists for this game
+  (checked: its walkthrough page carries no guide), so
+  the route notes are paraphrased from two full guides
+  instead: ScorpioOfShadows (roadmap order, mission
+  names) and Knoef (packet bar, side-quest markers,
+  bond level 11, checkered-flag races). Both are linked
+  in the page sources alongside TA. Hub now lists 3
+  games (91 achievements, 3,250G).
+
 ## 2026-11-04 — Slideshow guide cards (INSPEKTA first)
 
 ### Added
