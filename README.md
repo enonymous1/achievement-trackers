@@ -25,8 +25,8 @@ through a game in order instead of hunting through a flat list.
 The hub is the landing page: a welcome line, a how-it-works card, a
 search box, and one card per game showing its achievement count,
 Gamerscore total, and your saved progress on this browser. The footer
-totals the whole library (currently: 8 games · 238 achievements ·
-8,250G) and links to this repo.
+totals the whole library (currently: 9 games · 258 achievements ·
+9,250G) and links to this repo.
 
 Each game page has a Gamerscore progress bar, search, an
 incomplete-only toggle, phase filters, and export / import / reset for
@@ -137,6 +137,14 @@ progression achievements (new Hunter, levels 6 and 30
 on a shared counter, first Relic, first Treasure Map).
 No TA walkthrough exists, so chapter order follows a
 completed playthrough's unlock sequence.
+Wreckfest (Windows) — 20 achievements, 1,000G, the full
+game: 5 career championships plus all career
+challenges, ranks 10/25/50 on a shared counter,
+vehicle collecting, the wrecking totals, the lawn
+mower hour, and 20 multiplayer wins (private-lobby
+boostable; AI wins don't count). No TA walkthrough
+exists, so route notes are paraphrased from the Knoef
+and Fuzionbyte trophy guides.
 
 ## Prerequisites
 

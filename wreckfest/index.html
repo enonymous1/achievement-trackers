@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wreckfest — Achievement Tracker</title>
+<meta name="description" content="Achievement-first tracker for Wreckfest: achievements grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<meta property="og:title" content="Wreckfest — Achievement Tracker">
+<meta property="og:description" content="Achievement-first tracker for Wreckfest: achievements grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<script>
+  /* Theme before first paint: saved choice wins, otherwise follow the
+     system. AdminLTE 4 / Bootstrap 5.3 read data-bs-theme. */
+  (function () {
+    try {
+      var theme = localStorage.getItem("at-theme");
+      if (!theme) {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      document.documentElement.setAttribute("data-bs-theme", theme);
+    } catch (e) {}
+  })();
+</script>
+<link rel="stylesheet" href="../assets/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="../assets/vendor/bootstrap-icons.min.css">
+<link rel="stylesheet" href="../assets/vendor/adminlte.min.css">
+<link rel="stylesheet" href="../assets/css/sidebar.css">
+<link rel="stylesheet" href="../assets/css/tracker-cards.css">
+<style>
+  /* Page rules only: the card language itself lives in
+     assets/css/tracker-cards.css, shared with the How page demos. */
+  /* v2's contained column, not AdminLTE's full-width fluid layout. */
+  .app-main .container-fluid{max-width:1100px;margin-left:auto;margin-right:auto}
+  /* Only the progress bar card is pinned: the slim card holding the
+     Gamerscore title, counts and bar sticks to the top of the
+     viewport while scrolling (the top header scrolls away in this
+     layout, so top: 0 is right). Search, filters and the
+     Order/Scope text live in the card below it and scroll away. */
+  .progress-card{position:sticky;top:0;z-index:1030;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  /* AdminLTE's layout-fixed sets .app-main to overflow:auto (via
+     .sidebar-expand-lg.layout-fixed .app-main), which makes it the
+     sticky element's scrolling ancestor — and since it never
+     scrolls itself, position:sticky on the progress card stops
+     working. Restore visible overflow at the same specificity, so
+     the card sticks to the viewport scroll, as it did in the
+     top-nav layout. */
+  .sidebar-expand-lg.layout-fixed .app-main{overflow:visible}
+  /* Sections read as a group again (v2's card background), not as a
+     bare bordered box on the page background. */
+  details{background:var(--bs-card-bg);border:1px solid var(--bs-border-color);border-radius:12px;margin-bottom:1rem;overflow:hidden}
+  details summary{cursor:pointer;padding:1rem;font-weight:700;font-size:1.1rem}
+  details summary::marker{color:var(--bs-secondary-color)}
+  details summary small{display:block;font-weight:400;color:var(--bs-secondary-color);font-size:.9rem;margin-top:2px}
+  .section-body{padding:0 1rem 1rem}
+  /* Overall progress bar: v2's rounded gradient pill, not the flat
+     Bootstrap bar. The counter bars keep Bootstrap's flat bar. */
+  #overallBar{background:linear-gradient(90deg,var(--at-green),#a8e07a);border-radius:99px}
+  .progress:has(#overallBar){height:14px;border-radius:99px;overflow:hidden}
+  /* Phase filters are separate pills (v2), not a joined button group;
+     the active pill is solid green with dark text, as in v2. */
+  /* Phase pills read as normal text (v2), not Bootstrap's dark-green
+     outline-success text, which is near-illegible on a dark card. */
+  .filter{--bs-btn-color:var(--bs-body-color);--bs-btn-border-color:var(--bs-border-color);--bs-btn-hover-color:var(--bs-body-color);--bs-btn-hover-border-color:var(--at-green);--bs-btn-active-color:var(--bs-body-color)}
+  .filter.active{background:var(--at-green) !important;border-color:var(--at-green) !important;font-weight:700}
+  [data-bs-theme="dark"] .filter.active{color:#12140f !important}
+  .hidden{display:none !important}
+  @media print{.app-header,.controls,#xbox-sync{display:none !important}.progress-card{position:static}details{break-inside:avoid}}
+</style>
+</head>
+<body class="layout-fixed sidebar-expand-lg">
+<script>
+  /* Restore the sidebar's collapsed/open state before AdminLTE's
+     own init runs, so the drawer does not flash open on every page.
+     The observer in assets/js/sidebar-state.js saves each change. */
+  (function(){try{var s=localStorage.getItem('at-sidebar');if(s==='collapsed')document.body.classList.add('sidebar-collapse');if(s==='open')document.body.classList.add('sidebar-open');}catch(e){}})();
+</script>
+<div class="app-wrapper">
+  <nav class="app-header navbar navbar-expand bg-body">
+    <div class="container-fluid">
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" aria-label="Toggle sidebar"><i class="bi bi-list"></i></a></li>
+      </ul>
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item"><span class="nav-link" id="overallTextNav">0 / 20 · 0G</span></li>
+        <li class="nav-item ms-2"><button type="button" id="theme-toggle" class="btn btn-sm btn-outline-secondary" aria-label="Toggle dark mode">Theme</button></li>
+      </ul>
+    </div>
+  </nav>
+  <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+    <div class="sidebar-brand">
+      <a href="../" class="brand-link"><span class="brand-text fw-light">🏆 Achievement Trackers</span></a>
+    </div>
+    <div class="sidebar-wrapper">
+      <nav class="mt-2">
+        <ul class="nav sidebar-menu flex-column" role="menu">
+              <li class="nav-item"><a href="../" class="nav-link"><i class="nav-icon bi bi-house"></i><p>Home</p></a></li>
+              <li class="nav-header">Games</li>
+              <li class="nav-item"><a href="../1000xresist/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>1000xRESIST</p></a></li>
+              <li class="nav-item"><a href="../barbie-horse-trails/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Barbie Horse Trails</p></a></li>
+              <li class="nav-item"><a href="../goldeneye-007/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>GoldenEye 007</p></a></li>
+              <li class="nav-item"><a href="../great-god-grove/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Great God Grove</p></a></li>
+              <li class="nav-item"><a href="../minecraft-dungeons/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Minecraft Dungeons</p></a></li>
+              <li class="nav-item"><a href="../pigeon-simulator/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Pigeon Simulator</p></a></li>
+              <li class="nav-item"><a href="../relic-hunters-legend/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Relic Hunters Legend</p></a></li>
+              <li class="nav-item"><a href="../winter-burrow/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Winter Burrow</p></a></li>
+              <li class="nav-item"><a href="../wreckfest/" class="nav-link active"><i class="nav-icon bi bi-controller"></i><p>Wreckfest</p></a></li>
+        </ul>
+      </nav>
+      <div class="sidebar-bottom">
+        <ul class="nav sidebar-menu flex-column" role="menu">
+          <li class="nav-item"><a href="../how-it-works/" class="nav-link"><i class="nav-icon bi bi-question-circle"></i><p>How it works</p></a></li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+  <main class="app-main">
+    <div class="app-content-header">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-12">
+            <h3 class="mb-0">Wreckfest <small class="text-secondary">— Achievement Tracker</small></h3>
+            <p class="text-secondary mb-0">Banger racing at its finest — five championships, a garage full of wrecks, and one very patient lawn mower.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="app-content">
+      <div class="container-fluid">
+
+        <div class="card progress-card">
+          <div class="card-header d-flex justify-content-between flex-wrap gap-2">
+            <h3 class="card-title">Gamerscore progress</h3>
+            <span id="overallText">0 / 20 achievements · 0 / 1000G</span>
+          </div>
+          <div class="card-body">
+            <div class="progress" role="progressbar" aria-label="Gamerscore progress">
+              <div class="progress-bar bg-success" id="overallBar" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="controls d-flex flex-wrap gap-2 align-items-center">
+              <input type="search" id="search" class="form-control flex-grow-1" style="min-width:220px" placeholder="Search achievements, missions, gear…" aria-label="Search tracker">
+              <label class="form-check-label"><input type="checkbox" id="incompleteOnly" class="form-check-input me-1"> Incomplete only</label>
+              <button type="button" id="exportBtn" class="btn btn-outline-secondary btn-sm">Export progress</button>
+              <label class="btn btn-outline-secondary btn-sm mb-0" for="importFile">Import progress</label>
+              <input type="file" id="importFile" accept=".json,application/json" class="d-none">
+              <button type="button" id="resetBtn" class="btn btn-outline-danger btn-sm">Reset all</button>
+              <button type="button" class="note-btn" data-note-key="game" title="Game notes" aria-label="Game notes"><i class="bi bi-journal-text"></i></button>
+            </div>
+            <div class="controls d-flex flex-wrap gap-2 mt-2" role="group" aria-label="Filter by phase">
+              <button type="button" class="filter btn btn-outline-success active" data-filter="all">All</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="career">Career</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="ranks">Ranks &amp; garage</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="wrecking">Wrecking &amp; stunts</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="multiplayer">Multiplayer</button>
+            </div>
+            <p class="text-secondary mt-3 mb-0"><strong>Order:</strong> Career first, in championship order — the rank, vehicle, and wrecking totals build up as you go, and the rank-50 grind is the cleanup after the campaign (expect to finish the story around rank 30–35). Multiplayer wins need human opponents; wins against AI don&#x27;t count.</p>
+            <p class="text-secondary mb-0"><strong>Scope:</strong> Full game: all 20 achievements / 1,000G — the Windows (PC Game Pass) version. No TrueAchievements walkthrough exists; route notes are paraphrased from the Knoef and Fuzionbyte trophy guides, which cover the same achievements. About 15–20 hours.</p>
+          </div>
+        </div>
+
+
+
+<details open data-cat="career">
+<summary>Career <small>7 achievements · <span class="sec-progress" data-section="career"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Storm Warning Win Your First Career Race. Win your first career race — it pops during the Regional Juniors championship."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-storm" data-gs="20" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#1</span><span class="ach-name">Storm Warning</span><span class="gs badge text-bg-warning ms-auto">20G</span></button><button type="button" class="note-btn" data-note-key="ach-storm" title="Notes for Storm Warning" aria-label="Notes for Storm Warning"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Win Your First Career Race.</p><p class="how">Win your first career race — it pops during the Regional Juniors championship.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Regional Juniors Champion Complete Regional Juniors Championship. Complete the Regional Juniors championship, the first of the five career championships."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-regional" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#2</span><span class="ach-name">Regional Juniors Champion</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-regional" title="Notes for Regional Juniors Champion" aria-label="Notes for Regional Juniors Champion"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Regional Juniors Championship.</p><p class="how">Complete the Regional Juniors championship, the first of the five career championships.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="National Amateurs Champion Complete National Amateurs Championship. Complete the National Amateurs championship."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-national" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#3</span><span class="ach-name">National Amateurs Champion</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-national" title="Notes for National Amateurs Champion" aria-label="Notes for National Amateurs Champion"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete National Amateurs Championship.</p><p class="how">Complete the National Amateurs championship.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Challengers Champion Complete Challengers Championship. Complete the Challengers championship."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-challengers" data-gs="90" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#4</span><span class="ach-name">Challengers Champion</span><span class="gs badge text-bg-warning ms-auto">90G</span></button><button type="button" class="note-btn" data-note-key="ach-challengers" title="Notes for Challengers Champion" aria-label="Notes for Challengers Champion"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Challengers Championship.</p><p class="how">Complete the Challengers championship.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Pro Internationals Champion Complete Pro Internationals Championship. Complete the Pro Internationals championship."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-pro" data-gs="90" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#5</span><span class="ach-name">Pro Internationals Champion</span><span class="gs badge text-bg-warning ms-auto">90G</span></button><button type="button" class="note-btn" data-note-key="ach-pro" title="Notes for Pro Internationals Champion" aria-label="Notes for Pro Internationals Champion"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Pro Internationals Championship.</p><p class="how">Complete the Pro Internationals championship.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="World Masters Champion Complete World Masters Championship. Complete the World Masters championship, the last of the five."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-world" data-gs="90" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#6</span><span class="ach-name">World Masters Champion</span><span class="gs badge text-bg-warning ms-auto">90G</span></button><button type="button" class="note-btn" data-note-key="ach-world" title="Notes for World Masters Champion" aria-label="Notes for World Masters Champion"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete World Masters Championship.</p><p class="how">Complete the World Masters championship, the last of the five.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Highballer Complete All Career Challenges. Complete all career challenges — the special challenge events also unlock the special vehicles (Lawn Mower from Eat Dirt!, School Bus from the Oval Challenge, and more)."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-highballer" data-gs="90" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#7</span><span class="ach-name">Highballer</span><span class="gs badge text-bg-warning ms-auto">90G</span></button><button type="button" class="note-btn" data-note-key="ach-highballer" title="Notes for Highballer" aria-label="Notes for Highballer"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete All Career Challenges.</p><p class="how">Complete all career challenges — the special challenge events also unlock the special vehicles (Lawn Mower from Eat Dirt!, School Bus from the Oval Challenge, and more).</p></div></article></div>
+</div></div></details>
+<details data-cat="ranks">
+<summary>Ranks &amp; garage <small>6 achievements · <span class="sec-progress" data-section="ranks"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Dirty Roller Reach Player Rank 10. Reach player rank 10."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-rank10" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#8</span><span class="ach-name">Dirty Roller</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-rank10" title="Notes for Dirty Roller" aria-label="Notes for Dirty Roller"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="rank" data-target="10"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Reach Player Rank 10.</p><p class="how">Reach player rank 10.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease rank counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="rank" data-target="10" min="0" value="0" aria-label="rank counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase rank counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Trashing Around Reach Player Rank 25. Reach player rank 25."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-rank25" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#9</span><span class="ach-name">Trashing Around</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-rank25" title="Notes for Trashing Around" aria-label="Notes for Trashing Around"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="rank" data-target="25"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Reach Player Rank 25.</p><p class="how">Reach player rank 25.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease rank counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="rank" data-target="25" min="0" value="0" aria-label="rank counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase rank counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Showing Some Dedication Reach Player Rank 50. Reach player rank 50 — 1,530,000 XP total. After the campaign you&#x27;ll be around rank 30–35; grind the rest in a custom event (Motor City circuit, strong car, AI in lawnmowers, 60 laps, realistic damage, hard/expert) or a private deathmatch (Fairfield County Demolition Arena, friend + 6 AI, ~10,000 XP per 4 minutes)."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-rank50" data-gs="90" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#10</span><span class="ach-name">Showing Some Dedication</span><span class="gs badge text-bg-warning ms-auto">90G</span></button><button type="button" class="note-btn" data-note-key="ach-rank50" title="Notes for Showing Some Dedication" aria-label="Notes for Showing Some Dedication"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="rank" data-target="50"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Reach Player Rank 50.</p><p class="how">Reach player rank 50 — 1,530,000 XP total. After the campaign you&#x27;ll be around rank 30–35; grind the rest in a custom event (Motor City circuit, strong car, AI in lawnmowers, 60 laps, realistic damage, hard/expert) or a private deathmatch (Fairfield County Demolition Arena, friend + 6 AI, ~10,000 XP per 4 minutes).</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease rank counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="rank" data-target="50" min="0" value="0" aria-label="rank counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase rank counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Wheeler Dealer Collect 10 Vehicles. Collect 10 vehicles — buy from the Market and collect the career-reward vehicles."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-vehicles10" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#11</span><span class="ach-name">Wheeler Dealer</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-vehicles10" title="Notes for Wheeler Dealer" aria-label="Notes for Wheeler Dealer"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="vehicles" data-target="10"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Collect 10 Vehicles.</p><p class="how">Collect 10 vehicles — buy from the Market and collect the career-reward vehicles.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease vehicles counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="vehicles" data-target="10" min="0" value="0" aria-label="vehicles counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase vehicles counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Junk Collector Collect 20 Vehicles. Collect 20 vehicles."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-vehicles20" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#12</span><span class="ach-name">Junk Collector</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-vehicles20" title="Notes for Junk Collector" aria-label="Notes for Junk Collector"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="vehicles" data-target="20"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Collect 20 Vehicles.</p><p class="how">Collect 20 vehicles.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease vehicles counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="vehicles" data-target="20" min="0" value="0" aria-label="vehicles counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase vehicles counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Cash For Crashes Earn 50 000 Credits. Earn 50,000 credits across career, multiplayer, and custom events."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-cash" data-gs="90" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#13</span><span class="ach-name">Cash For Crashes</span><span class="gs badge text-bg-warning ms-auto">90G</span></button><button type="button" class="note-btn" data-note-key="ach-cash" title="Notes for Cash For Crashes" aria-label="Notes for Cash For Crashes"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="credits" data-target="50000"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Earn 50 000 Credits.</p><p class="how">Earn 50,000 credits across career, multiplayer, and custom events.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease credits counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="credits" data-target="50000" min="0" value="0" aria-label="credits counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase credits counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+</div></div></details>
+<details data-cat="wrecking">
+<summary>Wrecking &amp; stunts <small>6 achievements · <span class="sec-progress" data-section="wrecking"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Hating Them Tin Cans Wreck 100 Opponents. Wreck 100 opponents — only the final hit counts, so an assist on a 90%-damaged car doesn&#x27;t. A big tough vehicle against AI lawnmowers in a custom deathmatch is the fastest farm."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-wreck100" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#14</span><span class="ach-name">Hating Them Tin Cans</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-wreck100" title="Notes for Hating Them Tin Cans" aria-label="Notes for Hating Them Tin Cans"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="wrecks" data-target="100"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Wreck 100 Opponents.</p><p class="how">Wreck 100 opponents — only the final hit counts, so an assist on a 90%-damaged car doesn&#x27;t. A big tough vehicle against AI lawnmowers in a custom deathmatch is the fastest farm.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease wrecks counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="wrecks" data-target="100" min="0" value="0" aria-label="wrecks counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase wrecks counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Glutton For Punishment Get Wrecked 100 Times. Get wrecked 100 times — it builds up through the campaign and multiplayer; if you&#x27;re short, grab a lawnmower and get yourself killed."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-wrecked100" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#15</span><span class="ach-name">Glutton For Punishment</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-wrecked100" title="Notes for Glutton For Punishment" aria-label="Notes for Glutton For Punishment"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="wrecked" data-target="100"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Get Wrecked 100 Times.</p><p class="how">Get wrecked 100 times — it builds up through the campaign and multiplayer; if you&#x27;re short, grab a lawnmower and get yourself killed.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease wrecked counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="wrecked" data-target="100" min="0" value="0" aria-label="wrecked counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase wrecked counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Maniac Driver Wreck 50 Opponents With School Bus. Wreck 50 opponents with the School Bus — it unlocks from the Oval Challenge; some campaign missions use it, and the rest can be farmed in private matches against bots."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-bus" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#16</span><span class="ach-name">Maniac Driver</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-bus" title="Notes for Maniac Driver" aria-label="Notes for Maniac Driver"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="bus-wrecks" data-target="50"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Wreck 50 Opponents With School Bus.</p><p class="how">Wreck 50 opponents with the School Bus — it unlocks from the Oval Challenge; some campaign missions use it, and the rest can be farmed in private matches against bots.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease bus-wrecks counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="bus-wrecks" data-target="50" min="0" value="0" aria-label="bus-wrecks counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase bus-wrecks counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Look Mom, I Can Fly Spend 5 Minutes In Air. Spend 5 minutes total in the air — Bone Breaker Valley has two good air spots per lap."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-fly" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#17</span><span class="ach-name">Look Mom, I Can Fly</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-fly" title="Notes for Look Mom, I Can Fly" aria-label="Notes for Look Mom, I Can Fly"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="air-minutes" data-target="5"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Spend 5 Minutes In Air.</p><p class="how">Spend 5 minutes total in the air — Bone Breaker Valley has two good air spots per lap.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease air-minutes counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="air-minutes" data-target="5" min="0" value="0" aria-label="air-minutes counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase air-minutes counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Garden Variety Drive 1 Hour With Lawn Mower. Drive 1 hour with the Lawn Mower — it unlocks from the Eat Dirt! challenge. Custom event, no AI opponents, nudge it forward, then idle for an hour (keep the controller awake)."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-mower" data-gs="20" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#18</span><span class="ach-name">Garden Variety</span><span class="gs badge text-bg-warning ms-auto">20G</span></button><button type="button" class="note-btn" data-note-key="ach-mower" title="Notes for Garden Variety" aria-label="Notes for Garden Variety"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="mower-minutes" data-target="60"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Drive 1 Hour With Lawn Mower.</p><p class="how">Drive 1 hour with the Lawn Mower — it unlocks from the Eat Dirt! challenge. Custom event, no AI opponents, nudge it forward, then idle for an hour (keep the controller awake).</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease mower-minutes counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="mower-minutes" data-target="60" min="0" value="0" aria-label="mower-minutes counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase mower-minutes counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Rocketeer Reach 210 Km/h (130 Mph) With Rocket. Reach 210 km/h (130 mph) with the Rocket, the starter car — find a long straight or downhill stretch."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-rocket" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#19</span><span class="ach-name">Rocketeer</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-rocket" title="Notes for Rocketeer" aria-label="Notes for Rocketeer"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Reach 210 Km/h (130 Mph) With Rocket.</p><p class="how">Reach 210 km/h (130 mph) with the Rocket, the starter car — find a long straight or downhill stretch.</p></div></article></div>
+</div></div></details>
+<details data-cat="multiplayer">
+<summary>Multiplayer <small>1 achievement · <span class="sec-progress" data-section="multiplayer"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Human Lover Win 20 Events In Multiplayer. Win 20 multiplayer events — boostable in a private lobby with a friend, taking turns winning. Wins against AI opponents do not count."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-human" data-gs="90" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#20</span><span class="ach-name">Human Lover</span><span class="gs badge text-bg-warning ms-auto">90G</span></button><button type="button" class="note-btn" data-note-key="ach-human" title="Notes for Human Lover" aria-label="Notes for Human Lover"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="mp-wins" data-target="20"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Win 20 Events In Multiplayer.</p><p class="how">Win 20 multiplayer events — boostable in a private lobby with a friend, taking turns winning. Wins against AI opponents do not count.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease mp-wins counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="mp-wins" data-target="20" min="0" value="0" aria-label="mp-wins counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase mp-wins counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+</div></div></details>
+
+        <div class="card">
+          <div class="card-body text-secondary">
+            <p class="mb-1"><strong>Sources:</strong> achievement names, requirements and Gamerscore from the achievement list linked below; route notes are short paraphrases of the linked walkthrough — the full guide text is not reproduced here. <a href="https://www.trueachievements.com/game/Wreckfest-Windows/achievements">TrueAchievements — Achievements</a> · <a href="https://www.cheatcc.com/articles/wreckfest-cheats-cheat-codes-for-xbox-one-playstation-5-pc-and-more/">Cheat Code Central — Gamerscore table</a> · <a href="https://knoef.info/trophy-guides/ps5/wreckfest-trophy-guide/">Knoef — Trophy guide</a></p>
+            <p class="mb-0">Unofficial fan tracker, not affiliated with the achievement site, the walkthrough author, or the game's publisher. Shell: AdminLTE 4.10.0 + Bootstrap 5.3.8 + Bootstrap Icons 1.11.3, vendored under <code>assets/vendor/</code> (see <code>THIRD_PARTY_NOTICES.md</code>).</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+  <footer class="app-footer">
+    <strong>Achievement Trackers</strong> — <a href="../">back to all games</a>
+  </footer>
+</div>
+<script src="../assets/vendor/bootstrap.bundle.min.js"></script>
+<script src="../assets/vendor/adminlte.min.js"></script>
+<script src="../assets/js/theme-toggle.js"></script>
+<script src="../assets/js/sidebar-state.js"></script>
+<dialog id="media-modal" aria-label="Image viewer">
+  <div class="media-modal-inner">
+    <button type="button" class="media-modal-close" aria-label="Close image viewer">×</button>
+    <img id="media-modal-img" alt="">
+    <p id="media-modal-caption" class="media-modal-caption"></p>
+    <div id="media-modal-nav" class="media-modal-nav" style="display:none">
+      <button type="button" class="media-modal-prev btn btn-outline-light btn-sm">← Previous</button>
+      <span id="media-modal-count" class="media-modal-count"></span>
+      <button type="button" class="media-modal-next btn btn-outline-light btn-sm">Next →</button>
+    </div>
+  </div>
+</dialog>
+<dialog id="notes-modal" aria-label="Notes">
+  <div class="notes-modal-inner">
+    <div class="d-flex justify-content-between align-items-center gap-3">
+      <h3 id="notes-modal-title" class="mb-0 fs-5">Notes</h3>
+      <button type="button" class="notes-modal-close" aria-label="Close notes">×</button>
+    </div>
+    <textarea id="notes-modal-text" class="form-control mt-2" rows="5" placeholder="Anything you want to remember for this one…"></textarea>
+    <p class="text-secondary mt-2 mb-0">Saved in this browser only, alongside your progress.</p>
+  </div>
+</dialog>
+<script>
+/* Tracker progress. The hub never writes progress, only reads it;
+   this script is the single writer for a game page. */
+(function(){
+  var KEY='wf-tracker-v1';
+  var OLD='';
+  var MIGRATION={};
+  var TOTAL_GS=1000;
+  /* Tasks are now header toggle buttons, not checkboxes: the pressed
+     state lives in aria-pressed, and the id / data-gs contract with
+     save, export and the step auto-tick code is unchanged. */
+  var tasks=[].slice.call(document.querySelectorAll('button.task'));
+  var steps=[].slice.call(document.querySelectorAll('input.step'));
+  var counts=[].slice.call(document.querySelectorAll('input.count'));
+  var notesModal=document.getElementById('notes-modal');
+  var notesModalTitle=document.getElementById('notes-modal-title');
+  var notesModalText=document.getElementById('notes-modal-text');
+  /* Notes are one object, not one string: the game-wide note
+     lives under 'game', each achievement's under its card id.
+     Old saves and exports stored a single string — that was
+     the game-wide note, so it migrates to the 'game' key. */
+  var notesData={};
+  var notesKey=null;
+  var search=document.getElementById('search');
+  var incompleteOnly=document.getElementById('incompleteOnly');
+  var overallText=document.getElementById('overallText');
+  var overallTextNav=document.getElementById('overallTextNav');
+  var overallBar=document.getElementById('overallBar');
+
+  /* Save dedupes shared counters: several achievements render an input
+     for the same group, but localStorage stores one value per group. */
+  function save(){
+    var data={checked:{},steps:{},counters:{},notes:notesData};
+    tasks.forEach(function(t){ if(t.getAttribute('aria-pressed')==='true') data.checked[t.id]=true; });
+    steps.forEach(function(s){ if(s.checked) data.steps[s.id]=true; });
+    var seen={};
+    counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(!seen[g]){ data.counters[g]=c.value; seen[g]=true; } });
+    try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(e){}
+  }
+  function applyData(data){
+    tasks.forEach(function(t){ t.setAttribute('aria-pressed', (data.checked&&data.checked[t.id]) ? 'true' : 'false'); });
+    steps.forEach(function(s){ s.checked=!!(data.steps&&data.steps[s.id]); });
+    counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(data.counters&&data.counters[g]!==undefined) c.value=data.counters[g]; });
+    var n=data.notes;
+    if(typeof n==='string'){ notesData=n?{game:n}:{}; }
+    else if(n&&typeof n==='object'){ notesData=n; }
+    else { notesData={}; }
+    refreshNoteIcons();
+  }
+  /* Migration runs ONLY when no new-format progress exists. If a player
+     already has new progress, legacy data must not overwrite it; the
+     old key is left alone rather than deleted. */
+  function migrateLegacy(){
+    var raw; try{ raw=localStorage.getItem(OLD); }catch(e){ return; }
+    if(!raw||!MIGRATION) return;
+    try{
+      var d=JSON.parse(raw), checked=d.checked||{}, cnts=d.counts||{};
+      var out={checked:{},steps:{},counters:{},notes:{}};
+      Object.keys(MIGRATION.checked_map||{}).forEach(function(k){ if(checked[k]) MIGRATION.checked_map[k].forEach(function(a){ out.checked[a]=true; }); });
+      Object.keys(MIGRATION.step_map||{}).forEach(function(k){ if(checked[k]) out.steps[MIGRATION.step_map[k]]=true; });
+      Object.keys(MIGRATION.counter_map||{}).forEach(function(k){ if(cnts[k]) out.counters[MIGRATION.counter_map[k]]=cnts[k]; });
+      if(Object.keys(out.checked).length||Object.keys(out.steps).length||Object.keys(out.counters).length){
+        try{ localStorage.setItem(KEY,JSON.stringify(out)); }catch(e){}
+        applyData(out);
+      }
+    }catch(e){}
+  }
+  function load(){
+    var raw; try{ raw=localStorage.getItem(KEY); }catch(e){ return; }
+    if(!raw){ migrateLegacy(); return; }
+    try{ applyData(JSON.parse(raw)); }catch(e){}
+  }
+  function syncCounters(source){
+    if(!source) return;
+    var g=source.getAttribute('data-counter');
+    counts.forEach(function(c){ if(c.getAttribute('data-counter')===g) c.value=source.value; });
+  }
+  function updateProgress(){
+    var done=tasks.filter(function(t){return t.getAttribute('aria-pressed')==='true';});
+    var gs=done.reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+    var text=done.length+' / '+tasks.length+' achievements · '+gs.toLocaleString('en-US')+' / '+TOTAL_GS.toLocaleString('en-US')+'G';
+    overallText.textContent=text;
+    if(overallTextNav) overallTextNav.textContent=done.length+' / '+tasks.length+' · '+gs.toLocaleString('en-US')+'G';
+    overallBar.style.width=Math.round(gs/TOTAL_GS*100)+'%';
+    document.querySelectorAll('details[data-cat]').forEach(function(sec){
+      var box=sec.querySelectorAll('button.task');
+      if(!box.length) return;
+      var pressed=function(t){return t.getAttribute('aria-pressed')==='true';};
+      var d=[].slice.call(box).filter(pressed).length;
+      var g=[].slice.call(box).filter(pressed).reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+      var el=sec.querySelector('.sec-progress');
+      if(el) el.textContent=d+' / '+box.length+' · '+g+'G';
+    });
+    counts.forEach(function(c){
+      var target=parseInt(c.getAttribute('data-target'),10)||0;
+      var val=parseInt(c.value,10)||0;
+      var pct=target?Math.min(100,Math.round(val/target*100)):0;
+      var wrap=c.closest('.counter');
+      var txt=wrap?wrap.querySelector('.count-text'):null;
+      if(txt) txt.textContent=' '+val.toLocaleString('en-US')+' / '+target.toLocaleString('en-US')+' ('+pct+'%)';
+      /* Bars live under the card header, not next to the input, and
+         are matched by group AND target: a shared group can feed
+         several thresholds, and each bar must show its own target. */
+      var g=c.getAttribute('data-counter');
+      document.querySelectorAll('.counter-bar[data-counter="'+g+'"][data-target="'+target+'"]').forEach(function(barEl){
+        var bar=barEl.querySelector('.progress-bar');
+        if(bar) bar.style.width=pct+'%';
+      });
+    });
+    /* Step progress bars under the headers of multi-step
+       achievements: the bar shows how many of that achievement's
+       sub-steps are ticked. Step cards have no parent, so they
+       carry no bar — this is only for achievement cards. */
+    document.querySelectorAll('.step-bar').forEach(function(barEl){
+      var parent=barEl.getAttribute('data-step-parent');
+      var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+parent+'"]'));
+      var done=sibs.filter(function(s){return s.checked;}).length;
+      var pct=sibs.length?Math.round(done/sibs.length*100):0;
+      var bar=barEl.querySelector('.progress-bar');
+      if(bar) bar.style.width=pct+'%';
+    });
+  }
+  /* applyFilters hides whole sections, not just cards: a section with
+     no visible cards after filtering must not leave an empty heading
+     and an empty bordered box behind. */
+  function applyFilters(){
+    var q=(search.value||'').toLowerCase().trim();
+    var active=document.querySelector('.filter.active');
+    var cat=active?active.getAttribute('data-filter'):'all';
+    var inc=incompleteOnly.checked;
+    document.querySelectorAll('details[data-cat]').forEach(function(sec){
+      var secCat=sec.getAttribute('data-cat');
+      var catMatch=(cat==='all'||cat===secCat);
+      var visibleItems=0;
+      sec.querySelectorAll('.item').forEach(function(item){
+        var name=(item.getAttribute('data-name')||'')+' '+item.textContent.toLowerCase();
+        var qMatch=!q||name.indexOf(q)>-1;
+        var task=item.querySelector('button.task');
+        var incMatch=!inc||!task||task.getAttribute('aria-pressed')!=='true';
+        var show=catMatch&&qMatch&&incMatch;
+        item.classList.toggle('hidden',!show);
+        if(show) visibleItems++;
+      });
+      var hasItems=sec.querySelectorAll('.item').length>0;
+      sec.classList.toggle('hidden',!catMatch||(hasItems&&visibleItems===0));
+    });
+    fitHeaders();
+  }
+  /* Header normalisation: long names shrink toward a floor
+     (1.05rem to 0.85rem) before they are allowed to wrap, and
+     headers in the same visible row are then equalised to the
+     row's tallest, so card bodies start on one line instead of
+     staggering. Runs after every filter pass (which is also
+     every search, reset and import path), on resize, when a
+     section opens or closes, and once fonts arrive. */
+  function fitHeaders(){
+    document.querySelectorAll('.ach-head').forEach(function(h){ h.style.minHeight = ''; });
+    document.querySelectorAll('.ach-name').forEach(function(n){ n.style.fontSize = ''; });
+    document.querySelectorAll('.ach-name').forEach(function(n){
+      var floors = ['0.95rem', '0.85rem'];
+      for(var i = 0; i < floors.length; i++){
+        var line = parseFloat(getComputedStyle(n).lineHeight);
+        if(n.offsetHeight <= line + 1) break;
+        n.style.fontSize = floors[i];
+      }
+    });
+    var rows = {};
+    document.querySelectorAll('.item').forEach(function(item){
+      if(item.classList.contains('hidden') || !item.offsetParent) return;
+      var head = item.querySelector('.ach-head');
+      if(!head) return;
+      var sec = item.closest('details');
+      var key = (sec ? sec.getAttribute('data-cat') : '') + ':' + item.offsetTop;
+      (rows[key] = rows[key] || []).push(head);
+    });
+    Object.keys(rows).forEach(function(key){
+      var max = 0;
+      rows[key].forEach(function(h){ max = Math.max(max, h.offsetHeight); });
+      rows[key].forEach(function(h){ h.style.minHeight = max + 'px'; });
+    });
+  }
+  var fitTimer = null;
+  window.addEventListener('resize', function(){
+    if(fitTimer) clearTimeout(fitTimer);
+    fitTimer = setTimeout(fitHeaders, 150);
+  });
+  document.querySelectorAll('details[data-cat]').forEach(function(d){
+    d.addEventListener('toggle', fitHeaders);
+  });
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeaders);
+  document.querySelectorAll('.filter').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.filter').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active'); applyFilters();
+    });
+  });
+  /* Header toggle: clicking anywhere in the header flips aria-pressed.
+     Steps still use the change handler below; a button does not fire
+     change, so this click handler is the task toggle. */
+  tasks.forEach(function(t){
+    t.addEventListener('click',function(){
+      t.setAttribute('aria-pressed', t.getAttribute('aria-pressed')==='true' ? 'false' : 'true');
+      save(); updateProgress(); applyFilters();
+    });
+  });
+  /* Counter steppers: -/+ buttons beside the input, clamped at 0.
+     A programmatic value change fires no input event, so sync, save
+     and progress are called explicitly here. */
+  document.addEventListener('click',function(e){
+    var btn=e.target.closest ? e.target.closest('.counter-btn') : null;
+    if(!btn) return;
+    var wrap=btn.closest('.counter');
+    var input=wrap?wrap.querySelector('input.count'):null;
+    if(!input) return;
+    var val=parseInt(input.value,10)||0;
+    val=Math.max(0, val + (parseInt(btn.getAttribute('data-step'),10)||0));
+    input.value=val;
+    syncCounters(input); save(); updateProgress();
+  });
+  document.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.classList.contains('step')&&t.getAttribute('data-parent')){
+      var parent=document.getElementById(t.getAttribute('data-parent'));
+      if(parent){
+        var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+t.getAttribute('data-parent')+'"]'));
+        if(sibs.length&&sibs.every(function(s){return s.checked;})) parent.setAttribute('aria-pressed','true');
+      }
+    }
+    save(); updateProgress(); applyFilters();
+  });
+  document.addEventListener('input',function(e){
+    if(e.target===search){ applyFilters(); return; }
+    if(e.target===incompleteOnly){ applyFilters(); return; }
+    if(e.target.classList.contains('count')) syncCounters(e.target);
+    save(); updateProgress();
+  });
+  document.getElementById('resetBtn').addEventListener('click',function(){
+    if(!confirm('Reset all achievements, steps, counters and notes?')) return;
+    tasks.forEach(function(t){t.setAttribute('aria-pressed','false');});
+    steps.forEach(function(s){s.checked=false;});
+    counts.forEach(function(c){c.value=0;});
+    notesData={}; refreshNoteIcons();
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    updateProgress(); applyFilters();
+  });
+  document.getElementById('exportBtn').addEventListener('click',function(){
+    save();
+    var raw; try{ raw=localStorage.getItem(KEY)||'{}'; }catch(e){ raw='{}'; }
+    var blob=new Blob([raw],{type:'application/json'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='wreckfest-progress.json'; a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); },1000);
+  });
+  document.getElementById('importFile').addEventListener('change',function(e){
+    var f=e.target.files&&e.target.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{
+        var data=JSON.parse(r.result);
+        try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(err){}
+        applyData(data); updateProgress(); applyFilters();
+      }catch(err){ alert('That file did not look like a tracker export.'); }
+    };
+    r.readAsText(f);
+  });
+  /* Shared import preview/apply machinery, used by the Xbox sync
+     card. Only one import preview is live at a time, and Confirm
+     applies whichever is pending. Sync is additive only — it ticks
+     newly unlocked achievements and their sub-steps, and never
+     unticks, never touches notes or counters. */
+  function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function achName(achId){ var b=document.getElementById(achId); var n=b?b.querySelector('.ach-name'):null; return n?n.textContent.trim():achId; }
+  function achHasCounter(achId){ var b=document.getElementById(achId); var it=b?b.closest('.item'):null; return !!(it&&it.querySelector('input.count')); }
+  /* planFor splits a candidate set into what is new, what is
+     already ticked, and the sub-steps/counters that go with the new
+     ones. matchedIds is the wider matched set (for the "left as
+     they are" count); appliedIds is the subset the preview will
+     actually tick. */
+  function planFor(appliedIds, matchedIds){
+    var isPressed=function(achId){ var b=document.getElementById(achId); return b&&b.getAttribute('aria-pressed')==='true'; };
+    var newAch=[], already=0;
+    appliedIds.forEach(function(achId){ if(isPressed(achId)) already++; else newAch.push(achId); });
+    var stepIds=[], stepNames=[];
+    newAch.forEach(function(achId){
+      [].slice.call(document.querySelectorAll('.step[data-parent="'+achId+'"]')).forEach(function(s){
+        if(!s.checked){ stepIds.push(s.id); stepNames.push((s.parentNode?s.parentNode.textContent:'').trim()); }
+      });
+    });
+    var counterNames=[];
+    newAch.forEach(function(achId){ if(achHasCounter(achId)) counterNames.push(achName(achId)); });
+    var matchedSet={};
+    matchedIds.forEach(function(id){ matchedSet[id]=true; });
+    var lockedCount=tasks.filter(function(t){ return !matchedSet[t.id]; }).length;
+    return {newAch:newAch, already:already, stepIds:stepIds, stepNames:stepNames, counterNames:counterNames, lockedCount:lockedCount};
+  }
+  var importPending=null;
+  function hideImportPreviews(){
+    document.querySelectorAll('.import-preview').forEach(function(el){ el.classList.add('hidden'); });
+    importPending=null;
+  }
+  /* opts: bodyEl, previewEl, confirmBtn, plan (from planFor),
+     warnings (strings), dates (achId -> date string), statsHtml
+     (an already rendered stats paragraph, or ''). */
+  function showImportPreview(opts){
+    hideImportPreviews();
+    var plan=opts.plan, html='';
+    (opts.warnings||[]).forEach(function(w){ html+='<p class="text-warning mb-2">'+escHtml(w)+'</p>'; });
+    if(plan.newAch.length){
+      html+='<p><strong>'+plan.newAch.length+' new achievement'+(plan.newAch.length===1?'':'s')+' will be ticked:</strong></p><ul>';
+      plan.newAch.forEach(function(achId){
+        html+='<li>'+escHtml(achName(achId));
+        if(opts.dates&&opts.dates[achId]) html+=' <span class="text-secondary">— unlocked '+escHtml(opts.dates[achId])+'</span>';
+        html+='</li>';
+      });
+      html+='</ul>';
+    } else {
+      html+='<p>Nothing new — every matched achievement is already ticked here.</p>';
+    }
+    if(plan.stepNames.length){
+      html+='<p><strong>'+plan.stepNames.length+' sub-step'+(plan.stepNames.length===1?'':'s')+' will also be ticked</strong> (they are the route to the achievements above):</p><ul>';
+      plan.stepNames.forEach(function(n){ html+='<li>'+escHtml(n)+'</li>'; });
+      html+='</ul>';
+    }
+    if(plan.counterNames.length){
+      html+='<p class="text-secondary">Counters stay manual: the source does not report raw counts, so the counters for '+plan.counterNames.map(escHtml).join(', ')+' are left as they are.</p>';
+    }
+    if(opts.statsHtml) html+=opts.statsHtml;
+    opts.bodyEl.innerHTML=html;
+    opts.previewEl.classList.remove('hidden');
+    opts.confirmBtn.style.display=plan.newAch.length?'':'none';
+    importPending={achIds:plan.newAch, stepIds:plan.stepIds};
+  }
+  /* Applies the pending import through the normal save path and
+     returns how many achievements were ticked (0 if none pending). */
+  function applyImportPending(){
+    if(!importPending) return 0;
+    var n=importPending.achIds.length;
+    importPending.achIds.forEach(function(achId){
+      var b=document.getElementById(achId);
+      if(b) b.setAttribute('aria-pressed','true');
+    });
+    importPending.stepIds.forEach(function(stepId){
+      var s=document.getElementById(stepId);
+      if(s) s.checked=true;
+    });
+    importPending=null;
+    save(); updateProgress(); applyFilters();
+    return n;
+  }
+  /* Xbox sync via OpenXBL (user-supplied key). The sync card is only
+     rendered for games whose JSON carries xbox_title_id and an
+     xbox_id per achievement; without the card this block is a no-op.
+     Sync is additive and previewed: it ticks newly unlocked
+     achievements (and their sub-steps) and never unticks, never
+     touches notes or counters. The key and gamertag live under the
+     separate 'at-xbox' localStorage key, so Export/Import — which
+     only read and write the progress key above — can never leak
+     them. Response shapes are handled tolerantly (see the extract
+     helpers): OpenXBL's published spec documents endpoints but no
+     response schema, so the first live response may still refine
+     these, and anything unrecognised fails loudly instead of
+     guessing a tick. */
+  var syncCard=document.getElementById('xbox-sync');
+  if(syncCard){
+    var XBOX_API='https://api.xbl.io/api/v2';
+    var XBOX_META_KEY='at-xbox';
+    var syncMap={};
+    try{ syncMap=JSON.parse(syncCard.getAttribute('data-xbox-map')||'{}'); }catch(e){ syncMap={}; }
+    var syncTitleId=syncCard.getAttribute('data-xbox-title-id')||'';
+    var gtInput=document.getElementById('xbox-gamertag');
+    var keyInput=document.getElementById('xbox-key');
+    var syncBtn=document.getElementById('xbox-sync-btn');
+    var clearKeyBtn=document.getElementById('xbox-clear-key');
+    var statusEl=document.getElementById('xbox-status');
+    var previewEl=document.getElementById('xbox-preview');
+    var previewBody=document.getElementById('xbox-preview-body');
+    var confirmBtn=document.getElementById('xbox-confirm');
+    var cancelBtn=document.getElementById('xbox-cancel');
+    var pasteInput=document.getElementById('xbox-paste');
+    var pasteBtn=document.getElementById('xbox-paste-btn');
+    function metaLoad(){ try{ return JSON.parse(localStorage.getItem(XBOX_META_KEY)||'{}'); }catch(e){ return {}; } }
+    function metaSave(m){ try{ localStorage.setItem(XBOX_META_KEY,JSON.stringify(m)); }catch(e){} }
+    var xboxMeta=metaLoad();
+    if(xboxMeta.gamertag) gtInput.value=xboxMeta.gamertag;
+    if(xboxMeta.key) keyInput.value=xboxMeta.key;
+    function setStatus(msg){ statusEl.textContent=msg; }
+    function persistInputs(){
+      var m=metaLoad();
+      var gt=gtInput.value.trim();
+      if(m.gamertag!==gt) m.xuid='';
+      m.gamertag=gt; m.key=keyInput.value.trim(); metaSave(m); xboxMeta=m;
+    }
+    gtInput.addEventListener('change',persistInputs);
+    keyInput.addEventListener('change',persistInputs);
+    function xboxFetch(path,key){
+      return fetch(XBOX_API+path,{headers:{'X-Authorization':key,'Accept':'application/json'}}).then(function(r){
+        if(!r.ok){ var err=new Error('HTTP '+r.status); err.status=r.status; throw err; }
+        return r.json();
+      });
+    }
+    /* Shape tolerance: the gamertag endpoint documents a flat
+       {xuid, gamertag, gamerscore} body, while profile endpoints
+       return profileUsers[0].id. Accept both, plus a bare array. */
+    function extractXuid(data){
+      if(!data) return null;
+      if(typeof data==='string') return data;
+      if(data.xuid) return String(data.xuid);
+      if(data.profileUsers&&data.profileUsers[0]&&data.profileUsers[0].id) return String(data.profileUsers[0].id);
+      if(Array.isArray(data)&&data[0]) return extractXuid(data[0]);
+      return null;
+    }
+    function extractAchievements(data){
+      if(!data) return null;
+      if(Array.isArray(data)) return data;
+      if(Array.isArray(data.achievements)) return data.achievements;
+      return null;
+    }
+    function isUnlocked(a){
+      return a.progressState==='Achieved'||!!(a.progression&&a.progression.timeUnlocked);
+    }
+    function fetchTitlePages(xuid,key){
+      var entries=[], token='', prevToken=null, pages=0;
+      function next(){
+        if(pages>=5) return Promise.reject(new Error('too many pages'));
+        pages++;
+        var url='/achievements/player/'+encodeURIComponent(xuid)+'/title/'+encodeURIComponent(syncTitleId);
+        if(token) url+='?continuationToken='+encodeURIComponent(token);
+        return xboxFetch(url,key).then(function(data){
+          var list=extractAchievements(data);
+          if(!list) throw new Error('unexpected response shape');
+          entries=entries.concat(list);
+          var t=(data.pagingInfo&&data.pagingInfo.continuationToken)||data.continuationToken||'';
+          if(!t) return entries;
+          if(t===prevToken) throw new Error('pagination loop');
+          prevToken=token; token=t; return next();
+        });
+      }
+      return next();
+    }
+    function buildPreview(entries,warnings){
+      var unlocked=[], skipped=0, seenIds={};
+      entries.forEach(function(a){
+        var id=(a&&a.id!==undefined)?String(a.id):null;
+        if(id===null){ skipped++; return; }
+        if(seenIds[id]) return; seenIds[id]=true;
+        if(isUnlocked(a)) unlocked.push(id);
+      });
+      var mapped=[], unmapped=0;
+      unlocked.forEach(function(id){
+        if(syncMap[id]) mapped.push(syncMap[id]); else unmapped++;
+      });
+      var plan=planFor(mapped,mapped);
+      showImportPreview({
+        bodyEl:previewBody, previewEl:previewEl, confirmBtn:confirmBtn,
+        warnings:warnings, plan:plan,
+        statsHtml:'<p class="text-secondary mb-0">Already ticked: '+plan.already+' · Xbox achievements not in this tracker: '+unmapped+' · Tracker achievements Xbox does not report unlocked (left exactly as they are, including manual ticks from other platforms): '+plan.lockedCount+(skipped?' · Entries without an id, ignored: '+skipped:'')+'.</p>'
+      });
+      setStatus('Preview ready — nothing has changed yet. Confirm to apply, or Cancel.');
+    }
+    function syncError(e){
+      hideImportPreviews();
+      if(e&&e.status===401) setStatus('That key was rejected — check it at xbl.io, or create a new one.');
+      else if(e&&e.status===429) setStatus('OpenXBL rate limit — wait a while and try again.');
+      else if(e&&e.status===403) setStatus('Xbox returned no data for this title — check your Xbox privacy settings (achievement history) or that you have played this game on Xbox.');
+      else if(e&&e.status===404) setStatus('No Xbox profile or title data found — check the gamertag spelling and that you have played this game on Xbox.');
+      else if(e&&e.message==='gamertag not found') setStatus('No Xbox profile found for that gamertag — check the spelling.');
+      else if(e&&e.message==='too many pages') setStatus('OpenXBL paginated this title beyond what this page follows — sync stopped rather than applying a partial result.');
+      else if(e&&e.message==='pagination loop') setStatus('OpenXBL returned the same page twice — sync stopped rather than applying a partial result.');
+      else if(e&&e.message==='unexpected response shape') setStatus('OpenXBL returned a response this page does not recognise — sync stopped, nothing changed.');
+      else if(e instanceof TypeError) setStatus('The browser could not reach OpenXBL — check your connection, or use the paste-JSON option below.');
+      else setStatus('Sync failed — nothing changed. ('+(e&&e.message?e.message:'unknown error')+')');
+    }
+    syncBtn.addEventListener('click',function(){
+      var key=keyInput.value.trim(), gt=gtInput.value.trim();
+      if(!gt){ setStatus('Enter a gamertag first.'); return; }
+      if(!key){ setStatus('Paste your OpenXBL API key first.'); return; }
+      persistInputs();
+      hideImportPreviews();
+      setStatus('Fetching…');
+      syncBtn.disabled=true;
+      var warnings=[];
+      var xuidPromise;
+      if(xboxMeta.xuid&&xboxMeta.gamertag===gt){
+        xuidPromise=Promise.resolve(xboxMeta.xuid);
+      } else {
+        xuidPromise=xboxFetch('/player/gamertag/'+encodeURIComponent(gt),key).then(function(prof){
+          var xuid=extractXuid(prof);
+          if(!xuid) throw new Error('gamertag not found');
+          return xboxFetch('/account',key).then(function(acct){
+            var acctXuid=extractXuid(acct);
+            if(acctXuid&&acctXuid!==xuid) warnings.push('This key belongs to a different gamertag — sync may return public-only data.');
+            xboxMeta.xuid=xuid; metaSave(xboxMeta);
+            return xuid;
+          });
+        });
+      }
+      xuidPromise.then(function(xuid){
+        return fetchTitlePages(xuid,key);
+      }).then(function(entries){
+        buildPreview(entries,warnings);
+      }).catch(syncError).then(function(){ syncBtn.disabled=false; });
+    });
+    pasteBtn.addEventListener('click',function(){
+      var text=pasteInput.value.trim();
+      if(!text){ setStatus('Paste an OpenXBL JSON response first.'); return; }
+      hideImportPreviews();
+      try{
+        var entries=extractAchievements(JSON.parse(text));
+        if(!entries) throw new Error('shape');
+        buildPreview(entries,['Pasted JSON — no gamertag or key was used.']);
+      }catch(e){
+        hideImportPreviews();
+        setStatus('That text did not look like an OpenXBL achievements response.');
+      }
+    });
+    confirmBtn.addEventListener('click',function(){
+      var n=applyImportPending();
+      hideImportPreviews();
+      var m=metaLoad(); m.lastSyncAt=new Date().toISOString(); metaSave(m); xboxMeta=m;
+      setStatus('Synced '+n+' new achievement'+(n===1?'':'s')+' from Xbox at '+new Date().toLocaleString()+'.');
+    });
+    cancelBtn.addEventListener('click',function(){
+      hideImportPreviews();
+      setStatus('Sync cancelled — nothing changed.');
+    });
+    clearKeyBtn.addEventListener('click',function(){
+      keyInput.value='';
+      var m=metaLoad(); m.key=''; metaSave(m); xboxMeta=m;
+      setStatus('Key cleared from this browser.');
+    });
+  }
+  /* Guide images that fail to load (moved, or the host blocks
+     loading them here) are swapped for a placeholder that says
+     why, instead of a broken-image icon. Images already broken
+     when this runs are swapped immediately. */
+  document.querySelectorAll('.ach-media img').forEach(function(img){
+    function swap(){
+      var fig = img.closest('figure');
+      var cap = fig ? fig.querySelector('figcaption') : null;
+      var cred = fig ? fig.querySelector('.media-credit') : null;
+      var capText = cap ? cap.textContent : '';
+      var credText = cred ? cred.textContent : '';
+      var extra = capText + (capText && credText ? ' ' : '') + credText;
+      var d = document.createElement('div');
+      d.className = 'ach-media-fallback';
+      d.textContent = 'Guide image unavailable — it may have moved, or the host may block loading it here. The walkthrough linked in the sources below has the original.'
+        + (extra ? ' (' + extra + ')' : '');
+      img.replaceWith(d);
+    }
+    if(img.complete && img.naturalWidth === 0) swap();
+    else img.addEventListener('error', swap);
+  });
+  /* Walkthrough shots open their full-size version in an
+     on-page viewer instead of a new tab. The link's href is
+     kept, so without scripts (or on a browser too old for
+     <dialog>) the click still opens the image in a new tab,
+     per target=_blank. Escape and tapping outside close it;
+     the close event clears the image so it stops loading.
+     The viewer caption carries the image credit, since the
+     card itself now shows it only on hover. For slideshow
+     shots the viewer also gains Previous/Next: they drive
+     the card's own slideshow buttons, so the card and the
+     viewer never disagree about which slide is current, and
+     arrow keys work too. */
+  var modal = document.getElementById('media-modal');
+  var modalImg = document.getElementById('media-modal-img');
+  var modalCap = document.getElementById('media-modal-caption');
+  var modalNav = document.getElementById('media-modal-nav');
+  var modalCount = document.getElementById('media-modal-count');
+  var modalPrev = modal ? modal.querySelector('.media-modal-prev') : null;
+  var modalNext = modal ? modal.querySelector('.media-modal-next') : null;
+  var modalShow = null;
+  function modalCaption(fig){
+    var cap = fig ? fig.querySelector('figcaption') : null;
+    var cred = fig ? fig.querySelector('.media-credit') : null;
+    var capText = cap ? cap.textContent : '';
+    var credText = cred ? cred.textContent : '';
+    return (capText + (capText && credText ? ' ' : '') + credText).trim();
+  }
+  function modalFromLink(a){
+    var img = a.querySelector('img');
+    var fig = a.closest('figure');
+    modalImg.src = a.getAttribute('href');
+    modalImg.alt = img ? img.alt : '';
+    var text = modalCaption(fig);
+    modalCap.textContent = text;
+    modalCap.style.display = text ? '' : 'none';
+  }
+  function modalSync(){
+    if(!modalShow) return;
+    var ss = modalShow.ss;
+    var active = ss.querySelector('.slideshow-slide.active');
+    var link = active ? active.querySelector('a') : null;
+    if(link) modalFromLink(link);
+    var idx = modalShow.links.indexOf(link);
+    modalCount.textContent = (idx + 1) + ' of ' + modalShow.links.length;
+    modalPrev.disabled = ss.querySelector('.slideshow-prev').disabled;
+    modalNext.disabled = ss.querySelector('.slideshow-next').disabled;
+  }
+  function modalStep(dir){
+    if(!modalShow) return;
+    var btn = modalShow.ss.querySelector(dir < 0 ? '.slideshow-prev' : '.slideshow-next');
+    if(btn) btn.click();
+    modalSync();
+  }
+  if(modal){
+    modal.addEventListener('close', function(){
+      modalImg.removeAttribute('src'); modalShow = null;
+      modal.classList.remove('media-modal-slideshow');
+    });
+    modal.addEventListener('click', function(e){ if(e.target === modal) modal.close(); });
+    var modalClose = modal.querySelector('.media-modal-close');
+    if(modalClose) modalClose.addEventListener('click', function(){ modal.close(); });
+    if(modalPrev) modalPrev.addEventListener('click', function(){ modalStep(-1); });
+    if(modalNext) modalNext.addEventListener('click', function(){ modalStep(1); });
+    modal.addEventListener('keydown', function(e){
+      if(!modalShow) return;
+      if(e.key === 'ArrowLeft') modalStep(-1);
+      else if(e.key === 'ArrowRight') modalStep(1);
+    });
+    /* Tapping the left or right side of a slideshow image steps
+       it too: the buttons underneath stay the discoverable
+       control, this is the faster path for repeat viewing. */
+    modalImg.addEventListener('click', function(e){
+      if(!modalShow) return;
+      var r = modalImg.getBoundingClientRect();
+      if(!r.width) return;
+      modalStep(e.clientX - r.left < r.width / 2 ? -1 : 1);
+    });
+    document.querySelectorAll('.ach-media a, .slideshow a').forEach(function(a){
+      a.addEventListener('click', function(e){
+        if(!modal.showModal) return;
+        e.preventDefault();
+        var ss = a.closest('.slideshow');
+        if(ss){
+          modalShow = {ss: ss, links: [].slice.call(ss.querySelectorAll('a'))};
+          modalNav.style.display = '';
+          modal.classList.add('media-modal-slideshow');
+          modalSync();
+        } else {
+          modalShow = null;
+          modalNav.style.display = 'none';
+          modal.classList.remove('media-modal-slideshow');
+          modalFromLink(a);
+        }
+        modal.showModal();
+      });
+    });
+  }
+  /* Notes live behind the note icons: one icon per card, one on
+     the filter card for game-wide notes. The popup saves as you
+     type, so closing it (button, Escape, outside tap) loses
+     nothing; the icon swaps to a check when its note is set. */
+  function refreshNoteIcons(){
+    document.querySelectorAll('.note-btn').forEach(function(b){
+      var key=b.getAttribute('data-note-key');
+      var has=!!(notesData[key]||'').trim();
+      var icon=b.querySelector('i');
+      if(icon){
+        icon.classList.toggle('bi-journal-check', has);
+        icon.classList.toggle('bi-journal-text', !has);
+      }
+      b.classList.toggle('has-note', has);
+    });
+  }
+  function openNotes(key, title){
+    notesKey=key;
+    notesModalTitle.textContent=title;
+    notesModalText.value=notesData[key]||'';
+    if(notesModal.showModal) notesModal.showModal();
+  }
+  if(notesModal){
+    notesModalText.addEventListener('input', function(){
+      if(notesKey===null) return;
+      var v=notesModalText.value;
+      if(v) notesData[notesKey]=v; else delete notesData[notesKey];
+      save(); refreshNoteIcons();
+    });
+    var notesModalClose=notesModal.querySelector('.notes-modal-close');
+    if(notesModalClose) notesModalClose.addEventListener('click', function(){ notesModal.close(); });
+    notesModal.addEventListener('click', function(e){ if(e.target===notesModal) notesModal.close(); });
+    document.querySelectorAll('.note-btn').forEach(function(b){
+      b.addEventListener('click', function(){
+        var art=b.closest('article');
+        var title=art ? 'Notes: '+art.querySelector('.ach-name').textContent : 'Game notes';
+        openNotes(b.getAttribute('data-note-key'), title);
+      });
+    });
+  }
+  /* Slideshow cards: Previous/Next walk through the guide
+     slides; only one slide shows at a time, and the ends
+     disable their button. Hidden slides are also pulled out
+     of tab order, since they are visibility-hidden, not gone. */
+  document.querySelectorAll('.slideshow').forEach(function(ss){
+    var slides = ss.querySelectorAll('.slideshow-slide');
+    var prev = ss.querySelector('.slideshow-prev');
+    var next = ss.querySelector('.slideshow-next');
+    var count = ss.querySelector('.slideshow-count');
+    var cur = 0;
+    function show(i){
+      cur = Math.max(0, Math.min(slides.length - 1, i));
+      slides.forEach(function(s, j){
+        var on = j === cur;
+        s.classList.toggle('active', on);
+        s.setAttribute('aria-hidden', on ? 'false' : 'true');
+        s.querySelectorAll('a').forEach(function(a){
+          if(on){ a.removeAttribute('tabindex'); } else { a.setAttribute('tabindex', '-1'); }
+        });
+      });
+      count.textContent = (cur + 1) + ' of ' + slides.length;
+      prev.disabled = cur === 0;
+      next.disabled = cur === slides.length - 1;
+    }
+    prev.addEventListener('click', function(){ show(cur - 1); });
+    next.addEventListener('click', function(){ show(cur + 1); });
+    show(0);
+  });
+  load(); updateProgress(); applyFilters();
+})();
+</script>
+</body>
+</html>

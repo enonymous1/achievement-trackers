@@ -4,6 +4,27 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Game #9: Wreckfest (Windows)
+
+### Added
+
+- Wreckfest (Windows) — all 20 achievements /
+  1,000G, the full game across four sections:
+  Career (first win, 5 championships in order, all
+  career challenges), Ranks & garage (ranks 10/25/50
+  on a shared counter, 10/20 vehicles on a shared
+  counter, 50,000 credits), Wrecking & stunts
+  (100 wrecks, 100 times wrecked, 50 School Bus
+  wrecks, 5 minutes airborne, 1 hour in the Lawn
+  Mower, 210 km/h in the Rocket), and Multiplayer
+  (20 event wins, private-lobby boostable; AI wins
+  don't count). No TrueAchievements walkthrough
+  exists; Gamerscore values come from the CheatCC
+  table and route notes from the Knoef/Fuzionbyte
+  guides (all linked in the page sources). About
+  15–20 hours. Library totals now 9 games · 258
+  achievements · 9,250G.
+
 ## 2026-11-04 — Game #8: Relic Hunters Legend
 
 ### Added

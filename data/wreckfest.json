@@ -1,0 +1,65 @@
+{
+  "slug": "wreckfest",
+  "title": "Wreckfest",
+  "tagline": "Banger racing at its finest — five championships, a garage full of wrecks, and one very patient lawn mower.",
+  "order_note": "Career first, in championship order — the rank, vehicle, and wrecking totals build up as you go, and the rank-50 grind is the cleanup after the campaign (expect to finish the story around rank 30–35). Multiplayer wins need human opponents; wins against AI don't count.",
+  "scope_note": "Full game: all 20 achievements / 1,000G — the Windows (PC Game Pass) version. No TrueAchievements walkthrough exists; route notes are paraphrased from the Knoef and Fuzionbyte trophy guides, which cover the same achievements. About 15–20 hours.",
+  "total_gs": 1000,
+  "total_count": 20,
+  "storage_key": "wf-tracker-v1",
+  "sources": [{"label": "TrueAchievements — Achievements", "url": "https://www.trueachievements.com/game/Wreckfest-Windows/achievements"}, {"label": "Cheat Code Central — Gamerscore table", "url": "https://www.cheatcc.com/articles/wreckfest-cheats-cheat-codes-for-xbox-one-playstation-5-pc-and-more/"}, {"label": "Knoef — Trophy guide", "url": "https://knoef.info/trophy-guides/ps5/wreckfest-trophy-guide/"}],
+  "sections": [
+    {
+      "id": "career",
+      "filter_label": "Career",
+      "title": "Career",
+      "subtitle": "7 achievements",
+      "achievements": [
+        {"id": "ach-storm", "name": "Storm Warning", "gs": 20, "req": "Win Your First Career Race.", "how": "Win your first career race — it pops during the Regional Juniors championship."},
+        {"id": "ach-regional", "name": "Regional Juniors Champion", "gs": 30, "req": "Complete Regional Juniors Championship.", "how": "Complete the Regional Juniors championship, the first of the five career championships."},
+        {"id": "ach-national", "name": "National Amateurs Champion", "gs": 30, "req": "Complete National Amateurs Championship.", "how": "Complete the National Amateurs championship."},
+        {"id": "ach-challengers", "name": "Challengers Champion", "gs": 90, "req": "Complete Challengers Championship.", "how": "Complete the Challengers championship."},
+        {"id": "ach-pro", "name": "Pro Internationals Champion", "gs": 90, "req": "Complete Pro Internationals Championship.", "how": "Complete the Pro Internationals championship."},
+        {"id": "ach-world", "name": "World Masters Champion", "gs": 90, "req": "Complete World Masters Championship.", "how": "Complete the World Masters championship, the last of the five."},
+        {"id": "ach-highballer", "name": "Highballer", "gs": 90, "req": "Complete All Career Challenges.", "how": "Complete all career challenges — the special challenge events also unlock the special vehicles (Lawn Mower from Eat Dirt!, School Bus from the Oval Challenge, and more)."}
+      ]
+    },
+    {
+      "id": "ranks",
+      "filter_label": "Ranks & garage",
+      "title": "Ranks & garage",
+      "subtitle": "6 achievements",
+      "achievements": [
+        {"id": "ach-rank10", "name": "Dirty Roller", "gs": 30, "req": "Reach Player Rank 10.", "how": "Reach player rank 10.", "counters": [{"group": "rank", "target": 10}]},
+        {"id": "ach-rank25", "name": "Trashing Around", "gs": 30, "req": "Reach Player Rank 25.", "how": "Reach player rank 25.", "counters": [{"group": "rank", "target": 25}]},
+        {"id": "ach-rank50", "name": "Showing Some Dedication", "gs": 90, "req": "Reach Player Rank 50.", "how": "Reach player rank 50 — 1,530,000 XP total. After the campaign you'll be around rank 30–35; grind the rest in a custom event (Motor City circuit, strong car, AI in lawnmowers, 60 laps, realistic damage, hard/expert) or a private deathmatch (Fairfield County Demolition Arena, friend + 6 AI, ~10,000 XP per 4 minutes).", "counters": [{"group": "rank", "target": 50}]},
+        {"id": "ach-vehicles10", "name": "Wheeler Dealer", "gs": 30, "req": "Collect 10 Vehicles.", "how": "Collect 10 vehicles — buy from the Market and collect the career-reward vehicles.", "counters": [{"group": "vehicles", "target": 10}]},
+        {"id": "ach-vehicles20", "name": "Junk Collector", "gs": 30, "req": "Collect 20 Vehicles.", "how": "Collect 20 vehicles.", "counters": [{"group": "vehicles", "target": 20}]},
+        {"id": "ach-cash", "name": "Cash For Crashes", "gs": 90, "req": "Earn 50 000 Credits.", "how": "Earn 50,000 credits across career, multiplayer, and custom events.", "counters": [{"group": "credits", "target": 50000}]}
+      ]
+    },
+    {
+      "id": "wrecking",
+      "filter_label": "Wrecking & stunts",
+      "title": "Wrecking & stunts",
+      "subtitle": "6 achievements",
+      "achievements": [
+        {"id": "ach-wreck100", "name": "Hating Them Tin Cans", "gs": 30, "req": "Wreck 100 Opponents.", "how": "Wreck 100 opponents — only the final hit counts, so an assist on a 90%-damaged car doesn't. A big tough vehicle against AI lawnmowers in a custom deathmatch is the fastest farm.", "counters": [{"group": "wrecks", "target": 100}]},
+        {"id": "ach-wrecked100", "name": "Glutton For Punishment", "gs": 30, "req": "Get Wrecked 100 Times.", "how": "Get wrecked 100 times — it builds up through the campaign and multiplayer; if you're short, grab a lawnmower and get yourself killed.", "counters": [{"group": "wrecked", "target": 100}]},
+        {"id": "ach-bus", "name": "Maniac Driver", "gs": 30, "req": "Wreck 50 Opponents With School Bus.", "how": "Wreck 50 opponents with the School Bus — it unlocks from the Oval Challenge; some campaign missions use it, and the rest can be farmed in private matches against bots.", "counters": [{"group": "bus-wrecks", "target": 50}]},
+        {"id": "ach-fly", "name": "Look Mom, I Can Fly", "gs": 30, "req": "Spend 5 Minutes In Air.", "how": "Spend 5 minutes total in the air — Bone Breaker Valley has two good air spots per lap.", "counters": [{"group": "air-minutes", "target": 5}]},
+        {"id": "ach-mower", "name": "Garden Variety", "gs": 20, "req": "Drive 1 Hour With Lawn Mower.", "how": "Drive 1 hour with the Lawn Mower — it unlocks from the Eat Dirt! challenge. Custom event, no AI opponents, nudge it forward, then idle for an hour (keep the controller awake).", "counters": [{"group": "mower-minutes", "target": 60}]},
+        {"id": "ach-rocket", "name": "Rocketeer", "gs": 30, "req": "Reach 210 Km/h (130 Mph) With Rocket.", "how": "Reach 210 km/h (130 mph) with the Rocket, the starter car — find a long straight or downhill stretch."}
+      ]
+    },
+    {
+      "id": "multiplayer",
+      "filter_label": "Multiplayer",
+      "title": "Multiplayer",
+      "subtitle": "1 achievement",
+      "achievements": [
+        {"id": "ach-human", "name": "Human Lover", "gs": 90, "req": "Win 20 Events In Multiplayer.", "how": "Win 20 multiplayer events — boostable in a private lobby with a friend, taking turns winning. Wins against AI opponents do not count.", "counters": [{"group": "mp-wins", "target": 20}]}
+      ]
+    }
+  ]
+}
