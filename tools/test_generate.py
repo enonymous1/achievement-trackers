@@ -17,6 +17,7 @@ from generate import (
     render_game,
     render_how,
     render_hub,
+    render_media,
     render_sections,
     render_slideshow,
     render_xbox_sync_card,
@@ -259,6 +260,31 @@ class TestXboxValidation(unittest.TestCase):
         self.assertIn("TOGETHA", slides[-1]["caption"])
         self.assertTrue(slides[0]["src"].endswith("lumber-jacqueline-location.jpg"))
         self.assertTrue(slides[1]["src"].endswith("lumber-jacqueline-location.jpg"))
+
+    def test_shaboingboings_has_snack_break_image(self):
+        """Shaboingboings (#4) must carry its walkthrough shot:
+        the BizzyBoy on the bridge with the snack-break phrase.
+        It shipped without one and the gap was caught from a
+        reader's screenshot."""
+        game = next(g for g in load_games() if g["slug"] == "great-god-grove")
+        shaboing = next(
+            a for s in game["sections"] for a in s["achievements"]
+            if a["id"] == "ach-shaboing")
+        self.assertEqual(len(shaboing["media"]), 1)
+        self.assertTrue(
+            shaboing["media"][0]["src"].endswith("bizzyboy-snack-break.jpg"))
+
+    def test_media_without_full_links_to_itself(self):
+        """A media image with no larger version must still open
+        in the viewer: the viewer binds .ach-media links, so a
+        bare <img> would never open. It links to its own
+        display src instead."""
+        html = render_media({"name": "N", "media": [
+            {"type": "image", "src": "assets/media/x.jpg",
+             "caption": "C", "credit": "T"}]})
+        self.assertIn(
+            '<a href="../assets/media/x.jpg" target="_blank" '
+            'rel="noopener" title="Open image">', html)
 
     def test_hub_game_cards_are_nested_in_columns(self):
         # Regression: a card that IS the column touches its

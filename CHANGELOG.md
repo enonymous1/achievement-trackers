@@ -4,6 +4,27 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Fix: Shaboingboings image on Great God Grove
+
+### Fixed
+
+- Shaboingboings (#4) was missing its walkthrough shot:
+  it now carries the BizzyBoy-on-the-bridge image with
+  the snack-break phrase, captioned and credited like
+  the other Grove shots. This one has no larger-version
+  link: the 820w display version loads fine, but its
+  1920×1080 original returns 403 from
+  TrueAchievements, so the `full` field is omitted
+  rather than linked to a dead URL. Grove now has 16
+  media entries on 16 cards.
+- Viewer fix found while verifying that card: the
+  viewer binds `.ach-media a`, so an image with no
+  `full` rendered as a bare `<img>` and never opened
+  in the viewer. Images without `full` now link to
+  their own display src (title "Open image"), in both
+  media blocks and slideshow slides, so every shot
+  opens in the viewer.
+
 ## 2026-11-04 — Game #10: Dragon Ball Xenoverse 2
 
 ### Added

@@ -365,7 +365,11 @@ def render_media(ach):
     Images render as <img> (lazy); clips render as <video> when the
     src is a media file, or as a privacy-enhanced YouTube embed
     when it is a YouTube URL. Anything else is rejected by
-    validate_game, so this never has to guess.
+    validate_game, so this never has to guess. Every image is
+    wrapped in a link: with `full` it points at the larger
+    version, without it the image links to itself, because the
+    viewer binds `.ach-media a` — a bare <img> would never
+    open in the viewer.
     """
     parts = []
     for entry in ach.get("media", []):
@@ -377,6 +381,9 @@ def render_media(ach):
             if entry.get("full"):
                 img = (f'<a href="{esc(_media_src(entry["full"]))}" target="_blank" '
                        f'rel="noopener" title="Open larger version">{img}</a>')
+            else:
+                img = (f'<a href="{esc(_media_src(src))}" target="_blank" '
+                       f'rel="noopener" title="Open image">{img}</a>')
             credit = (f'<span class="media-credit">Image: {esc(entry["credit"])}</span>'
                       if entry.get("credit") else "")
             fig = f'<span class="media-img">{img}{credit}</span>'
@@ -416,6 +423,9 @@ def render_slideshow(ach):
         if entry.get("full"):
             img = (f'<a href="{esc(_media_src(entry["full"]))}" target="_blank" '
                    f'rel="noopener" title="Open larger version">{img}</a>')
+        else:
+            img = (f'<a href="{esc(_media_src(entry["src"]))}" target="_blank" '
+                   f'rel="noopener" title="Open image">{img}</a>')
         credit = (f'<span class="media-credit">Image: {esc(entry["credit"])}</span>'
                   if entry.get("credit") else "")
         figcap = (f'<figcaption class="figure-caption">{esc(entry["caption"])}</figcaption>'
