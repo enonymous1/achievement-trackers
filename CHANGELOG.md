@@ -4,6 +4,20 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-05 — Fix: Irresponsible babysitter order on Great God Grove
+
+### Fixed
+
+- Irresponsible babysitter moves from Chapter 4
+  (#32) to Chapter 1, right after Shaboingboings
+  and before H-h-h-historian (now #5). The
+  walkthrough puts the beach-ball feed immediately
+  after the bridge BizzyBoy and before the
+  historian, and Justin confirmed it in-game —
+  the Chapter 4 placement was a bad judgment
+  call. Chapter subtitles updated (Ch 1: 11,
+  Ch 4: 10); totals unchanged.
+
 ## 2026-11-04 — Shaboingboings full-size image
 
 ### Added
