@@ -1,0 +1,111 @@
+{
+  "slug": "dragon-ball-xenoverse-2",
+  "title": "Dragon Ball Xenoverse 2",
+  "tagline": "Time Patroller duty — relive the sagas, master every instructor, and clean up Conton City.",
+  "order_note": "Story sagas first, then class tests, Parallel Quests and Expert Missions, online, and the Conton City cleanup. Instructors' lessons mean earning their skills, not maxing friendship. The four Shenron wishes for new characters double as progress toward the character collection.",
+  "scope_note": "Base game only: 50 achievements / 1,000G. The 11 DLC achievements (300G across 4 packs, including level 99 and the Hero Colosseum) are out of scope. No TrueAchievements walkthrough exists (it needs a new owner); route notes are paraphrased from the GameFAQs trophy guide. About 60–80 hours.",
+  "total_gs": 1000,
+  "total_count": 50,
+  "storage_key": "dbx2-tracker-v1",
+  "sources": [{"label": "TrueAchievements — Achievements", "url": "https://www.trueachievements.com/game/Dragon-Ball-Xenoverse-2/achievements"}, {"label": "GamesXtreme — Gamerscore values", "url": "https://www.gamesxtreme.com/game/dragon-ball-xenoverse-2/achievements/xbox-one-xbox-series-sx"}, {"label": "GameFAQs — Trophy guide (vreaper)", "url": "https://gamefaqs.gamespot.com/ps4/282513-dragon-ball-xenoverse-2-ultra-pack-1/faqs/74285?page=3"}],
+  "sections": [
+    {
+      "id": "story",
+      "filter_label": "Story",
+      "title": "Story",
+      "subtitle": "12 achievements",
+      "achievements": [
+        {"id": "ach-raditz", "name": "Prologue to Battle!", "gs": 15, "req": "Complete “Raditz's Attack.”", "how": "Complete “Raditz's Attack.”"},
+        {"id": "ach-saiyan", "name": "The Saiyan Legend Reborn!", "gs": 15, "req": "Complete “The Saiyan Threat.”", "how": "Complete “The Saiyan Threat.”"},
+        {"id": "ach-namek", "name": "Dawn of the Fierce Battle...", "gs": 15, "req": "Complete “Ruckus on Planet Namek.”", "how": "Complete “Ruckus on Planet Namek.”"},
+        {"id": "ach-ginyu", "name": "Frieza's Secret Weapon!", "gs": 15, "req": "Complete “The Ginyu Force Strikes.”", "how": "Complete “The Ginyu Force Strikes.”"},
+        {"id": "ach-galactic", "name": "Awaken Warrior of Legend...", "gs": 15, "req": "Complete “The Galactic Emperor.”", "how": "Complete “The Galactic Emperor.”"},
+        {"id": "ach-android", "name": "Successor of the Strongest", "gs": 15, "req": "Complete “Android Warfare.”", "how": "Complete “Android Warfare.”"},
+        {"id": "ach-future", "name": "The Spirit of Goku is Forever!", "gs": 15, "req": "Complete “A Desperate Future.”", "how": "Complete “A Desperate Future.”"},
+        {"id": "ach-buu", "name": "Seize the Future!!", "gs": 15, "req": "Complete “Decisive Battle with Majin Buu.”", "how": "Complete “Decisive Battle with Majin Buu.”"},
+        {"id": "ach-gods", "name": "The Battle of Gods Concludes!", "gs": 15, "req": "Complete “God of Destruction's Anger.”", "how": "Complete “God of Destruction's Anger.”"},
+        {"id": "ach-emperor", "name": "Despair Once More!", "gs": 15, "req": "Complete “The Emperor's Return.”", "how": "Complete “The Emperor's Return.”"},
+        {"id": "ach-ending", "name": "Goku's Dream is Super-Huge!", "gs": 70, "req": "Watch the ending sequence.", "how": "Watch the ending sequence after finishing the story."},
+        {"id": "ach-unknown", "name": "Defiance in the Face of Despair!!", "gs": 15, "req": "Complete “Unknown History.”", "how": "Complete “Unknown History,” the hidden story chapter."}
+      ]
+    },
+    {
+      "id": "tests",
+      "filter_label": "Tests",
+      "title": "Class tests",
+      "subtitle": "3 achievements",
+      "achievements": [
+        {"id": "ach-easy", "name": "Prepare to Die!", "gs": 15, "req": "Pass the Easy Class test.", "how": "Pass the Easy Class test."},
+        {"id": "ach-kai", "name": "It Won't Be Enough to Kill Me!", "gs": 15, "req": "Pass the Kai Class test.", "how": "Pass the Kai Class test."},
+        {"id": "ach-super", "name": "Want to Be the Next God of Destruction?", "gs": 30, "req": "Pass the Super Class test.", "how": "Pass the Super Class test."}
+      ]
+    },
+    {
+      "id": "quests",
+      "filter_label": "Quests",
+      "title": "Parallel Quests & Expert Missions",
+      "subtitle": "5 achievements",
+      "achievements": [
+        {"id": "ach-pq50", "name": "You're Not Worthy of Fighting Me!", "gs": 15, "req": "Parallel Quest completion rate is over 50%!", "how": "Push your Parallel Quest completion rate over 50%.", "counters": [{"group": "pq-percent", "target": 50}]},
+        {"id": "ach-pqall", "name": "You're the Second Foe to Push Me This Far!", "gs": 30, "req": "Cleared all Parallel Quests!", "how": "Clear all Parallel Quests."},
+        {"id": "ach-expert7", "name": "If I Don't Do It, Who Will?", "gs": 15, "req": "Complete 7 Expert Missions.", "how": "Complete 7 Expert Missions.", "counters": [{"group": "expert", "target": 7}]},
+        {"id": "ach-expertall", "name": "You Really Are a Hero!", "gs": 30, "req": "Complete all Expert Missions.", "how": "Complete all Expert Missions."},
+        {"id": "ach-challenge", "name": "We Better Use the Hyperbolic Time Chamber...", "gs": 15, "req": "Complete all Challenge Quests.", "how": "Complete all Challenge Quests."}
+      ]
+    },
+    {
+      "id": "online",
+      "filter_label": "Online",
+      "title": "Online",
+      "subtitle": "3 achievements",
+      "achievements": [
+        {"id": "ach-online1", "name": "How About a Little Warm-up?", "gs": 15, "req": "Played Online Battles for the first time!", "how": "Play Online Battles for the first time."},
+        {"id": "ach-online7", "name": "Victory is Mine!", "gs": 30, "req": "Won online 7 times!", "how": "Win online 7 times — fight a friend in Endless and take turns winning, which also covers the endless wins below.", "counters": [{"group": "online-wins", "target": 7}]},
+        {"id": "ach-endless7", "name": "Of All My Fights You're My 2nd Strongest Foe", "gs": 15, "req": "Won endless battle 7 times!", "how": "Win endless battle 7 times — a friend taking turns with you knocks this out alongside the online wins.", "counters": [{"group": "endless-wins", "target": 7}]}
+      ]
+    },
+    {
+      "id": "city",
+      "filter_label": "Conton City",
+      "title": "Conton City",
+      "subtitle": "26 achievements",
+      "achievements": [
+        {"id": "ach-shenron", "name": "I Summon You Forth: Shenron!", "gs": 15, "req": "Gathered 7 Dragon Balls and summoned Shenron!", "how": "Gather all 7 Dragon Balls (they drop in Parallel Quests) and summon Shenron at the Dragon Ball Pedestal."},
+        {"id": "ach-chars", "name": "I've Come for You!", "gs": 30, "req": "Unlocked all characters and variations!", "how": "Unlock all characters and variations — most come from story and Parallel Quests, and the last few need Shenron wishes: wish for a new playable character four times in total."},
+        {"id": "ach-stages", "name": "You Really Get Around!", "gs": 15, "req": "Visited all stages!", "how": "Visit all stages — this comes naturally while clearing all Parallel Quests."},
+        {"id": "ach-majinborn", "name": "The Most Powerful Majin is Born!", "gs": 15, "req": "Cause a Majin to be born.", "how": "Cause a Majin to be born at Buu's house by feeding the Majin family."},
+        {"id": "ach-majinchange", "name": "I Feel a Little...Different!", "gs": 30, "req": "Cause a Majin to change.", "how": "Cause a Majin to change at Buu's house — feed a Majin three times until it changes color."},
+        {"id": "ach-frieza1", "name": "You Wouldn't Want to Work for Me, Would You?", "gs": 15, "req": "Join the Frieza Force.", "how": "Join the Frieza Force in Conton City."},
+        {"id": "ach-frieza2", "name": "I'll Make You Commander of the Frieza Force", "gs": 30, "req": "Become Frieza's second-in-command.", "how": "Rise to second-in-command of the Frieza Force by completing their missions."},
+        {"id": "ach-boost", "name": "Allow Me to Awaken This Power for You", "gs": 15, "req": "Unlock an attribute boost.", "how": "Unlock an attribute boost through Conton City progression."},
+        {"id": "ach-wishes", "name": "Takkaraput Pop Porunga Pupiritt Paro!", "gs": 30, "req": "Power up Shenron's wishes.", "how": "Keep summoning Shenron — powering up his wishes unlocks after repeated summons at the Dragon Ball Pedestal."},
+        {"id": "ach-qq", "name": "Shut Up and Put This on Your Right Ear!", "gs": 15, "req": "Create a QQ Bang.", "how": "Create a QQ Bang at Capsule Corporation by mixing a piece of equipment with materials."},
+        {"id": "ach-vegeta", "name": "You're Number 1!", "gs": 30, "req": "Get Vegeta to acknowledge your strength.", "how": "Get Vegeta to acknowledge your strength by training with him as an instructor and completing his lessons."},
+        {"id": "ach-hercule", "name": "My Stomach Hurts!", "gs": 15, "req": "Receive an SP Reward from Hercule.", "how": "Receive an SP Reward from Hercule in Conton City."},
+        {"id": "ach-saiyaman", "name": "The Righteous Must Flourish!", "gs": 30, "req": "Become a student of the Great Saiyamen and defeat all the villains.", "how": "Become a student of the Great Saiyaman and defeat all the villains in his quests."},
+        {"id": "ach-awoken", "name": "Over Here, Slowpoke...", "gs": 60, "req": "Learn all possible Awoken Skills for each race from the large time rifts.", "how": "Learn all possible Awoken Skills for each race from the large time rifts — each race's Awoken skill lives in its time rift. This is the last one most players finish."},
+        {"id": "ach-skills", "name": "People of Earth, Please Lend Me Your Energy!", "gs": 15, "req": "Collect half of all skills.", "how": "Collect half of all skills — they accumulate from story, Parallel Quests, shops, and wishes."},
+        {"id": "ach-equip", "name": "The Bad Guys Always Wear the Coolest Clothes", "gs": 15, "req": "Collect half of all equipment.", "how": "Collect half of all equipment — it accumulates from story, Parallel Quests, shops, and wishes."},
+        {"id": "ach-nick", "name": "You Can't Destroy What I Really Am!", "gs": 15, "req": "Collect 50% of nicknames and view the nickname list.", "how": "Collect 50% of nicknames, then view the nickname list."},
+        {"id": "ach-allies", "name": "Take Care of Your Mom for Me...", "gs": 15, "req": "Free all allies who were put under mind control.", "how": "Free all allies who were put under mind control in their missions."},
+        {"id": "ach-repel", "name": "See You Later!", "gs": 15, "req": "Successfully repel a super Ki Blast.", "how": "Successfully repel a super Ki Blast — deflect one back at its sender in battle."},
+        {"id": "ach-krillin", "name": "Tra La La La La La!", "gs": 15, "req": "Complete 10 of Krillin's training sessions.", "how": "Complete 10 of Krillin's training sessions.", "counters": [{"group": "krillin", "target": 10}]},
+        {"id": "ach-yamcha", "name": "That Stone Might Be a Decoy! Let Me Check It", "gs": 15, "req": "Complete 10 of Yamcha's training sessions.", "how": "Complete 10 of Yamcha's training sessions.", "counters": [{"group": "yamcha", "target": 10}]},
+        {"id": "ach-miniatures", "name": "Focus Hard - Not on a Place, But on a Person", "gs": 15, "req": "Interact with Time Miniatures in all Bases.", "how": "Interact with Time Miniatures in all Bases."},
+        {"id": "ach-kame", "name": "Hello!", "gs": 15, "req": "Pay a visit to Kame House.", "how": "Pay a visit to Kame House."},
+        {"id": "ach-vehicle", "name": "In a Rocket Built For One Person?", "gs": 15, "req": "Ride a vehicle.", "how": "Ride a vehicle in Conton City."},
+        {"id": "ach-level80", "name": "Super Saiyan God Super Saiyan", "gs": 15, "req": "Reach level 80.", "how": "Reach level 80.", "counters": [{"group": "level", "target": 80}]},
+        {"id": "ach-instructors", "name": "You're Like the Son I Never Had...", "gs": 30, "req": "Complete all the instructors' lessons.", "how": "Complete all the instructors' lessons — you need to earn their skills, not max out their friendship gauges."}
+      ]
+    },
+    {
+      "id": "completion",
+      "filter_label": "Completion",
+      "title": "Completion",
+      "subtitle": "1 achievement",
+      "achievements": [
+        {"id": "ach-bye", "name": "Bye Bye, Xenoverse", "gs": 0, "req": "Complete all the achievements!", "how": "Complete every other base-game achievement on this page. This one is worth 0G and pops with the last of them."}
+      ]
+    }
+  ]
+}

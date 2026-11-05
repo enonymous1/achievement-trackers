@@ -25,8 +25,8 @@ through a game in order instead of hunting through a flat list.
 The hub is the landing page: a welcome line, a how-it-works card, a
 search box, and one card per game showing its achievement count,
 Gamerscore total, and your saved progress on this browser. The footer
-totals the whole library (currently: 9 games · 258 achievements ·
-9,250G) and links to this repo.
+totals the whole library (currently: 10 games · 308 achievements ·
+10,250G) and links to this repo.
 
 Each game page has a Gamerscore progress bar, search, an
 incomplete-only toggle, phase filters, and export / import / reset for
@@ -145,6 +145,14 @@ mower hour, and 20 multiplayer wins (private-lobby
 boostable; AI wins don't count). No TA walkthrough
 exists, so route notes are paraphrased from the Knoef
 and Fuzionbyte trophy guides.
+Dragon Ball Xenoverse 2 — 50 achievements, 1,000G, the
+base game only (the 11 DLC achievements are out of
+scope): 12 story sagas, 3 class tests, Parallel
+Quests and Expert Missions, online wins, and the
+Conton City cleanup, ending with the 0G completion
+achievement. No TA walkthrough exists, so route
+notes are paraphrased from the GameFAQs trophy
+guide.
 
 ## Prerequisites
 

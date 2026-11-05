@@ -4,6 +4,34 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Game #10: Dragon Ball Xenoverse 2
+
+### Added
+
+- Dragon Ball Xenoverse 2 — 50 achievements /
+  1,000G, the base game only, across six sections:
+  Story (12 sagas from Raditz's Attack through
+  Unknown History, plus the 70G ending sequence),
+  Class tests (Easy/Kai/Super), Parallel Quests &
+  Expert Missions (50% and full PQ completion, 7
+  and all Expert Missions, all Challenge Quests),
+  Online (first battle, 7 online wins, 7 endless
+  wins), Conton City (26: Shenron and the four
+  character wishes, all stages, Majin born/change,
+  Frieza Force ranks, QQ Bang, Awoken Skills, half
+  of skills/equipment/nicknames, Krillin and Yamcha
+  training, level 80, all instructors' lessons),
+  and Completion (the 0G Bye Bye, Xenoverse).
+  The 11 DLC achievements (300G) are out of scope,
+  stated on the page. No TrueAchievements
+  walkthrough exists (it needs a new owner);
+  Gamerscore values come from GamesXtreme and
+  route notes from the GameFAQs trophy guide (both
+  linked in the page sources), and the 1,000G total
+  was verified by arithmetic against the confirmed
+  values. About 60–80 hours. Library totals now 10
+  games · 308 achievements · 10,250G.
+
 ## 2026-11-04 — Game #9: Wreckfest (Windows)
 
 ### Added

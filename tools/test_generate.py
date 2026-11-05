@@ -79,6 +79,17 @@ class TestValidate(unittest.TestCase):
         with self.assertRaises(SystemExit):
             validate_game("test.json", game)
 
+    def test_zero_gs_passes(self):
+        # Genuine 0G achievements exist (e.g. Xenoverse 2's
+        # completion achievement); they must validate and sum as 0.
+        game = make_game(total_gs=10, total_count=2)
+        game["sections"][0]["achievements"].append(
+            {"id": "a0", "name": "Z", "gs": 0, "req": "R", "how": "H"}
+        )
+        validated = validate_game("test.json", game)
+        self.assertEqual(validated["_total_gs"], 10)
+        self.assertEqual(validated["_total_count"], 2)
+
     def test_duplicate_achievement_id_fails(self):
         game = make_game()
         game["sections"][0]["achievements"].append(

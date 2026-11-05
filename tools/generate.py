@@ -61,6 +61,13 @@ def _is_positive_int(value):
     return type(value) is int and value > 0
 
 
+def _is_nonnegative_int(value):
+    # Gamerscore is normally positive, but Xbox does have genuine 0G
+    # achievements (e.g. Dragon Ball Xenoverse 2's completion
+    # achievement), so gs allows zero while still rejecting bools.
+    return type(value) is int and value >= 0
+
+
 def fail(message):
     print(f"generate: error: {message}", file=sys.stderr)
     raise SystemExit(1)
@@ -164,8 +171,8 @@ def validate_game(filename, game):
             achievements.append(ach)
             check(ach["id"] not in task_ids, f"duplicate achievement id {ach['id']!r}")
             task_ids.add(ach["id"])
-            check(_is_positive_int(ach.get("gs")),
-                  f"{ach['id']}: gs must be a positive integer")
+            check(_is_nonnegative_int(ach.get("gs")),
+                  f"{ach['id']}: gs must be a non-negative integer")
             xid = ach.get("xbox_id")
             if has_xbox:
                 check(isinstance(xid, str) and xid,
