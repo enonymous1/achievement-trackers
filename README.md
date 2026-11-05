@@ -25,8 +25,8 @@ through a game in order instead of hunting through a flat list.
 The hub is the landing page: a welcome line, a how-it-works card, a
 search box, and one card per game showing its achievement count,
 Gamerscore total, and your saved progress on this browser. The footer
-totals the whole library (currently: 7 games · 220 achievements ·
-7,250G) and links to this repo.
+totals the whole library (currently: 8 games · 238 achievements ·
+8,250G) and links to this repo.
 
 Each game page has a Gamerscore progress bar, search, an
 incomplete-only toggle, phase filters, and export / import / reset for
@@ -131,6 +131,12 @@ walkthrough order: 20 story missions, 3 difficulty
 completions, 21 cheat time trials, and 11 split-screen
 multiplayer achievements (with step checklists for the
 maps, weapon sets, and scenarios).
+Relic Hunters Legend — 18 achievements, 1,000G, the full
+game in story order: 13 chapters and adventures plus 5
+progression achievements (new Hunter, levels 6 and 30
+on a shared counter, first Relic, first Treasure Map).
+No TA walkthrough exists, so chapter order follows a
+completed playthrough's unlock sequence.
 
 ## Prerequisites
 

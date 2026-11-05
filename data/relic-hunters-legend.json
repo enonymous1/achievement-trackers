@@ -1,0 +1,47 @@
+{
+  "slug": "relic-hunters-legend",
+  "title": "Relic Hunters Legend",
+  "tagline": "A looter-shooter legend in the making — run the story, raise a Hunter to 30, and craft your first Relic.",
+  "order_note": "Chapters in story order, following one full playthrough's unlock sequence; the progression achievements pop whenever their totals land, so they may arrive earlier or later than listed.",
+  "scope_note": "Full game: all 18 achievements / 1,000G. No TrueAchievements walkthrough exists; chapter order follows a completed playthrough's unlock sequence. About 40–50 hours.",
+  "total_gs": 1000,
+  "total_count": 18,
+  "storage_key": "rhl-tracker-v1",
+  "sources": [{"label": "TrueAchievements — Achievements", "url": "https://www.trueachievements.com/game/Relic-Hunters-Legend/achievements"}, {"label": "mygamerprofile — GS values and unlock order", "url": "https://mygamerprofile.net/gamer/conor+x420a/relic-hunters-legend"}, {"label": "cheats.co — Systems guide", "url": "https://www.cheats.co/pl/game/relic-hunters-legend"}],
+  "sections": [
+    {
+      "id": "story",
+      "filter_label": "Story",
+      "title": "Story",
+      "subtitle": "13 achievements",
+      "achievements": [
+        {"id": "ach-morning", "name": "Good Morning, Time Traveler", "gs": 50, "req": "Complete the first Story Mission", "how": "Complete the first story mission."},
+        {"id": "ach-galyno", "name": "Galyno Canyons", "gs": 50, "req": "Complete “Galyno Canyons”", "how": "Complete “Galyno Canyons”."},
+        {"id": "ach-legend", "name": "A Legend is Born", "gs": 50, "req": "Complete “A Legend is Born” Adventure", "how": "Complete the “A Legend is Born” Adventure."},
+        {"id": "ach-trained", "name": "Trained Rebel", "gs": 50, "req": "Complete the “Rebel Training” Chapter", "how": "Complete the “Rebel Training” chapter."},
+        {"id": "ach-desert", "name": "Desert Legend", "gs": 50, "req": "Complete the “Desert Legends” Chapter", "how": "Complete the “Desert Legends” chapter."},
+        {"id": "ach-mountain", "name": "Mountain Climber", "gs": 50, "req": "Complete the “Mountain Climbers” Chapter", "how": "Complete the “Mountain Climbers” chapter."},
+        {"id": "ach-trash", "name": "Trash Surfer", "gs": 50, "req": "Complete the “Kings of Garbage” Chapter", "how": "Complete the “Kings of Garbage” chapter."},
+        {"id": "ach-act1", "name": "Act 1", "gs": 50, "req": "Complete the “Act 1” Chapter", "how": "Complete the “Act 1” chapter."},
+        {"id": "ach-act2", "name": "Act 2", "gs": 100, "req": "Complete the “Act 2” Chapter", "how": "Complete the “Act 2” chapter."},
+        {"id": "ach-forbidden", "name": "Forbidden Territory", "gs": 50, "req": "Complete the “Forbidden Territory” Chapter", "how": "Complete the “Forbidden Territory” chapter."},
+        {"id": "ach-mean", "name": "Mean Streets", "gs": 50, "req": "Complete the “Mean Streets” Chapter", "how": "Complete the “Mean Streets” chapter."},
+        {"id": "ach-spire", "name": "Troubled Spire", "gs": 50, "req": "Complete the “Troubled Spire” Chapter", "how": "Complete the “Troubled Spire” chapter."},
+        {"id": "ach-act3", "name": "Act 3", "gs": 100, "req": "Complete the “Act 3” Chapter", "how": "Complete the “Act 3” chapter — the story finale."}
+      ]
+    },
+    {
+      "id": "progression",
+      "filter_label": "Progression",
+      "title": "Progression",
+      "subtitle": "5 achievements",
+      "achievements": [
+        {"id": "ach-crew", "name": "Rebel Crew", "gs": 50, "req": "Unlock a new Hunter", "how": "Unlock a new Hunter — there are seven playable hunters, and new ones unlock as you progress the story."},
+        {"id": "ach-progress", "name": "Making Progress", "gs": 50, "req": "Level Up a Hunter to Level 6", "how": "Level any Hunter to level 6.", "counters": [{"group": "hunter-level", "target": 6}]},
+        {"id": "ach-treasure", "name": "Treasure Hunter", "gs": 50, "req": "Complete a Treasure Map", "how": "Complete a Treasure Map — maps unlock via coordinates found in regular missions and lead to unique loot."},
+        {"id": "ach-relic", "name": "Relic Hunter", "gs": 50, "req": "Craft your first Relic", "how": "Craft your first Relic — relics surface from story progress, Adventures, Treasure Maps, and Item World."},
+        {"id": "ach-top", "name": "All the way up!", "gs": 50, "req": "Level Up a Hunter to Level 30", "how": "Level one Hunter to 30 — the long grind of the list. Mix Scavenge, Skirmish, and Treasure Maps for efficient XP, and use the Material Exchange Shop to round out crafting resources. Stick to one Hunter for this.", "counters": [{"group": "hunter-level", "target": 30}]}
+      ]
+    }
+  ]
+}

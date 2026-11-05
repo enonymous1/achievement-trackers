@@ -4,6 +4,24 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Game #8: Relic Hunters Legend
+
+### Added
+
+- Relic Hunters Legend — all 18 achievements /
+  1,000G, the full game in story order across two
+  sections: 13 chapters and adventures (first story
+  mission through Act 3) plus 5 progression
+  achievements (new Hunter, levels 6 and 30 on one
+  shared Hunter-level counter, first Relic, first
+  Treasure Map). No TrueAchievements walkthrough
+  exists, so chapter order follows a completed
+  playthrough's unlock sequence and Gamerscore
+  values come from that playthrough's profile page
+  (both linked in the page sources). About 40–50
+  hours. Library totals now 8 games · 238
+  achievements · 8,250G.
+
 ## 2026-11-04 — Game #7: GoldenEye 007
 
 ### Added
