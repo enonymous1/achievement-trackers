@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moonlighter — Achievement Tracker</title>
+<meta name="description" content="Achievement-first tracker for Moonlighter: achievements grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<meta property="og:title" content="Moonlighter — Achievement Tracker">
+<meta property="og:description" content="Achievement-first tracker for Moonlighter: achievements grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<script>
+  /* Theme before first paint: saved choice wins, otherwise follow the
+     system. AdminLTE 4 / Bootstrap 5.3 read data-bs-theme. */
+  (function () {
+    try {
+      var theme = localStorage.getItem("at-theme");
+      if (!theme) {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      document.documentElement.setAttribute("data-bs-theme", theme);
+    } catch (e) {}
+  })();
+</script>
+<link rel="stylesheet" href="../assets/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="../assets/vendor/bootstrap-icons.min.css">
+<link rel="stylesheet" href="../assets/vendor/adminlte.min.css">
+<link rel="stylesheet" href="../assets/css/sidebar.css">
+<link rel="stylesheet" href="../assets/css/tracker-cards.css">
+<style>
+  /* Page rules only: the card language itself lives in
+     assets/css/tracker-cards.css, shared with the How page demos. */
+  /* v2's contained column, not AdminLTE's full-width fluid layout. */
+  .app-main .container-fluid{max-width:1100px;margin-left:auto;margin-right:auto}
+  /* Only the progress bar card is pinned: the slim card holding the
+     Gamerscore title, counts and bar sticks to the top of the
+     viewport while scrolling (the top header scrolls away in this
+     layout, so top: 0 is right). Search, filters and the
+     Order/Scope text live in the card below it and scroll away. */
+  .progress-card{position:sticky;top:0;z-index:1030;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  /* AdminLTE's layout-fixed sets .app-main to overflow:auto (via
+     .sidebar-expand-lg.layout-fixed .app-main), which makes it the
+     sticky element's scrolling ancestor — and since it never
+     scrolls itself, position:sticky on the progress card stops
+     working. Restore visible overflow at the same specificity, so
+     the card sticks to the viewport scroll, as it did in the
+     top-nav layout. */
+  .sidebar-expand-lg.layout-fixed .app-main{overflow:visible}
+  /* Sections read as a group again (v2's card background), not as a
+     bare bordered box on the page background. */
+  details{background:var(--bs-card-bg);border:1px solid var(--bs-border-color);border-radius:12px;margin-bottom:1rem;overflow:hidden}
+  details summary{cursor:pointer;padding:1rem;font-weight:700;font-size:1.1rem}
+  details summary::marker{color:var(--bs-secondary-color)}
+  details summary small{display:block;font-weight:400;color:var(--bs-secondary-color);font-size:.9rem;margin-top:2px}
+  .section-body{padding:0 1rem 1rem}
+  /* Overall progress bar: v2's rounded gradient pill, not the flat
+     Bootstrap bar. The counter bars keep Bootstrap's flat bar. */
+  #overallBar{background:linear-gradient(90deg,var(--at-green),#a8e07a);border-radius:99px}
+  .progress:has(#overallBar){height:14px;border-radius:99px;overflow:hidden}
+  /* Phase filters are separate pills (v2), not a joined button group;
+     the active pill is solid green with dark text, as in v2. */
+  /* Phase pills read as normal text (v2), not Bootstrap's dark-green
+     outline-success text, which is near-illegible on a dark card. */
+  .filter{--bs-btn-color:var(--bs-body-color);--bs-btn-border-color:var(--bs-border-color);--bs-btn-hover-color:var(--bs-body-color);--bs-btn-hover-border-color:var(--at-green);--bs-btn-active-color:var(--bs-body-color)}
+  .filter.active{background:var(--at-green) !important;border-color:var(--at-green) !important;font-weight:700}
+  [data-bs-theme="dark"] .filter.active{color:#12140f !important}
+  .hidden{display:none !important}
+  @media print{.app-header,.controls,#xbox-sync{display:none !important}.progress-card{position:static}details{break-inside:avoid}}
+</style>
+</head>
+<body class="layout-fixed sidebar-expand-lg">
+<script>
+  /* Restore the sidebar's collapsed/open state before AdminLTE's
+     own init runs, so the drawer does not flash open on every page.
+     The observer in assets/js/sidebar-state.js saves each change. */
+  (function(){try{var s=localStorage.getItem('at-sidebar');if(s==='collapsed')document.body.classList.add('sidebar-collapse');if(s==='open')document.body.classList.add('sidebar-open');}catch(e){}})();
+</script>
+<div class="app-wrapper">
+  <nav class="app-header navbar navbar-expand bg-body">
+    <div class="container-fluid">
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" aria-label="Toggle sidebar"><i class="bi bi-list"></i></a></li>
+      </ul>
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item"><span class="nav-link" id="overallTextNav">0 / 57 · 0G</span></li>
+        <li class="nav-item ms-2"><button type="button" id="theme-toggle" class="btn btn-sm btn-outline-secondary" aria-label="Toggle dark mode">Theme</button></li>
+      </ul>
+    </div>
+  </nav>
+  <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+    <div class="sidebar-brand">
+      <a href="../" class="brand-link"><span class="brand-text fw-light">🏆 Achievement Trackers</span></a>
+    </div>
+    <div class="sidebar-wrapper">
+      <nav class="mt-2">
+        <ul class="nav sidebar-menu flex-column" role="menu">
+              <li class="nav-item"><a href="../" class="nav-link"><i class="nav-icon bi bi-house"></i><p>Home</p></a></li>
+              <li class="nav-header">Games</li>
+              <li class="nav-item"><a href="../1000xresist/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>1000xRESIST</p></a></li>
+              <li class="nav-item"><a href="../barbie-horse-trails/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Barbie Horse Trails</p></a></li>
+              <li class="nav-item"><a href="../dragon-ball-xenoverse-2/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Dragon Ball Xenoverse 2</p></a></li>
+              <li class="nav-item"><a href="../goldeneye-007/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>GoldenEye 007</p></a></li>
+              <li class="nav-item"><a href="../great-god-grove/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Great God Grove</p></a></li>
+              <li class="nav-item"><a href="../minecraft-dungeons/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Minecraft Dungeons</p></a></li>
+              <li class="nav-item"><a href="../moonlighter/" class="nav-link active"><i class="nav-icon bi bi-controller"></i><p>Moonlighter</p></a></li>
+              <li class="nav-item"><a href="../pigeon-simulator/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Pigeon Simulator</p></a></li>
+              <li class="nav-item"><a href="../relic-hunters-legend/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Relic Hunters Legend</p></a></li>
+              <li class="nav-item"><a href="../winter-burrow/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Winter Burrow</p></a></li>
+              <li class="nav-item"><a href="../wreckfest/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Wreckfest</p></a></li>
+        </ul>
+      </nav>
+      <div class="sidebar-bottom">
+        <ul class="nav sidebar-menu flex-column" role="menu">
+          <li class="nav-item"><a href="../how-it-works/" class="nav-link"><i class="nav-icon bi bi-question-circle"></i><p>How it works</p></a></li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+  <main class="app-main">
+    <div class="app-content-header">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-12">
+            <h3 class="mb-0">Moonlighter <small class="text-secondary">— Achievement Tracker</small></h3>
+            <p class="text-secondary mb-0">Dungeon by night, shopkeeper by day — dive for loot, then haggle over it.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="app-content">
+      <div class="container-fluid">
+
+        <div class="card progress-card">
+          <div class="card-header d-flex justify-content-between flex-wrap gap-2">
+            <h3 class="card-title">Gamerscore progress</h3>
+            <span id="overallText">0 / 57 achievements · 0 / 1000G</span>
+          </div>
+          <div class="card-body">
+            <div class="progress" role="progressbar" aria-label="Gamerscore progress">
+              <div class="progress-bar bg-success" id="overallBar" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="controls d-flex flex-wrap gap-2 align-items-center">
+              <input type="search" id="search" class="form-control flex-grow-1" style="min-width:220px" placeholder="Search achievements, missions, gear…" aria-label="Search tracker">
+              <label class="form-check-label"><input type="checkbox" id="incompleteOnly" class="form-check-input me-1"> Incomplete only</label>
+              <button type="button" id="exportBtn" class="btn btn-outline-secondary btn-sm">Export progress</button>
+              <label class="btn btn-outline-secondary btn-sm mb-0" for="importFile">Import progress</label>
+              <input type="file" id="importFile" accept=".json,application/json" class="d-none">
+              <button type="button" id="resetBtn" class="btn btn-outline-danger btn-sm">Reset all</button>
+              <button type="button" class="note-btn" data-note-key="game" title="Game notes" aria-label="Game notes"><i class="bi bi-journal-text"></i></button>
+            </div>
+            <div class="controls d-flex flex-wrap gap-2 mt-2" role="group" aria-label="Filter by phase">
+              <button type="button" class="filter btn btn-outline-success active" data-filter="all">All</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="golem">Golem</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="forest">Forest</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="desert">Desert</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="tech">Tech</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="ngplus">NG+</button>
+            </div>
+            <p class="text-secondary mt-3 mb-0"><strong>Order:</strong> Sections run in walkthrough order — Golem, Forest, Desert, Tech, then the final boss and a New Game+ speedrun. Playthrough 1 is the careful run: under 40 deaths, no-hit boss kills, and the broom finish on every boss. The prologue is a survive-as-long-as-you-can tutorial — grab what you can before you die. Cumulative trackers (kills, floors, notebook, decorations) carry across the whole run.</p>
+            <p class="text-secondary mb-0"><strong>Scope:</strong> All 57 achievements / 1,000G — the full game, no DLC. The Between Dimensions DLC has its own achievements and is out of scope. Two playthroughs: a careful first run, then a New Game+ speedrun; 25–30 hours.</p>
+          </div>
+        </div>
+
+
+
+<details open data-cat="golem">
+<summary>Playthrough 1 · Golem Dungeon <small>20 achievements · <span class="sec-progress" data-section="golem"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Does It Grow on Trees?!? Get money from a tree After the prologue, hit the trees around town until one drops coins — try the main square and the lower edge of town."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-trees" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#1</span><span class="ach-name">Does It Grow on Trees?!?</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-trees" title="Notes for Does It Grow on Trees?!?" aria-label="Notes for Does It Grow on Trees?!?"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Get money from a tree</p><p class="how">After the prologue, hit the trees around town until one drops coins — try the main square and the lower edge of town.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Really?!? Earn money from trees 100 times Keep hitting town trees whenever you&#x27;re back from a dungeon. The counter is glitchy and can pop early or late."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-really" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#2</span><span class="ach-name">Really?!?</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-really" title="Notes for Really?!?" aria-label="Notes for Really?!?"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="tree-money" data-target="100"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Earn money from trees 100 times</p><p class="how">Keep hitting town trees whenever you&#x27;re back from a dungeon. The counter is glitchy and can pop early or late.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease tree-money counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="tree-money" data-target="100" min="0" value="0" aria-label="tree-money counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase tree-money counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Distracted Merchant Make 20 visitors abandon your shop Put 20 cheap items out at 1 gold each, one per table, and let customers wait in line until they leave without being served. Takes more than one day — sleep and repeat."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-distracted" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#3</span><span class="ach-name">Distracted Merchant</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-distracted" title="Notes for Distracted Merchant" aria-label="Notes for Distracted Merchant"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="abandoned" data-target="20"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Make 20 visitors abandon your shop</p><p class="how">Put 20 cheap items out at 1 gold each, one per table, and let customers wait in line until they leave without being served. Takes more than one day — sleep and repeat.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease abandoned counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="abandoned" data-target="20" min="0" value="0" aria-label="abandoned counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase abandoned counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Evil Merchant Sell 20 items slightly overpriced Sell 20 items at the &#x27;expensive&#x27; price, one step above optimal — the walkthrough&#x27;s price tables show the band for each item."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-evil" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#4</span><span class="ach-name">Evil Merchant</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-evil" title="Notes for Evil Merchant" aria-label="Notes for Evil Merchant"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="overpriced" data-target="20"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Sell 20 items slightly overpriced</p><p class="how">Sell 20 items at the &#x27;expensive&#x27; price, one step above optimal — the walkthrough&#x27;s price tables show the band for each item.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease overpriced counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="overpriced" data-target="20" min="0" value="0" aria-label="overpriced counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase overpriced counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Scammer Receive 60 really expensive valuations Price items &#x27;too expensive&#x27; and wait for the frowning-face valuation, 60 times. Grind it alongside Evil Merchant."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-scammer" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#5</span><span class="ach-name">Scammer</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-scammer" title="Notes for Scammer" aria-label="Notes for Scammer"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="expensive-valuations" data-target="60"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Receive 60 really expensive valuations</p><p class="how">Price items &#x27;too expensive&#x27; and wait for the frowning-face valuation, 60 times. Grind it alongside Evil Merchant.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease expensive-valuations counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="expensive-valuations" data-target="60" min="0" value="0" aria-label="expensive-valuations counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase expensive-valuations counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Naive Merchant Sell 40 items really cheap Sell 40 items at the &#x27;cheap&#x27; price."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-naive" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#6</span><span class="ach-name">Naive Merchant</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-naive" title="Notes for Naive Merchant" aria-label="Notes for Naive Merchant"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="cheap-sales" data-target="40"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Sell 40 items really cheap</p><p class="how">Sell 40 items at the &#x27;cheap&#x27; price.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease cheap-sales counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="cheap-sales" data-target="40" min="0" value="0" aria-label="cheap-sales counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase cheap-sales counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Good Merchant Sell 20 items for the perfect price Sell 20 items at the &#x27;perfect&#x27; (optimal) price — use the walkthrough&#x27;s price tables."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-good" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#7</span><span class="ach-name">Good Merchant</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-good" title="Notes for Good Merchant" aria-label="Notes for Good Merchant"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="perfect-sales" data-target="20"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Sell 20 items for the perfect price</p><p class="how">Sell 20 items at the &#x27;perfect&#x27; (optimal) price — use the walkthrough&#x27;s price tables.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease perfect-sales counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="perfect-sales" data-target="20" min="0" value="0" aria-label="perfect-sales counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase perfect-sales counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="There Is No Avarice Without Penalty Die with your inventory full of items Fill every inventory slot, then die in the dungeon. Items in the top row survive, so put anything precious there first."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-avarice" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#8</span><span class="ach-name">There Is No Avarice Without Penalty</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-avarice" title="Notes for There Is No Avarice Without Penalty" aria-label="Notes for There Is No Avarice Without Penalty"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Die with your inventory full of items</p><p class="how">Fill every inventory slot, then die in the dungeon. Items in the top row survive, so put anything precious there first.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Special Place Arrive at Crazy Pete&#x27;s Special Place In any Crazy Pete resting room, walk into the top-right corner — the wet spot by the wall. It can also pop glitched alongside Rage Against the Desert."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-special-place" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#9</span><span class="ach-name">Special Place</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-special-place" title="Notes for Special Place" aria-label="Notes for Special Place"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Arrive at Crazy Pete&#x27;s Special Place</p><p class="how">In any Crazy Pete resting room, walk into the top-right corner — the wet spot by the wall. It can also pop glitched alongside Rage Against the Desert.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Exterminator Kill 100 bugs Run or roll over the tiny bugs scurrying across dungeon floors — snails and beetles in the Forest, scorpions and dung beetles in the Desert."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-exterminator" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#10</span><span class="ach-name">Exterminator</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-exterminator" title="Notes for Exterminator" aria-label="Notes for Exterminator"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="bugs" data-target="100"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Kill 100 bugs</p><p class="how">Run or roll over the tiny bugs scurrying across dungeon floors — snails and beetles in the Forest, scorpions and dung beetles in the Desert.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease bugs counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="bugs" data-target="100" min="0" value="0" aria-label="bugs counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase bugs counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="No Secrets Find a secret room 10 times Some rooms with pitfalls sparkle for a few seconds after you enter — drop into any pitfall there. 10 secret rooms in total."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-no-secrets" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#11</span><span class="ach-name">No Secrets</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-no-secrets" title="Notes for No Secrets" aria-label="Notes for No Secrets"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="secret-rooms" data-target="10"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Find a secret room 10 times</p><p class="how">Some rooms with pitfalls sparkle for a few seconds after you enter — drop into any pitfall there. 10 secret rooms in total.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease secret-rooms counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="secret-rooms" data-target="10" min="0" value="0" aria-label="secret-rooms counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase secret-rooms counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Horde Mode Defeat three waves of enemies in a Wave Room In a wave room, activate the stone-slime pillar and beat 3 waves. Don&#x27;t open the chest first or the pillar implodes and the waves are gone."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-horde" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#12</span><span class="ach-name">Horde Mode</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-horde" title="Notes for Horde Mode" aria-label="Notes for Horde Mode"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Defeat three waves of enemies in a Wave Room</p><p class="how">In a wave room, activate the stone-slime pillar and beat 3 waves. Don&#x27;t open the chest first or the pillar implodes and the waves are gone.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Going for Supplies... Use the Emblem in the room before the boss room In the room right before a boss room, use the merchant Emblem to teleport back to town."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-supplies" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#13</span><span class="ach-name">Going for Supplies...</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-supplies" title="Notes for Going for Supplies..." aria-label="Notes for Going for Supplies..."><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Use the Emblem in the room before the boss room</p><p class="how">In the room right before a boss room, use the merchant Emblem to teleport back to town.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Slime Protection Service Hit the Witch&#x27;s slime 42 times In the Witch&#x27;s shop, hit the slime in the pen in the left corner 42 times — only hits that make it react count, and the tracker is glitchy."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-slime" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#14</span><span class="ach-name">Slime Protection Service</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-slime" title="Notes for Slime Protection Service" aria-label="Notes for Slime Protection Service"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="slime-hits" data-target="42"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Hit the Witch&#x27;s slime 42 times</p><p class="how">In the Witch&#x27;s shop, hit the slime in the pen in the left corner 42 times — only hits that make it react count, and the tracker is glitchy.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease slime-hits counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="slime-hits" data-target="42" min="0" value="0" aria-label="slime-hits counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase slime-hits counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Saver Collect more than 5000 gold Cumulative gold collected from selling — comes naturally while working the Golem Dungeon."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-saver" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#15</span><span class="ach-name">Saver</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-saver" title="Notes for Saver" aria-label="Notes for Saver"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="gold-collected" data-target="5000"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Collect more than 5000 gold</p><p class="how">Cumulative gold collected from selling — comes naturally while working the Golem Dungeon.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease gold-collected counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="gold-collected" data-target="5000" min="0" value="0" aria-label="gold-collected counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase gold-collected counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="First Investment Purchase the second shop upgrade Buy the first shop-size upgrade on the Town Board — the shop&#x27;s starting size counts as the first upgrade."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-first-investment" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#16</span><span class="ach-name">First Investment</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-first-investment" title="Notes for First Investment" aria-label="Notes for First Investment"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Purchase the second shop upgrade</p><p class="how">Buy the first shop-size upgrade on the Town Board — the shop&#x27;s starting size counts as the first upgrade.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Golem Enthusiast Arrive at the third floor of the Golem Dungeon 10 times Reach floor 3 of the Golem Dungeon 10 times — comes with the material farming runs."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-golem-enth" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#17</span><span class="ach-name">Golem Enthusiast</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-golem-enth" title="Notes for Golem Enthusiast" aria-label="Notes for Golem Enthusiast"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="floor3-golem" data-target="10"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Arrive at the third floor of the Golem Dungeon 10 times</p><p class="how">Reach floor 3 of the Golem Dungeon 10 times — comes with the material farming runs.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease floor3-golem counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="floor3-golem" data-target="10" min="0" value="0" aria-label="floor3-golem counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase floor3-golem counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Rage Against the Golems Kill 1000 golem enemies 1,000 Golem Dungeon kills — comes with the floor-3 repeats and material farming."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-rage-golems" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#18</span><span class="ach-name">Rage Against the Golems</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-rage-golems" title="Notes for Rage Against the Golems" aria-label="Notes for Rage Against the Golems"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="kills-golem" data-target="1000"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Kill 1000 golem enemies</p><p class="how">1,000 Golem Dungeon kills — comes with the floor-3 repeats and material farming.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease kills-golem counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="kills-golem" data-target="1000" min="0" value="0" aria-label="kills-golem counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase kills-golem counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Overthrow the King! Defeat the Golem King Beat the Golem King. Three repeating phases: ground pound and shockwave, slime-fist swipe, then the falling fist — the shockwave after the rock-fall doesn&#x27;t count as a hit."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-overthrow" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#19</span><span class="ach-name">Overthrow the King!</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-overthrow" title="Notes for Overthrow the King!" aria-label="Notes for Overthrow the King!"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Defeat the Golem King</p><p class="how">Beat the Golem King. Three repeating phases: ground pound and shockwave, slime-fist swipe, then the falling fist — the shockwave after the rock-fall doesn&#x27;t count as a hit.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Perfect Golem King Perfect Golem King Beat him without taking a single hit. Set a portal in the room before the boss, quit to the menu from town as a checkpoint, and retry from there — it doesn&#x27;t work if you die. Maxed armour and Giant Sword; time charged attacks to the falling-fist strikes for i-frames."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-perfect-golem" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#20</span><span class="ach-name">Perfect Golem King</span><span class="badge text-bg-danger-subtle text-danger-emphasis border border-danger-subtle ms-2" title="Missable: can be passed without popping">Missable</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-perfect-golem" title="Notes for Perfect Golem King" aria-label="Notes for Perfect Golem King"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Perfect Golem King</p><p class="how">Beat him without taking a single hit. Set a portal in the room before the boss, quit to the menu from town as a checkpoint, and retry from there — it doesn&#x27;t work if you die. Maxed armour and Giant Sword; time charged attacks to the falling-fist strikes for i-frames.</p></div></article></div>
+</div></div></details>
+<details data-cat="forest">
+<summary>Forest Dungeon <small>9 achievements · <span class="sec-progress" data-section="forest"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Wasteful Merchant Buy more than 10 items at Le Retailer Buy 11 items from Le Retailer (daytime, north-west of town). TA says more than 10; the walkthrough&#x27;s &#x27;buy ten&#x27; may already do it."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-wasteful" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#21</span><span class="ach-name">Wasteful Merchant</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-wasteful" title="Notes for Wasteful Merchant" aria-label="Notes for Wasteful Merchant"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="retailer-buys" data-target="11"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Buy more than 10 items at Le Retailer</p><p class="how">Buy 11 items from Le Retailer (daytime, north-west of town). TA says more than 10; the walkthrough&#x27;s &#x27;buy ten&#x27; may already do it.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease retailer-buys counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="retailer-buys" data-target="11" min="0" value="0" aria-label="retailer-buys counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase retailer-buys counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Expansion Purchase the third shop upgrade Buy the second shop upgrade — it adds customer requests, waiting at the right side of the shop. Check the calendar page in your notebook and only take requests you can fill easily."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-expansion" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#22</span><span class="ach-name">Expansion</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-expansion" title="Notes for Expansion" aria-label="Notes for Expansion"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Purchase the third shop upgrade</p><p class="how">Buy the second shop upgrade — it adds customer requests, waiting at the right side of the shop. Check the calendar page in your notebook and only take requests you can fill easily.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Sanitary System Take potions from breakables 20 times Potions from breakable objects — urns, corpses, rocks, bushes — 20 times. Comes naturally across the dungeons."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-sanitary" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#23</span><span class="ach-name">Sanitary System</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-sanitary" title="Notes for Sanitary System" aria-label="Notes for Sanitary System"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="potion-breakables" data-target="20"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Take potions from breakables 20 times</p><p class="how">Potions from breakable objects — urns, corpses, rocks, bushes — 20 times. Comes naturally across the dungeons.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease potion-breakables counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="potion-breakables" data-target="20" min="0" value="0" aria-label="potion-breakables counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase potion-breakables counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Saver+ Collect more than 50,000 gold Cumulative 50,000 gold collected from selling."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-saver-plus" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#24</span><span class="ach-name">Saver+</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-saver-plus" title="Notes for Saver+" aria-label="Notes for Saver+"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="gold-collected" data-target="50000"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Collect more than 50,000 gold</p><p class="how">Cumulative 50,000 gold collected from selling.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease gold-collected counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="gold-collected" data-target="50000" min="0" value="0" aria-label="gold-collected counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase gold-collected counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Saver++ Collect more than 100,000 gold Cumulative 100,000 gold collected from selling."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-saver-plusplus" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#25</span><span class="ach-name">Saver++</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-saver-plusplus" title="Notes for Saver++" aria-label="Notes for Saver++"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="gold-collected" data-target="100000"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Collect more than 100,000 gold</p><p class="how">Cumulative 100,000 gold collected from selling.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease gold-collected counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="gold-collected" data-target="100000" min="0" value="0" aria-label="gold-collected counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase gold-collected counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Forest Enthusiast Arrive at the third floor of the Forest Dungeon 10 times Reach floor 3 of the Forest Dungeon 10 times."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-forest-enth" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#26</span><span class="ach-name">Forest Enthusiast</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-forest-enth" title="Notes for Forest Enthusiast" aria-label="Notes for Forest Enthusiast"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="floor3-forest" data-target="10"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Arrive at the third floor of the Forest Dungeon 10 times</p><p class="how">Reach floor 3 of the Forest Dungeon 10 times.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease floor3-forest counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="floor3-forest" data-target="10" min="0" value="0" aria-label="floor3-forest counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase floor3-forest counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Rage Against the Forest Kill 1000 forest enemies 1,000 Forest Dungeon kills."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-rage-forest" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#27</span><span class="ach-name">Rage Against the Forest</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-rage-forest" title="Notes for Rage Against the Forest" aria-label="Notes for Rage Against the Forest"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="kills-forest" data-target="1000"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Kill 1000 forest enemies</p><p class="how">1,000 Forest Dungeon kills.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease kills-forest counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="kills-forest" data-target="1000" min="0" value="0" aria-label="kills-forest counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase kills-forest counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Prune the Plant! Defeat Carnivorous Mutae Beat Carnivorous Mutae. Gloves up close for phase 1; bow or quick combos later. Watch for the spiral seed shots in the final phase, and ignore the respawning minions — their shots don&#x27;t pass the bushes."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-prune" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#28</span><span class="ach-name">Prune the Plant!</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-prune" title="Notes for Prune the Plant!" aria-label="Notes for Prune the Plant!"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Defeat Carnivorous Mutae</p><p class="how">Beat Carnivorous Mutae. Gloves up close for phase 1; bow or quick combos later. Watch for the spiral seed shots in the final phase, and ignore the respawning minions — their shots don&#x27;t pass the bushes.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Perfect Carnivorous Mutae Perfect Carnivorous Mutae No-hit kill — the second hardest perfect. Same portal checkpoint trick. Its minions shoot from random angles; leave them alone and focus the boss."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-perfect-mutae" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#29</span><span class="ach-name">Perfect Carnivorous Mutae</span><span class="badge text-bg-danger-subtle text-danger-emphasis border border-danger-subtle ms-2" title="Missable: can be passed without popping">Missable</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-perfect-mutae" title="Notes for Perfect Carnivorous Mutae" aria-label="Notes for Perfect Carnivorous Mutae"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Perfect Carnivorous Mutae</p><p class="how">No-hit kill — the second hardest perfect. Same portal checkpoint trick. Its minions shoot from random angles; leave them alone and focus the boss.</p></div></article></div>
+</div></div></details>
+<details data-cat="desert">
+<summary>Desert Dungeon <small>7 achievements · <span class="sec-progress" data-section="desert"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Greedy Collect more than 1,000,000 gold Hold 1,000,000 gold on you at once — this one is not cumulative. Don&#x27;t spend below it until it pops."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-greedy" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#30</span><span class="ach-name">Greedy</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-greedy" title="Notes for Greedy" aria-label="Notes for Greedy"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Collect more than 1,000,000 gold</p><p class="how">Hold 1,000,000 gold on you at once — this one is not cumulative. Don&#x27;t spend below it until it pops.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="It Takes a Thief to Catch a Thief Earn money from the Banker 5 times Recruit the Banker (the last merchant), lend him gold, and collect a profit 5 times. Aim for +15% returns; he has a cooldown between payouts."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-thief" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#31</span><span class="ach-name">It Takes a Thief to Catch a Thief</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-thief" title="Notes for It Takes a Thief to Catch a Thief" aria-label="Notes for It Takes a Thief to Catch a Thief"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="banker-payouts" data-target="5"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Earn money from the Banker 5 times</p><p class="how">Recruit the Banker (the last merchant), lend him gold, and collect a profit 5 times. Aim for +15% returns; he has a cooldown between payouts.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease banker-payouts counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="banker-payouts" data-target="5" min="0" value="0" aria-label="banker-payouts counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase banker-payouts counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Luxury Purchase the fourth shop upgrade Buy the third shop upgrade — it adds a shop assistant. It takes 30% of daily earnings and fails requests, so most players never use it."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-luxury" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#32</span><span class="ach-name">Luxury</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-luxury" title="Notes for Luxury" aria-label="Notes for Luxury"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Purchase the fourth shop upgrade</p><p class="how">Buy the third shop upgrade — it adds a shop assistant. It takes 30% of daily earnings and fails requests, so most players never use it.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Desert Enthusiast Arrive at the third floor of the Desert Dungeon 10 times Reach floor 3 of the Desert Dungeon 10 times."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-desert-enth" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#33</span><span class="ach-name">Desert Enthusiast</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-desert-enth" title="Notes for Desert Enthusiast" aria-label="Notes for Desert Enthusiast"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="floor3-desert" data-target="10"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Arrive at the third floor of the Desert Dungeon 10 times</p><p class="how">Reach floor 3 of the Desert Dungeon 10 times.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease floor3-desert counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="floor3-desert" data-target="10" min="0" value="0" aria-label="floor3-desert counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase floor3-desert counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Rage Against the Desert Kill 1000 desert enemies 1,000 Desert Dungeon kills."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-rage-desert" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#34</span><span class="ach-name">Rage Against the Desert</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-rage-desert" title="Notes for Rage Against the Desert" aria-label="Notes for Rage Against the Desert"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="kills-desert" data-target="1000"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Kill 1000 desert enemies</p><p class="how">1,000 Desert Dungeon kills.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease kills-desert counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="kills-desert" data-target="1000" min="0" value="0" aria-label="kills-desert counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase kills-desert counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Behead the Snake! Defeat Naja Beat Naja. Destroy the body parts in order 3, 2, 1, 4 — top priority is the flame-spirit part — then the head, which only charges at that point."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-behead" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#35</span><span class="ach-name">Behead the Snake!</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-behead" title="Notes for Behead the Snake!" aria-label="Notes for Behead the Snake!"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Defeat Naja</p><p class="how">Beat Naja. Destroy the body parts in order 3, 2, 1, 4 — top priority is the flame-spirit part — then the head, which only charges at that point.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Perfect Naja Perfect Naja No-hit kill, the hardest one — Naja&#x27;s attacks are pure RNG, so watch each body part&#x27;s tell and use the portal checkpoint. This is the rarest achievement in the game."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-perfect-naja" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#36</span><span class="ach-name">Perfect Naja</span><span class="badge text-bg-danger-subtle text-danger-emphasis border border-danger-subtle ms-2" title="Missable: can be passed without popping">Missable</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-perfect-naja" title="Notes for Perfect Naja" aria-label="Notes for Perfect Naja"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Perfect Naja</p><p class="how">No-hit kill, the hardest one — Naja&#x27;s attacks are pure RNG, so watch each body part&#x27;s tell and use the portal checkpoint. This is the rarest achievement in the game.</p></div></article></div>
+</div></div></details>
+<details data-cat="tech">
+<summary>Tech Dungeon &amp; Finale <small>19 achievements · <span class="sec-progress" data-section="tech"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Heavy Warrior Craft all big swords Craft all 9 big swords, Training through Fusion and Storm. Check the merchant log — the tracker is glitchy; wait for each weapon to register before upgrading further."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-heavy" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#37</span><span class="ach-name">Heavy Warrior</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-heavy" title="Notes for Heavy Warrior" aria-label="Notes for Heavy Warrior"><i class="bi bi-journal-text"></i></button></div><div class="progress step-bar mx-3 mt-2" style="height:10px" data-step-parent="ach-heavy"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Craft all big swords</p><p class="how">Craft all 9 big swords, Training through Fusion and Storm. Check the merchant log — the tracker is glitchy; wait for each weapon to register before upgrading further.</p><div class="steps"><label><input type="checkbox" class="step" id="step-heavy-training-big-sword" data-parent="ach-heavy"> Training Big Sword</label><label><input type="checkbox" class="step" id="step-heavy-buster-big-sword" data-parent="ach-heavy"> Buster Big Sword</label><label><input type="checkbox" class="step" id="step-heavy-rock-big-sword" data-parent="ach-heavy"> Rock Big Sword</label><label><input type="checkbox" class="step" id="step-heavy-wild-big-sword" data-parent="ach-heavy"> Wild Big Sword</label><label><input type="checkbox" class="step" id="step-heavy-toxic-big-sword" data-parent="ach-heavy"> Toxic Big Sword</label><label><input type="checkbox" class="step" id="step-heavy-vulcan-big-sword" data-parent="ach-heavy"> Vulcan Big Sword</label><label><input type="checkbox" class="step" id="step-heavy-blaze-big-sword" data-parent="ach-heavy"> Blaze Big Sword</label><label><input type="checkbox" class="step" id="step-heavy-fusion-big-sword" data-parent="ach-heavy"> Fusion Big Sword</label><label><input type="checkbox" class="step" id="step-heavy-storm-big-sword" data-parent="ach-heavy"> Storm Big Sword</label></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Distant Warrior Craft all bows Craft all 9 bows, Training through Exeter and Lightning. Same glitch warning as the other weapon trees."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-distant" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#38</span><span class="ach-name">Distant Warrior</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-distant" title="Notes for Distant Warrior" aria-label="Notes for Distant Warrior"><i class="bi bi-journal-text"></i></button></div><div class="progress step-bar mx-3 mt-2" style="height:10px" data-step-parent="ach-distant"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Craft all bows</p><p class="how">Craft all 9 bows, Training through Exeter and Lightning. Same glitch warning as the other weapon trees.</p><div class="steps"><label><input type="checkbox" class="step" id="step-distant-training-bow" data-parent="ach-distant"> Training Bow</label><label><input type="checkbox" class="step" id="step-distant-hunter-bow" data-parent="ach-distant"> Hunter Bow</label><label><input type="checkbox" class="step" id="step-distant-catapult-bow" data-parent="ach-distant"> Catapult Bow</label><label><input type="checkbox" class="step" id="step-distant-natural-bow" data-parent="ach-distant"> Natural Bow</label><label><input type="checkbox" class="step" id="step-distant-poison-bow" data-parent="ach-distant"> Poison Bow</label><label><input type="checkbox" class="step" id="step-distant-soldier-bow" data-parent="ach-distant"> Soldier Bow</label><label><input type="checkbox" class="step" id="step-distant-flamethrower-bow" data-parent="ach-distant"> Flamethrower Bow</label><label><input type="checkbox" class="step" id="step-distant-exeter-bow" data-parent="ach-distant"> Exeter Bow</label><label><input type="checkbox" class="step" id="step-distant-lightning-bow" data-parent="ach-distant"> Lightning Bow</label></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Berserk Warrior Craft all gloves Craft all 9 gloves, Training through Star Platinum and Thunder."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-berserk" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#39</span><span class="ach-name">Berserk Warrior</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-berserk" title="Notes for Berserk Warrior" aria-label="Notes for Berserk Warrior"><i class="bi bi-journal-text"></i></button></div><div class="progress step-bar mx-3 mt-2" style="height:10px" data-step-parent="ach-berserk"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Craft all gloves</p><p class="how">Craft all 9 gloves, Training through Star Platinum and Thunder.</p><div class="steps"><label><input type="checkbox" class="step" id="step-berserk-training-gloves" data-parent="ach-berserk"> Training Gloves</label><label><input type="checkbox" class="step" id="step-berserk-fighter-gloves" data-parent="ach-berserk"> Fighter Gloves</label><label><input type="checkbox" class="step" id="step-berserk-rough-gloves" data-parent="ach-berserk"> Rough Gloves</label><label><input type="checkbox" class="step" id="step-berserk-forest-spirit-gloves" data-parent="ach-berserk"> Forest Spirit Gloves</label><label><input type="checkbox" class="step" id="step-berserk-venom-twins-gloves" data-parent="ach-berserk"> Venom Twins Gloves</label><label><input type="checkbox" class="step" id="step-berserk-captain-gloves" data-parent="ach-berserk"> Captain Gloves</label><label><input type="checkbox" class="step" id="step-berserk-flame-gloves" data-parent="ach-berserk"> Flame Gloves</label><label><input type="checkbox" class="step" id="step-berserk-star-platinum-gloves" data-parent="ach-berserk"> Star Platinum Gloves</label><label><input type="checkbox" class="step" id="step-berserk-thunder-gloves" data-parent="ach-berserk"> Thunder Gloves</label></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Balanced Warrior Craft all short swords Craft all 9 short swords, Training through King and Vampire."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-balanced" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#40</span><span class="ach-name">Balanced Warrior</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-balanced" title="Notes for Balanced Warrior" aria-label="Notes for Balanced Warrior"><i class="bi bi-journal-text"></i></button></div><div class="progress step-bar mx-3 mt-2" style="height:10px" data-step-parent="ach-balanced"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Craft all short swords</p><p class="how">Craft all 9 short swords, Training through King and Vampire.</p><div class="steps"><label><input type="checkbox" class="step" id="step-balanced-training-short-sword" data-parent="ach-balanced"> Training Short Sword</label><label><input type="checkbox" class="step" id="step-balanced-soldier-short-sword" data-parent="ach-balanced"> Soldier Short Sword</label><label><input type="checkbox" class="step" id="step-balanced-rusty-short-sword" data-parent="ach-balanced"> Rusty Short Sword</label><label><input type="checkbox" class="step" id="step-balanced-knight-short-sword" data-parent="ach-balanced"> Knight Short Sword</label><label><input type="checkbox" class="step" id="step-balanced-venom-short-sword" data-parent="ach-balanced"> Venom Short Sword</label><label><input type="checkbox" class="step" id="step-balanced-commander-short-sword" data-parent="ach-balanced"> Commander Short Sword</label><label><input type="checkbox" class="step" id="step-balanced-reborn-short-sword" data-parent="ach-balanced"> Reborn Short Sword</label><label><input type="checkbox" class="step" id="step-balanced-king-short-sword" data-parent="ach-balanced"> King Short Sword</label><label><input type="checkbox" class="step" id="step-balanced-vampire-short-sword" data-parent="ach-balanced"> Vampire Short Sword</label></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Piercing Warrior Craft all spears Craft all 9 spears, Training through Fighter and Lightning Rod. The Broom Spear is your starting weapon and already in your log."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-piercing" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#41</span><span class="ach-name">Piercing Warrior</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-piercing" title="Notes for Piercing Warrior" aria-label="Notes for Piercing Warrior"><i class="bi bi-journal-text"></i></button></div><div class="progress step-bar mx-3 mt-2" style="height:10px" data-step-parent="ach-piercing"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Craft all spears</p><p class="how">Craft all 9 spears, Training through Fighter and Lightning Rod. The Broom Spear is your starting weapon and already in your log.</p><div class="steps"><label><input type="checkbox" class="step" id="step-piercing-broom-spear" data-parent="ach-piercing"> Broom Spear</label><label><input type="checkbox" class="step" id="step-piercing-training-spear" data-parent="ach-piercing"> Training Spear</label><label><input type="checkbox" class="step" id="step-piercing-warrior-spear" data-parent="ach-piercing"> Warrior Spear</label><label><input type="checkbox" class="step" id="step-piercing-golem-drill-spear" data-parent="ach-piercing"> Golem Drill Spear</label><label><input type="checkbox" class="step" id="step-piercing-woods-spear" data-parent="ach-piercing"> Woods Spear</label><label><input type="checkbox" class="step" id="step-piercing-venom-sting-spear" data-parent="ach-piercing"> Venom Sting Spear</label><label><input type="checkbox" class="step" id="step-piercing-monkey-spear" data-parent="ach-piercing"> Monkey Spear</label><label><input type="checkbox" class="step" id="step-piercing-hell-spear" data-parent="ach-piercing"> Hell Spear</label><label><input type="checkbox" class="step" id="step-piercing-fighter-spear" data-parent="ach-piercing"> Fighter Spear</label><label><input type="checkbox" class="step" id="step-piercing-lightning-rod-spear" data-parent="ach-piercing"> Lightning Rod Spear</label></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Weapon Master Craft all weapons Pops when the last of the five weapon-type achievements pops — every weapon in all five trees, found or crafted."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-weapon-master" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#42</span><span class="ach-name">Weapon Master</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-weapon-master" title="Notes for Weapon Master" aria-label="Notes for Weapon Master"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Craft all weapons</p><p class="how">Pops when the last of the five weapon-type achievements pops — every weapon in all five trees, found or crafted.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Emporium Purchase the last shop upgrade Buy the final shop upgrade on the Town Board."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-emporium" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#43</span><span class="ach-name">Emporium</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-emporium" title="Notes for Emporium" aria-label="Notes for Emporium"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Purchase the last shop upgrade</p><p class="how">Buy the final shop upgrade on the Town Board.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Rynoka&#x27;s Major! Buy all improvements on the Town Board Buy every Town Board improvement — all shop upgrades, all merchants, chest, bed, cash register and discount bin. The board shows what&#x27;s left."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-rynoka" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#44</span><span class="ach-name">Rynoka&#x27;s Major!</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-rynoka" title="Notes for Rynoka&#x27;s Major!" aria-label="Notes for Rynoka&#x27;s Major!"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Buy all improvements on the Town Board</p><p class="how">Buy every Town Board improvement — all shop upgrades, all merchants, chest, bed, cash register and discount bin. The board shows what&#x27;s left.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Archeologist Read all Crazy Pete&#x27;s notes Read all 12 of Crazy Pete&#x27;s notes — one per floor in each dungeon, in the abandoned-campsite rooms."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-archeologist" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#45</span><span class="ach-name">Archeologist</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-archeologist" title="Notes for Archeologist" aria-label="Notes for Archeologist"><i class="bi bi-journal-text"></i></button></div><div class="progress step-bar mx-3 mt-2" style="height:10px" data-step-parent="ach-archeologist"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Read all Crazy Pete&#x27;s notes</p><p class="how">Read all 12 of Crazy Pete&#x27;s notes — one per floor in each dungeon, in the abandoned-campsite rooms.</p><div class="steps"><label><input type="checkbox" class="step" id="step-arch-golem" data-parent="ach-archeologist"> Golem Dungeon notes (3)</label><label><input type="checkbox" class="step" id="step-arch-forest" data-parent="ach-archeologist"> Forest Dungeon notes (3)</label><label><input type="checkbox" class="step" id="step-arch-desert" data-parent="ach-archeologist"> Desert Dungeon notes (3)</label><label><input type="checkbox" class="step" id="step-arch-tech" data-parent="ach-archeologist"> Tech Dungeon notes (3)</label></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Scribe Complete the Notebook Fill the Notebook — every item in all four dungeons, including each dungeon&#x27;s unique ring from purple chests."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-scribe" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#46</span><span class="ach-name">Scribe</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-scribe" title="Notes for Scribe" aria-label="Notes for Scribe"><i class="bi bi-journal-text"></i></button></div><div class="progress step-bar mx-3 mt-2" style="height:10px" data-step-parent="ach-scribe"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Complete the Notebook</p><p class="how">Fill the Notebook — every item in all four dungeons, including each dungeon&#x27;s unique ring from purple chests.</p><div class="steps"><label><input type="checkbox" class="step" id="step-scribe-golem" data-parent="ach-scribe"> Golem Dungeon notebook</label><label><input type="checkbox" class="step" id="step-scribe-forest" data-parent="ach-scribe"> Forest Dungeon notebook</label><label><input type="checkbox" class="step" id="step-scribe-desert" data-parent="ach-scribe"> Desert Dungeon notebook</label><label><input type="checkbox" class="step" id="step-scribe-tech" data-parent="ach-scribe"> Tech Dungeon notebook</label></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Decorative Mind Buy all decorative items Buy every decorative item from the Peddler — new ones unlock as you reach higher floors and beat bosses."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-decorative" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#47</span><span class="ach-name">Decorative Mind</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-decorative" title="Notes for Decorative Mind" aria-label="Notes for Decorative Mind"><i class="bi bi-journal-text"></i></button></div><div class="progress step-bar mx-3 mt-2" style="height:10px" data-step-parent="ach-decorative"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Buy all decorative items</p><p class="how">Buy every decorative item from the Peddler — new ones unlock as you reach higher floors and beat bosses.</p><div class="steps"><label><input type="checkbox" class="step" id="step-deco-golem" data-parent="ach-decorative"> Golem Dungeon decorations</label><label><input type="checkbox" class="step" id="step-deco-forest" data-parent="ach-decorative"> Forest Dungeon decorations</label><label><input type="checkbox" class="step" id="step-deco-desert" data-parent="ach-decorative"> Desert Dungeon decorations</label><label><input type="checkbox" class="step" id="step-deco-tech" data-parent="ach-decorative"> Tech Dungeon decorations</label></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Janitor Kill all bosses with the broom (last hit) Land the killing blow on all four bosses with the Broom Spear. Do the perfect kill first, then reload the portal checkpoint and redo it with the broom — the other way round can glitch the tracker."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-janitor" data-gs="60" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#48</span><span class="ach-name">Janitor</span><span class="badge text-bg-danger-subtle text-danger-emphasis border border-danger-subtle ms-2" title="Missable: can be passed without popping">Missable</span><span class="gs badge text-bg-warning ms-auto">60G</span></button><button type="button" class="note-btn" data-note-key="ach-janitor" title="Notes for Janitor" aria-label="Notes for Janitor"><i class="bi bi-journal-text"></i></button></div><div class="progress step-bar mx-3 mt-2" style="height:10px" data-step-parent="ach-janitor"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Kill all bosses with the broom (last hit)</p><p class="how">Land the killing blow on all four bosses with the Broom Spear. Do the perfect kill first, then reload the portal checkpoint and redo it with the broom — the other way round can glitch the tracker.</p><div class="steps"><label><input type="checkbox" class="step" id="step-janitor-golem" data-parent="ach-janitor"> Golem King — broom finish</label><label><input type="checkbox" class="step" id="step-janitor-forest" data-parent="ach-janitor"> Carnivorous Mutae — broom finish</label><label><input type="checkbox" class="step" id="step-janitor-desert" data-parent="ach-janitor"> Naja — broom finish</label><label><input type="checkbox" class="step" id="step-janitor-tech" data-parent="ach-janitor"> Energy Flux — broom finish</label></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Savage! Kill a total of 10,000 enemies 10,000 kills total. Grind spot: a Tech Dungeon room with a slime and a regenerator — park a shooting pet to kill the respawning slime. Five to eight hours by hand otherwise."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-savage" data-gs="26" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#49</span><span class="ach-name">Savage!</span><span class="gs badge text-bg-warning ms-auto">26G</span></button><button type="button" class="note-btn" data-note-key="ach-savage" title="Notes for Savage!" aria-label="Notes for Savage!"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="kills-total" data-target="10000"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Kill a total of 10,000 enemies</p><p class="how">10,000 kills total. Grind spot: a Tech Dungeon room with a slime and a regenerator — park a shooting pet to kill the respawning slime. Five to eight hours by hand otherwise.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease kills-total counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="kills-total" data-target="10000" min="0" value="0" aria-label="kills-total counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase kills-total counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Tech Enthusiast Arrive at the third floor of the Tech Dungeon 10 times Reach floor 3 of the Tech Dungeon 10 times."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-tech-enth" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#50</span><span class="ach-name">Tech Enthusiast</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-tech-enth" title="Notes for Tech Enthusiast" aria-label="Notes for Tech Enthusiast"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="floor3-tech" data-target="10"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Arrive at the third floor of the Tech Dungeon 10 times</p><p class="how">Reach floor 3 of the Tech Dungeon 10 times.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease floor3-tech counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="floor3-tech" data-target="10" min="0" value="0" aria-label="floor3-tech counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase floor3-tech counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Rage Against the Machinery Kill 1000 tech enemies 1,000 Tech Dungeon kills."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-rage-tech" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#51</span><span class="ach-name">Rage Against the Machinery</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-rage-tech" title="Notes for Rage Against the Machinery" aria-label="Notes for Rage Against the Machinery"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="kills-tech" data-target="1000"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Kill 1000 tech enemies</p><p class="how">1,000 Tech Dungeon kills.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease kills-tech counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="kills-tech" data-target="1000" min="0" value="0" aria-label="kills-tech counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase kills-tech counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Unplug the Energy! Defeat Energy Flux Beat Energy Flux — the easiest boss. Hide behind your shield and chip away; only the rush attack needs a dodge."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-unplug" data-gs="12" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#52</span><span class="ach-name">Unplug the Energy!</span><span class="gs badge text-bg-warning ms-auto">12G</span></button><button type="button" class="note-btn" data-note-key="ach-unplug" title="Notes for Unplug the Energy!" aria-label="Notes for Unplug the Energy!"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Defeat Energy Flux</p><p class="how">Beat Energy Flux — the easiest boss. Hide behind your shield and chip away; only the rush attack needs a dodge.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Perfect Energy Flux Perfect Energy Flux No-hit kill. The shield blocks everything except the rush attack — face the boss behind the shield and strike between attacks."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-perfect-flux" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#53</span><span class="ach-name">Perfect Energy Flux</span><span class="badge text-bg-danger-subtle text-danger-emphasis border border-danger-subtle ms-2" title="Missable: can be passed without popping">Missable</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-perfect-flux" title="Notes for Perfect Energy Flux" aria-label="Notes for Perfect Energy Flux"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Perfect Energy Flux</p><p class="how">No-hit kill. The shield blocks everything except the rush attack — face the boss behind the shield and strike between attacks.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Hero or Merchant? Finish the game Beat the final boss, the Space Pirate Captain — two phases, a sword alien then the big form. Tank it with hero potions and your best armour. Killing him ends the game, so finish everything else first."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-hero" data-gs="44" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#54</span><span class="ach-name">Hero or Merchant?</span><span class="gs badge text-bg-warning ms-auto">44G</span></button><button type="button" class="note-btn" data-note-key="ach-hero" title="Notes for Hero or Merchant?" aria-label="Notes for Hero or Merchant?"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Finish the game</p><p class="how">Beat the final boss, the Space Pirate Captain — two phases, a sword alien then the big form. Tank it with hero potions and your best armour. Killing him ends the game, so finish everything else first.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Careful Merchant Complete the game with under 40 deaths Finish playthrough 1 with fewer than 40 deaths. Don&#x27;t risk cheap deaths — teleport out of bad rooms instead of pushing on."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-careful" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#55</span><span class="ach-name">Careful Merchant</span><span class="badge text-bg-danger-subtle text-danger-emphasis border border-danger-subtle ms-2" title="Missable: can be passed without popping">Missable</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-careful" title="Notes for Careful Merchant" aria-label="Notes for Careful Merchant"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete the game with under 40 deaths</p><p class="how">Finish playthrough 1 with fewer than 40 deaths. Don&#x27;t risk cheap deaths — teleport out of bad rooms instead of pushing on.</p></div></article></div>
+</div></div></details>
+<details data-cat="ngplus">
+<summary>Second Playthrough · New Game+ <small>2 achievements · <span class="sec-progress" data-section="ngplus"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Gotta Go fast! Beat the game in under 10 hours New Game+: beat the game in under 10 hours. Gold doubles, you keep your gear, and +1 items drop — about 3 hours if you rush and skip selling. Carry red crystals and map potions from the Witch."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-gotta-go" data-gs="60" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#56</span><span class="ach-name">Gotta Go fast!</span><span class="badge text-bg-danger-subtle text-danger-emphasis border border-danger-subtle ms-2" title="Missable: can be passed without popping">Missable</span><span class="gs badge text-bg-warning ms-auto">60G</span></button><button type="button" class="note-btn" data-note-key="ach-gotta-go" title="Notes for Gotta Go fast!" aria-label="Notes for Gotta Go fast!"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Beat the game in under 10 hours</p><p class="how">New Game+: beat the game in under 10 hours. Gold doubles, you keep your gear, and +1 items drop — about 3 hours if you rush and skip selling. Carry red crystals and map potions from the Witch.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="100% Complete all achievements Pops when the last achievement does — after the New Game+ final boss."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-100" data-gs="60" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#57</span><span class="ach-name">100%</span><span class="gs badge text-bg-warning ms-auto">60G</span></button><button type="button" class="note-btn" data-note-key="ach-100" title="Notes for 100%" aria-label="Notes for 100%"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete all achievements</p><p class="how">Pops when the last achievement does — after the New Game+ final boss.</p></div></article></div>
+</div></div></details>
+
+        <div class="card">
+          <div class="card-body text-secondary">
+            <p class="mb-1"><strong>Sources:</strong> achievement names, requirements and Gamerscore from the achievement list linked below; route notes are short paraphrases of the linked walkthrough — the full guide text is not reproduced here. <a href="https://www.trueachievements.com/game/Moonlighter/achievements">TrueAchievements — Achievements</a> · <a href="https://www.trueachievements.com/game/Moonlighter/walkthrough">TrueAchievements — Walkthrough (N18p73pwn3r)</a> · <a href="https://www.gamesxtreme.com/game/moonlighter/achievements/xbox-one-pc">GamesXtreme — Gamerscore cross-check</a> · <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=1712327712">Steam — 100% Achievement Guide</a></p>
+            <p class="mb-0">Unofficial fan tracker, not affiliated with the achievement site, the walkthrough author, or the game's publisher. Shell: AdminLTE 4.10.0 + Bootstrap 5.3.8 + Bootstrap Icons 1.11.3, vendored under <code>assets/vendor/</code> (see <code>THIRD_PARTY_NOTICES.md</code>).</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+  <footer class="app-footer">
+    <strong>Achievement Trackers</strong> — <a href="../">back to all games</a>
+  </footer>
+</div>
+<script src="../assets/vendor/bootstrap.bundle.min.js"></script>
+<script src="../assets/vendor/adminlte.min.js"></script>
+<script src="../assets/js/theme-toggle.js"></script>
+<script src="../assets/js/sidebar-state.js"></script>
+<dialog id="media-modal" aria-label="Image viewer">
+  <div class="media-modal-inner">
+    <button type="button" class="media-modal-close" aria-label="Close image viewer">×</button>
+    <img id="media-modal-img" alt="">
+    <p id="media-modal-caption" class="media-modal-caption"></p>
+    <div id="media-modal-nav" class="media-modal-nav" style="display:none">
+      <button type="button" class="media-modal-prev btn btn-outline-light btn-sm">← Previous</button>
+      <span id="media-modal-count" class="media-modal-count"></span>
+      <button type="button" class="media-modal-next btn btn-outline-light btn-sm">Next →</button>
+    </div>
+  </div>
+</dialog>
+<dialog id="notes-modal" aria-label="Notes">
+  <div class="notes-modal-inner">
+    <div class="d-flex justify-content-between align-items-center gap-3">
+      <h3 id="notes-modal-title" class="mb-0 fs-5">Notes</h3>
+      <button type="button" class="notes-modal-close" aria-label="Close notes">×</button>
+    </div>
+    <textarea id="notes-modal-text" class="form-control mt-2" rows="5" placeholder="Anything you want to remember for this one…"></textarea>
+    <p class="text-secondary mt-2 mb-0">Saved in this browser only, alongside your progress.</p>
+  </div>
+</dialog>
+<script>
+/* Tracker progress. The hub never writes progress, only reads it;
+   this script is the single writer for a game page. */
+(function(){
+  var KEY='ml-tracker-v1';
+  var OLD='';
+  var MIGRATION={};
+  var TOTAL_GS=1000;
+  /* Tasks are now header toggle buttons, not checkboxes: the pressed
+     state lives in aria-pressed, and the id / data-gs contract with
+     save, export and the step auto-tick code is unchanged. */
+  var tasks=[].slice.call(document.querySelectorAll('button.task'));
+  var steps=[].slice.call(document.querySelectorAll('input.step'));
+  var counts=[].slice.call(document.querySelectorAll('input.count'));
+  var notesModal=document.getElementById('notes-modal');
+  var notesModalTitle=document.getElementById('notes-modal-title');
+  var notesModalText=document.getElementById('notes-modal-text');
+  /* Notes are one object, not one string: the game-wide note
+     lives under 'game', each achievement's under its card id.
+     Old saves and exports stored a single string — that was
+     the game-wide note, so it migrates to the 'game' key. */
+  var notesData={};
+  var notesKey=null;
+  var search=document.getElementById('search');
+  var incompleteOnly=document.getElementById('incompleteOnly');
+  var overallText=document.getElementById('overallText');
+  var overallTextNav=document.getElementById('overallTextNav');
+  var overallBar=document.getElementById('overallBar');
+
+  /* Save dedupes shared counters: several achievements render an input
+     for the same group, but localStorage stores one value per group. */
+  function save(){
+    var data={checked:{},steps:{},counters:{},notes:notesData};
+    tasks.forEach(function(t){ if(t.getAttribute('aria-pressed')==='true') data.checked[t.id]=true; });
+    steps.forEach(function(s){ if(s.checked) data.steps[s.id]=true; });
+    var seen={};
+    counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(!seen[g]){ data.counters[g]=c.value; seen[g]=true; } });
+    try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(e){}
+  }
+  function applyData(data){
+    tasks.forEach(function(t){ t.setAttribute('aria-pressed', (data.checked&&data.checked[t.id]) ? 'true' : 'false'); });
+    steps.forEach(function(s){ s.checked=!!(data.steps&&data.steps[s.id]); });
+    counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(data.counters&&data.counters[g]!==undefined) c.value=data.counters[g]; });
+    var n=data.notes;
+    if(typeof n==='string'){ notesData=n?{game:n}:{}; }
+    else if(n&&typeof n==='object'){ notesData=n; }
+    else { notesData={}; }
+    refreshNoteIcons();
+  }
+  /* Migration runs ONLY when no new-format progress exists. If a player
+     already has new progress, legacy data must not overwrite it; the
+     old key is left alone rather than deleted. */
+  function migrateLegacy(){
+    var raw; try{ raw=localStorage.getItem(OLD); }catch(e){ return; }
+    if(!raw||!MIGRATION) return;
+    try{
+      var d=JSON.parse(raw), checked=d.checked||{}, cnts=d.counts||{};
+      var out={checked:{},steps:{},counters:{},notes:{}};
+      Object.keys(MIGRATION.checked_map||{}).forEach(function(k){ if(checked[k]) MIGRATION.checked_map[k].forEach(function(a){ out.checked[a]=true; }); });
+      Object.keys(MIGRATION.step_map||{}).forEach(function(k){ if(checked[k]) out.steps[MIGRATION.step_map[k]]=true; });
+      Object.keys(MIGRATION.counter_map||{}).forEach(function(k){ if(cnts[k]) out.counters[MIGRATION.counter_map[k]]=cnts[k]; });
+      if(Object.keys(out.checked).length||Object.keys(out.steps).length||Object.keys(out.counters).length){
+        try{ localStorage.setItem(KEY,JSON.stringify(out)); }catch(e){}
+        applyData(out);
+      }
+    }catch(e){}
+  }
+  function load(){
+    var raw; try{ raw=localStorage.getItem(KEY); }catch(e){ return; }
+    if(!raw){ migrateLegacy(); return; }
+    try{ applyData(JSON.parse(raw)); }catch(e){}
+  }
+  function syncCounters(source){
+    if(!source) return;
+    var g=source.getAttribute('data-counter');
+    counts.forEach(function(c){ if(c.getAttribute('data-counter')===g) c.value=source.value; });
+  }
+  function updateProgress(){
+    var done=tasks.filter(function(t){return t.getAttribute('aria-pressed')==='true';});
+    var gs=done.reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+    var text=done.length+' / '+tasks.length+' achievements · '+gs.toLocaleString('en-US')+' / '+TOTAL_GS.toLocaleString('en-US')+'G';
+    overallText.textContent=text;
+    if(overallTextNav) overallTextNav.textContent=done.length+' / '+tasks.length+' · '+gs.toLocaleString('en-US')+'G';
+    overallBar.style.width=Math.round(gs/TOTAL_GS*100)+'%';
+    document.querySelectorAll('details[data-cat]').forEach(function(sec){
+      var box=sec.querySelectorAll('button.task');
+      if(!box.length) return;
+      var pressed=function(t){return t.getAttribute('aria-pressed')==='true';};
+      var d=[].slice.call(box).filter(pressed).length;
+      var g=[].slice.call(box).filter(pressed).reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+      var el=sec.querySelector('.sec-progress');
+      if(el) el.textContent=d+' / '+box.length+' · '+g+'G';
+    });
+    counts.forEach(function(c){
+      var target=parseInt(c.getAttribute('data-target'),10)||0;
+      var val=parseInt(c.value,10)||0;
+      var pct=target?Math.min(100,Math.round(val/target*100)):0;
+      var wrap=c.closest('.counter');
+      var txt=wrap?wrap.querySelector('.count-text'):null;
+      if(txt) txt.textContent=' '+val.toLocaleString('en-US')+' / '+target.toLocaleString('en-US')+' ('+pct+'%)';
+      /* Bars live under the card header, not next to the input, and
+         are matched by group AND target: a shared group can feed
+         several thresholds, and each bar must show its own target. */
+      var g=c.getAttribute('data-counter');
+      document.querySelectorAll('.counter-bar[data-counter="'+g+'"][data-target="'+target+'"]').forEach(function(barEl){
+        var bar=barEl.querySelector('.progress-bar');
+        if(bar) bar.style.width=pct+'%';
+      });
+    });
+    /* Step progress bars under the headers of multi-step
+       achievements: the bar shows how many of that achievement's
+       sub-steps are ticked. Step cards have no parent, so they
+       carry no bar — this is only for achievement cards. */
+    document.querySelectorAll('.step-bar').forEach(function(barEl){
+      var parent=barEl.getAttribute('data-step-parent');
+      var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+parent+'"]'));
+      var done=sibs.filter(function(s){return s.checked;}).length;
+      var pct=sibs.length?Math.round(done/sibs.length*100):0;
+      var bar=barEl.querySelector('.progress-bar');
+      if(bar) bar.style.width=pct+'%';
+    });
+  }
+  /* applyFilters hides whole sections, not just cards: a section with
+     no visible cards after filtering must not leave an empty heading
+     and an empty bordered box behind. */
+  function applyFilters(){
+    var q=(search.value||'').toLowerCase().trim();
+    var active=document.querySelector('.filter.active');
+    var cat=active?active.getAttribute('data-filter'):'all';
+    var inc=incompleteOnly.checked;
+    document.querySelectorAll('details[data-cat]').forEach(function(sec){
+      var secCat=sec.getAttribute('data-cat');
+      var catMatch=(cat==='all'||cat===secCat);
+      var visibleItems=0;
+      sec.querySelectorAll('.item').forEach(function(item){
+        var name=(item.getAttribute('data-name')||'')+' '+item.textContent.toLowerCase();
+        var qMatch=!q||name.indexOf(q)>-1;
+        var task=item.querySelector('button.task');
+        var incMatch=!inc||!task||task.getAttribute('aria-pressed')!=='true';
+        var show=catMatch&&qMatch&&incMatch;
+        item.classList.toggle('hidden',!show);
+        if(show) visibleItems++;
+      });
+      var hasItems=sec.querySelectorAll('.item').length>0;
+      sec.classList.toggle('hidden',!catMatch||(hasItems&&visibleItems===0));
+    });
+    fitHeaders();
+  }
+  /* Header normalisation: long names shrink toward a floor
+     (1.05rem to 0.85rem) before they are allowed to wrap, and
+     headers in the same visible row are then equalised to the
+     row's tallest, so card bodies start on one line instead of
+     staggering. Runs after every filter pass (which is also
+     every search, reset and import path), on resize, when a
+     section opens or closes, and once fonts arrive. */
+  function fitHeaders(){
+    document.querySelectorAll('.ach-head').forEach(function(h){ h.style.minHeight = ''; });
+    document.querySelectorAll('.ach-name').forEach(function(n){ n.style.fontSize = ''; });
+    document.querySelectorAll('.ach-name').forEach(function(n){
+      var floors = ['0.95rem', '0.85rem'];
+      for(var i = 0; i < floors.length; i++){
+        var line = parseFloat(getComputedStyle(n).lineHeight);
+        if(n.offsetHeight <= line + 1) break;
+        n.style.fontSize = floors[i];
+      }
+    });
+    var rows = {};
+    document.querySelectorAll('.item').forEach(function(item){
+      if(item.classList.contains('hidden') || !item.offsetParent) return;
+      var head = item.querySelector('.ach-head');
+      if(!head) return;
+      var sec = item.closest('details');
+      var key = (sec ? sec.getAttribute('data-cat') : '') + ':' + item.offsetTop;
+      (rows[key] = rows[key] || []).push(head);
+    });
+    Object.keys(rows).forEach(function(key){
+      var max = 0;
+      rows[key].forEach(function(h){ max = Math.max(max, h.offsetHeight); });
+      rows[key].forEach(function(h){ h.style.minHeight = max + 'px'; });
+    });
+  }
+  var fitTimer = null;
+  window.addEventListener('resize', function(){
+    if(fitTimer) clearTimeout(fitTimer);
+    fitTimer = setTimeout(fitHeaders, 150);
+  });
+  document.querySelectorAll('details[data-cat]').forEach(function(d){
+    d.addEventListener('toggle', fitHeaders);
+  });
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeaders);
+  document.querySelectorAll('.filter').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.filter').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active'); applyFilters();
+    });
+  });
+  /* Header toggle: clicking anywhere in the header flips aria-pressed.
+     Steps still use the change handler below; a button does not fire
+     change, so this click handler is the task toggle. */
+  tasks.forEach(function(t){
+    t.addEventListener('click',function(){
+      t.setAttribute('aria-pressed', t.getAttribute('aria-pressed')==='true' ? 'false' : 'true');
+      save(); updateProgress(); applyFilters();
+    });
+  });
+  /* Counter steppers: -/+ buttons beside the input, clamped at 0.
+     A programmatic value change fires no input event, so sync, save
+     and progress are called explicitly here. */
+  document.addEventListener('click',function(e){
+    var btn=e.target.closest ? e.target.closest('.counter-btn') : null;
+    if(!btn) return;
+    var wrap=btn.closest('.counter');
+    var input=wrap?wrap.querySelector('input.count'):null;
+    if(!input) return;
+    var val=parseInt(input.value,10)||0;
+    val=Math.max(0, val + (parseInt(btn.getAttribute('data-step'),10)||0));
+    input.value=val;
+    syncCounters(input); save(); updateProgress();
+  });
+  document.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.classList.contains('step')&&t.getAttribute('data-parent')){
+      var parent=document.getElementById(t.getAttribute('data-parent'));
+      if(parent){
+        var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+t.getAttribute('data-parent')+'"]'));
+        if(sibs.length&&sibs.every(function(s){return s.checked;})) parent.setAttribute('aria-pressed','true');
+      }
+    }
+    save(); updateProgress(); applyFilters();
+  });
+  document.addEventListener('input',function(e){
+    if(e.target===search){ applyFilters(); return; }
+    if(e.target===incompleteOnly){ applyFilters(); return; }
+    if(e.target.classList.contains('count')) syncCounters(e.target);
+    save(); updateProgress();
+  });
+  document.getElementById('resetBtn').addEventListener('click',function(){
+    if(!confirm('Reset all achievements, steps, counters and notes?')) return;
+    tasks.forEach(function(t){t.setAttribute('aria-pressed','false');});
+    steps.forEach(function(s){s.checked=false;});
+    counts.forEach(function(c){c.value=0;});
+    notesData={}; refreshNoteIcons();
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    updateProgress(); applyFilters();
+  });
+  document.getElementById('exportBtn').addEventListener('click',function(){
+    save();
+    var raw; try{ raw=localStorage.getItem(KEY)||'{}'; }catch(e){ raw='{}'; }
+    var blob=new Blob([raw],{type:'application/json'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='moonlighter-progress.json'; a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); },1000);
+  });
+  document.getElementById('importFile').addEventListener('change',function(e){
+    var f=e.target.files&&e.target.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{
+        var data=JSON.parse(r.result);
+        try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(err){}
+        applyData(data); updateProgress(); applyFilters();
+      }catch(err){ alert('That file did not look like a tracker export.'); }
+    };
+    r.readAsText(f);
+  });
+  /* Shared import preview/apply machinery, used by the Xbox sync
+     card. Only one import preview is live at a time, and Confirm
+     applies whichever is pending. Sync is additive only — it ticks
+     newly unlocked achievements and their sub-steps, and never
+     unticks, never touches notes or counters. */
+  function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function achName(achId){ var b=document.getElementById(achId); var n=b?b.querySelector('.ach-name'):null; return n?n.textContent.trim():achId; }
+  function achHasCounter(achId){ var b=document.getElementById(achId); var it=b?b.closest('.item'):null; return !!(it&&it.querySelector('input.count')); }
+  /* planFor splits a candidate set into what is new, what is
+     already ticked, and the sub-steps/counters that go with the new
+     ones. matchedIds is the wider matched set (for the "left as
+     they are" count); appliedIds is the subset the preview will
+     actually tick. */
+  function planFor(appliedIds, matchedIds){
+    var isPressed=function(achId){ var b=document.getElementById(achId); return b&&b.getAttribute('aria-pressed')==='true'; };
+    var newAch=[], already=0;
+    appliedIds.forEach(function(achId){ if(isPressed(achId)) already++; else newAch.push(achId); });
+    var stepIds=[], stepNames=[];
+    newAch.forEach(function(achId){
+      [].slice.call(document.querySelectorAll('.step[data-parent="'+achId+'"]')).forEach(function(s){
+        if(!s.checked){ stepIds.push(s.id); stepNames.push((s.parentNode?s.parentNode.textContent:'').trim()); }
+      });
+    });
+    var counterNames=[];
+    newAch.forEach(function(achId){ if(achHasCounter(achId)) counterNames.push(achName(achId)); });
+    var matchedSet={};
+    matchedIds.forEach(function(id){ matchedSet[id]=true; });
+    var lockedCount=tasks.filter(function(t){ return !matchedSet[t.id]; }).length;
+    return {newAch:newAch, already:already, stepIds:stepIds, stepNames:stepNames, counterNames:counterNames, lockedCount:lockedCount};
+  }
+  var importPending=null;
+  function hideImportPreviews(){
+    document.querySelectorAll('.import-preview').forEach(function(el){ el.classList.add('hidden'); });
+    importPending=null;
+  }
+  /* opts: bodyEl, previewEl, confirmBtn, plan (from planFor),
+     warnings (strings), dates (achId -> date string), statsHtml
+     (an already rendered stats paragraph, or ''). */
+  function showImportPreview(opts){
+    hideImportPreviews();
+    var plan=opts.plan, html='';
+    (opts.warnings||[]).forEach(function(w){ html+='<p class="text-warning mb-2">'+escHtml(w)+'</p>'; });
+    if(plan.newAch.length){
+      html+='<p><strong>'+plan.newAch.length+' new achievement'+(plan.newAch.length===1?'':'s')+' will be ticked:</strong></p><ul>';
+      plan.newAch.forEach(function(achId){
+        html+='<li>'+escHtml(achName(achId));
+        if(opts.dates&&opts.dates[achId]) html+=' <span class="text-secondary">— unlocked '+escHtml(opts.dates[achId])+'</span>';
+        html+='</li>';
+      });
+      html+='</ul>';
+    } else {
+      html+='<p>Nothing new — every matched achievement is already ticked here.</p>';
+    }
+    if(plan.stepNames.length){
+      html+='<p><strong>'+plan.stepNames.length+' sub-step'+(plan.stepNames.length===1?'':'s')+' will also be ticked</strong> (they are the route to the achievements above):</p><ul>';
+      plan.stepNames.forEach(function(n){ html+='<li>'+escHtml(n)+'</li>'; });
+      html+='</ul>';
+    }
+    if(plan.counterNames.length){
+      html+='<p class="text-secondary">Counters stay manual: the source does not report raw counts, so the counters for '+plan.counterNames.map(escHtml).join(', ')+' are left as they are.</p>';
+    }
+    if(opts.statsHtml) html+=opts.statsHtml;
+    opts.bodyEl.innerHTML=html;
+    opts.previewEl.classList.remove('hidden');
+    opts.confirmBtn.style.display=plan.newAch.length?'':'none';
+    importPending={achIds:plan.newAch, stepIds:plan.stepIds};
+  }
+  /* Applies the pending import through the normal save path and
+     returns how many achievements were ticked (0 if none pending). */
+  function applyImportPending(){
+    if(!importPending) return 0;
+    var n=importPending.achIds.length;
+    importPending.achIds.forEach(function(achId){
+      var b=document.getElementById(achId);
+      if(b) b.setAttribute('aria-pressed','true');
+    });
+    importPending.stepIds.forEach(function(stepId){
+      var s=document.getElementById(stepId);
+      if(s) s.checked=true;
+    });
+    importPending=null;
+    save(); updateProgress(); applyFilters();
+    return n;
+  }
+  /* Xbox sync via OpenXBL (user-supplied key). The sync card is only
+     rendered for games whose JSON carries xbox_title_id and an
+     xbox_id per achievement; without the card this block is a no-op.
+     Sync is additive and previewed: it ticks newly unlocked
+     achievements (and their sub-steps) and never unticks, never
+     touches notes or counters. The key and gamertag live under the
+     separate 'at-xbox' localStorage key, so Export/Import — which
+     only read and write the progress key above — can never leak
+     them. Response shapes are handled tolerantly (see the extract
+     helpers): OpenXBL's published spec documents endpoints but no
+     response schema, so the first live response may still refine
+     these, and anything unrecognised fails loudly instead of
+     guessing a tick. */
+  var syncCard=document.getElementById('xbox-sync');
+  if(syncCard){
+    var XBOX_API='https://api.xbl.io/api/v2';
+    var XBOX_META_KEY='at-xbox';
+    var syncMap={};
+    try{ syncMap=JSON.parse(syncCard.getAttribute('data-xbox-map')||'{}'); }catch(e){ syncMap={}; }
+    var syncTitleId=syncCard.getAttribute('data-xbox-title-id')||'';
+    var gtInput=document.getElementById('xbox-gamertag');
+    var keyInput=document.getElementById('xbox-key');
+    var syncBtn=document.getElementById('xbox-sync-btn');
+    var clearKeyBtn=document.getElementById('xbox-clear-key');
+    var statusEl=document.getElementById('xbox-status');
+    var previewEl=document.getElementById('xbox-preview');
+    var previewBody=document.getElementById('xbox-preview-body');
+    var confirmBtn=document.getElementById('xbox-confirm');
+    var cancelBtn=document.getElementById('xbox-cancel');
+    var pasteInput=document.getElementById('xbox-paste');
+    var pasteBtn=document.getElementById('xbox-paste-btn');
+    function metaLoad(){ try{ return JSON.parse(localStorage.getItem(XBOX_META_KEY)||'{}'); }catch(e){ return {}; } }
+    function metaSave(m){ try{ localStorage.setItem(XBOX_META_KEY,JSON.stringify(m)); }catch(e){} }
+    var xboxMeta=metaLoad();
+    if(xboxMeta.gamertag) gtInput.value=xboxMeta.gamertag;
+    if(xboxMeta.key) keyInput.value=xboxMeta.key;
+    function setStatus(msg){ statusEl.textContent=msg; }
+    function persistInputs(){
+      var m=metaLoad();
+      var gt=gtInput.value.trim();
+      if(m.gamertag!==gt) m.xuid='';
+      m.gamertag=gt; m.key=keyInput.value.trim(); metaSave(m); xboxMeta=m;
+    }
+    gtInput.addEventListener('change',persistInputs);
+    keyInput.addEventListener('change',persistInputs);
+    function xboxFetch(path,key){
+      return fetch(XBOX_API+path,{headers:{'X-Authorization':key,'Accept':'application/json'}}).then(function(r){
+        if(!r.ok){ var err=new Error('HTTP '+r.status); err.status=r.status; throw err; }
+        return r.json();
+      });
+    }
+    /* Shape tolerance: the gamertag endpoint documents a flat
+       {xuid, gamertag, gamerscore} body, while profile endpoints
+       return profileUsers[0].id. Accept both, plus a bare array. */
+    function extractXuid(data){
+      if(!data) return null;
+      if(typeof data==='string') return data;
+      if(data.xuid) return String(data.xuid);
+      if(data.profileUsers&&data.profileUsers[0]&&data.profileUsers[0].id) return String(data.profileUsers[0].id);
+      if(Array.isArray(data)&&data[0]) return extractXuid(data[0]);
+      return null;
+    }
+    function extractAchievements(data){
+      if(!data) return null;
+      if(Array.isArray(data)) return data;
+      if(Array.isArray(data.achievements)) return data.achievements;
+      return null;
+    }
+    function isUnlocked(a){
+      return a.progressState==='Achieved'||!!(a.progression&&a.progression.timeUnlocked);
+    }
+    function fetchTitlePages(xuid,key){
+      var entries=[], token='', prevToken=null, pages=0;
+      function next(){
+        if(pages>=5) return Promise.reject(new Error('too many pages'));
+        pages++;
+        var url='/achievements/player/'+encodeURIComponent(xuid)+'/title/'+encodeURIComponent(syncTitleId);
+        if(token) url+='?continuationToken='+encodeURIComponent(token);
+        return xboxFetch(url,key).then(function(data){
+          var list=extractAchievements(data);
+          if(!list) throw new Error('unexpected response shape');
+          entries=entries.concat(list);
+          var t=(data.pagingInfo&&data.pagingInfo.continuationToken)||data.continuationToken||'';
+          if(!t) return entries;
+          if(t===prevToken) throw new Error('pagination loop');
+          prevToken=token; token=t; return next();
+        });
+      }
+      return next();
+    }
+    function buildPreview(entries,warnings){
+      var unlocked=[], skipped=0, seenIds={};
+      entries.forEach(function(a){
+        var id=(a&&a.id!==undefined)?String(a.id):null;
+        if(id===null){ skipped++; return; }
+        if(seenIds[id]) return; seenIds[id]=true;
+        if(isUnlocked(a)) unlocked.push(id);
+      });
+      var mapped=[], unmapped=0;
+      unlocked.forEach(function(id){
+        if(syncMap[id]) mapped.push(syncMap[id]); else unmapped++;
+      });
+      var plan=planFor(mapped,mapped);
+      showImportPreview({
+        bodyEl:previewBody, previewEl:previewEl, confirmBtn:confirmBtn,
+        warnings:warnings, plan:plan,
+        statsHtml:'<p class="text-secondary mb-0">Already ticked: '+plan.already+' · Xbox achievements not in this tracker: '+unmapped+' · Tracker achievements Xbox does not report unlocked (left exactly as they are, including manual ticks from other platforms): '+plan.lockedCount+(skipped?' · Entries without an id, ignored: '+skipped:'')+'.</p>'
+      });
+      setStatus('Preview ready — nothing has changed yet. Confirm to apply, or Cancel.');
+    }
+    function syncError(e){
+      hideImportPreviews();
+      if(e&&e.status===401) setStatus('That key was rejected — check it at xbl.io, or create a new one.');
+      else if(e&&e.status===429) setStatus('OpenXBL rate limit — wait a while and try again.');
+      else if(e&&e.status===403) setStatus('Xbox returned no data for this title — check your Xbox privacy settings (achievement history) or that you have played this game on Xbox.');
+      else if(e&&e.status===404) setStatus('No Xbox profile or title data found — check the gamertag spelling and that you have played this game on Xbox.');
+      else if(e&&e.message==='gamertag not found') setStatus('No Xbox profile found for that gamertag — check the spelling.');
+      else if(e&&e.message==='too many pages') setStatus('OpenXBL paginated this title beyond what this page follows — sync stopped rather than applying a partial result.');
+      else if(e&&e.message==='pagination loop') setStatus('OpenXBL returned the same page twice — sync stopped rather than applying a partial result.');
+      else if(e&&e.message==='unexpected response shape') setStatus('OpenXBL returned a response this page does not recognise — sync stopped, nothing changed.');
+      else if(e instanceof TypeError) setStatus('The browser could not reach OpenXBL — check your connection, or use the paste-JSON option below.');
+      else setStatus('Sync failed — nothing changed. ('+(e&&e.message?e.message:'unknown error')+')');
+    }
+    syncBtn.addEventListener('click',function(){
+      var key=keyInput.value.trim(), gt=gtInput.value.trim();
+      if(!gt){ setStatus('Enter a gamertag first.'); return; }
+      if(!key){ setStatus('Paste your OpenXBL API key first.'); return; }
+      persistInputs();
+      hideImportPreviews();
+      setStatus('Fetching…');
+      syncBtn.disabled=true;
+      var warnings=[];
+      var xuidPromise;
+      if(xboxMeta.xuid&&xboxMeta.gamertag===gt){
+        xuidPromise=Promise.resolve(xboxMeta.xuid);
+      } else {
+        xuidPromise=xboxFetch('/player/gamertag/'+encodeURIComponent(gt),key).then(function(prof){
+          var xuid=extractXuid(prof);
+          if(!xuid) throw new Error('gamertag not found');
+          return xboxFetch('/account',key).then(function(acct){
+            var acctXuid=extractXuid(acct);
+            if(acctXuid&&acctXuid!==xuid) warnings.push('This key belongs to a different gamertag — sync may return public-only data.');
+            xboxMeta.xuid=xuid; metaSave(xboxMeta);
+            return xuid;
+          });
+        });
+      }
+      xuidPromise.then(function(xuid){
+        return fetchTitlePages(xuid,key);
+      }).then(function(entries){
+        buildPreview(entries,warnings);
+      }).catch(syncError).then(function(){ syncBtn.disabled=false; });
+    });
+    pasteBtn.addEventListener('click',function(){
+      var text=pasteInput.value.trim();
+      if(!text){ setStatus('Paste an OpenXBL JSON response first.'); return; }
+      hideImportPreviews();
+      try{
+        var entries=extractAchievements(JSON.parse(text));
+        if(!entries) throw new Error('shape');
+        buildPreview(entries,['Pasted JSON — no gamertag or key was used.']);
+      }catch(e){
+        hideImportPreviews();
+        setStatus('That text did not look like an OpenXBL achievements response.');
+      }
+    });
+    confirmBtn.addEventListener('click',function(){
+      var n=applyImportPending();
+      hideImportPreviews();
+      var m=metaLoad(); m.lastSyncAt=new Date().toISOString(); metaSave(m); xboxMeta=m;
+      setStatus('Synced '+n+' new achievement'+(n===1?'':'s')+' from Xbox at '+new Date().toLocaleString()+'.');
+    });
+    cancelBtn.addEventListener('click',function(){
+      hideImportPreviews();
+      setStatus('Sync cancelled — nothing changed.');
+    });
+    clearKeyBtn.addEventListener('click',function(){
+      keyInput.value='';
+      var m=metaLoad(); m.key=''; metaSave(m); xboxMeta=m;
+      setStatus('Key cleared from this browser.');
+    });
+  }
+  /* Guide images that fail to load (moved, or the host blocks
+     loading them here) are swapped for a placeholder that says
+     why, instead of a broken-image icon. Images already broken
+     when this runs are swapped immediately. */
+  document.querySelectorAll('.ach-media img').forEach(function(img){
+    function swap(){
+      var fig = img.closest('figure');
+      var cap = fig ? fig.querySelector('figcaption') : null;
+      var cred = fig ? fig.querySelector('.media-credit') : null;
+      var capText = cap ? cap.textContent : '';
+      var credText = cred ? cred.textContent : '';
+      var extra = capText + (capText && credText ? ' ' : '') + credText;
+      var d = document.createElement('div');
+      d.className = 'ach-media-fallback';
+      d.textContent = 'Guide image unavailable — it may have moved, or the host may block loading it here. The walkthrough linked in the sources below has the original.'
+        + (extra ? ' (' + extra + ')' : '');
+      img.replaceWith(d);
+    }
+    if(img.complete && img.naturalWidth === 0) swap();
+    else img.addEventListener('error', swap);
+  });
+  /* Walkthrough shots open their full-size version in an
+     on-page viewer instead of a new tab. The link's href is
+     kept, so without scripts (or on a browser too old for
+     <dialog>) the click still opens the image in a new tab,
+     per target=_blank. Escape and tapping outside close it;
+     the close event clears the image so it stops loading.
+     The viewer caption carries the image credit, since the
+     card itself now shows it only on hover. For slideshow
+     shots the viewer also gains Previous/Next: they drive
+     the card's own slideshow buttons, so the card and the
+     viewer never disagree about which slide is current, and
+     arrow keys work too. */
+  var modal = document.getElementById('media-modal');
+  var modalImg = document.getElementById('media-modal-img');
+  var modalCap = document.getElementById('media-modal-caption');
+  var modalNav = document.getElementById('media-modal-nav');
+  var modalCount = document.getElementById('media-modal-count');
+  var modalPrev = modal ? modal.querySelector('.media-modal-prev') : null;
+  var modalNext = modal ? modal.querySelector('.media-modal-next') : null;
+  var modalShow = null;
+  function modalCaption(fig){
+    var cap = fig ? fig.querySelector('figcaption') : null;
+    var cred = fig ? fig.querySelector('.media-credit') : null;
+    var capText = cap ? cap.textContent : '';
+    var credText = cred ? cred.textContent : '';
+    return (capText + (capText && credText ? ' ' : '') + credText).trim();
+  }
+  function modalFromLink(a){
+    var img = a.querySelector('img');
+    var fig = a.closest('figure');
+    modalImg.src = a.getAttribute('href');
+    modalImg.alt = img ? img.alt : '';
+    var text = modalCaption(fig);
+    modalCap.textContent = text;
+    modalCap.style.display = text ? '' : 'none';
+  }
+  function modalSync(){
+    if(!modalShow) return;
+    var ss = modalShow.ss;
+    var active = ss.querySelector('.slideshow-slide.active');
+    var link = active ? active.querySelector('a') : null;
+    if(link) modalFromLink(link);
+    var idx = modalShow.links.indexOf(link);
+    modalCount.textContent = (idx + 1) + ' of ' + modalShow.links.length;
+    modalPrev.disabled = ss.querySelector('.slideshow-prev').disabled;
+    modalNext.disabled = ss.querySelector('.slideshow-next').disabled;
+  }
+  function modalStep(dir){
+    if(!modalShow) return;
+    var btn = modalShow.ss.querySelector(dir < 0 ? '.slideshow-prev' : '.slideshow-next');
+    if(btn) btn.click();
+    modalSync();
+  }
+  if(modal){
+    modal.addEventListener('close', function(){
+      modalImg.removeAttribute('src'); modalShow = null;
+      modal.classList.remove('media-modal-slideshow');
+    });
+    modal.addEventListener('click', function(e){ if(e.target === modal) modal.close(); });
+    var modalClose = modal.querySelector('.media-modal-close');
+    if(modalClose) modalClose.addEventListener('click', function(){ modal.close(); });
+    if(modalPrev) modalPrev.addEventListener('click', function(){ modalStep(-1); });
+    if(modalNext) modalNext.addEventListener('click', function(){ modalStep(1); });
+    modal.addEventListener('keydown', function(e){
+      if(!modalShow) return;
+      if(e.key === 'ArrowLeft') modalStep(-1);
+      else if(e.key === 'ArrowRight') modalStep(1);
+    });
+    /* Tapping the left or right side of a slideshow image steps
+       it too: the buttons underneath stay the discoverable
+       control, this is the faster path for repeat viewing. */
+    modalImg.addEventListener('click', function(e){
+      if(!modalShow) return;
+      var r = modalImg.getBoundingClientRect();
+      if(!r.width) return;
+      modalStep(e.clientX - r.left < r.width / 2 ? -1 : 1);
+    });
+    document.querySelectorAll('.ach-media a, .slideshow a').forEach(function(a){
+      a.addEventListener('click', function(e){
+        if(!modal.showModal) return;
+        e.preventDefault();
+        var ss = a.closest('.slideshow');
+        if(ss){
+          modalShow = {ss: ss, links: [].slice.call(ss.querySelectorAll('a'))};
+          modalNav.style.display = '';
+          modal.classList.add('media-modal-slideshow');
+          modalSync();
+        } else {
+          modalShow = null;
+          modalNav.style.display = 'none';
+          modal.classList.remove('media-modal-slideshow');
+          modalFromLink(a);
+        }
+        modal.showModal();
+      });
+    });
+  }
+  /* Notes live behind the note icons: one icon per card, one on
+     the filter card for game-wide notes. The popup saves as you
+     type, so closing it (button, Escape, outside tap) loses
+     nothing; the icon swaps to a check when its note is set. */
+  function refreshNoteIcons(){
+    document.querySelectorAll('.note-btn').forEach(function(b){
+      var key=b.getAttribute('data-note-key');
+      var has=!!(notesData[key]||'').trim();
+      var icon=b.querySelector('i');
+      if(icon){
+        icon.classList.toggle('bi-journal-check', has);
+        icon.classList.toggle('bi-journal-text', !has);
+      }
+      b.classList.toggle('has-note', has);
+    });
+  }
+  function openNotes(key, title){
+    notesKey=key;
+    notesModalTitle.textContent=title;
+    notesModalText.value=notesData[key]||'';
+    if(notesModal.showModal) notesModal.showModal();
+  }
+  if(notesModal){
+    notesModalText.addEventListener('input', function(){
+      if(notesKey===null) return;
+      var v=notesModalText.value;
+      if(v) notesData[notesKey]=v; else delete notesData[notesKey];
+      save(); refreshNoteIcons();
+    });
+    var notesModalClose=notesModal.querySelector('.notes-modal-close');
+    if(notesModalClose) notesModalClose.addEventListener('click', function(){ notesModal.close(); });
+    notesModal.addEventListener('click', function(e){ if(e.target===notesModal) notesModal.close(); });
+    document.querySelectorAll('.note-btn').forEach(function(b){
+      b.addEventListener('click', function(){
+        var art=b.closest('article');
+        var title=art ? 'Notes: '+art.querySelector('.ach-name').textContent : 'Game notes';
+        openNotes(b.getAttribute('data-note-key'), title);
+      });
+    });
+  }
+  /* Slideshow cards: Previous/Next walk through the guide
+     slides; only one slide shows at a time, and the ends
+     disable their button. Hidden slides are also pulled out
+     of tab order, since they are visibility-hidden, not gone. */
+  document.querySelectorAll('.slideshow').forEach(function(ss){
+    var slides = ss.querySelectorAll('.slideshow-slide');
+    var prev = ss.querySelector('.slideshow-prev');
+    var next = ss.querySelector('.slideshow-next');
+    var count = ss.querySelector('.slideshow-count');
+    var cur = 0;
+    function show(i){
+      cur = Math.max(0, Math.min(slides.length - 1, i));
+      slides.forEach(function(s, j){
+        var on = j === cur;
+        s.classList.toggle('active', on);
+        s.setAttribute('aria-hidden', on ? 'false' : 'true');
+        s.querySelectorAll('a').forEach(function(a){
+          if(on){ a.removeAttribute('tabindex'); } else { a.setAttribute('tabindex', '-1'); }
+        });
+      });
+      count.textContent = (cur + 1) + ' of ' + slides.length;
+      prev.disabled = cur === 0;
+      next.disabled = cur === slides.length - 1;
+    }
+    prev.addEventListener('click', function(){ show(cur - 1); });
+    next.addEventListener('click', function(){ show(cur + 1); });
+    show(0);
+  });
+  load(); updateProgress(); applyFilters();
+})();
+</script>
+</body>
+</html>

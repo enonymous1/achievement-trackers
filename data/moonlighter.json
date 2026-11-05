@@ -1,0 +1,110 @@
+{
+  "slug": "moonlighter",
+  "title": "Moonlighter",
+  "tagline": "Dungeon by night, shopkeeper by day — dive for loot, then haggle over it.",
+  "order_note": "Sections run in walkthrough order — Golem, Forest, Desert, Tech, then the final boss and a New Game+ speedrun. Playthrough 1 is the careful run: under 40 deaths, no-hit boss kills, and the broom finish on every boss. The prologue is a survive-as-long-as-you-can tutorial — grab what you can before you die. Cumulative trackers (kills, floors, notebook, decorations) carry across the whole run.",
+  "scope_note": "All 57 achievements / 1,000G — the full game, no DLC. The Between Dimensions DLC has its own achievements and is out of scope. Two playthroughs: a careful first run, then a New Game+ speedrun; 25–30 hours.",
+  "total_gs": 1000,
+  "total_count": 57,
+  "storage_key": "ml-tracker-v1",
+  "sources": [{"label": "TrueAchievements — Achievements", "url": "https://www.trueachievements.com/game/Moonlighter/achievements"}, {"label": "TrueAchievements — Walkthrough (N18p73pwn3r)", "url": "https://www.trueachievements.com/game/Moonlighter/walkthrough"}, {"label": "GamesXtreme — Gamerscore cross-check", "url": "https://www.gamesxtreme.com/game/moonlighter/achievements/xbox-one-pc"}, {"label": "Steam — 100% Achievement Guide", "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=1712327712"}],
+  "sections": [
+    {
+      "id": "golem",
+      "filter_label": "Golem",
+      "title": "Playthrough 1 \u00b7 Golem Dungeon",
+      "subtitle": "20 achievements",
+      "achievements": [
+        {"id": "ach-trees", "name": "Does It Grow on Trees?!?", "gs": 12, "req": "Get money from a tree", "how": "After the prologue, hit the trees around town until one drops coins — try the main square and the lower edge of town."},
+        {"id": "ach-really", "name": "Really?!?", "gs": 12, "req": "Earn money from trees 100 times", "how": "Keep hitting town trees whenever you're back from a dungeon. The counter is glitchy and can pop early or late.", "counters": [{"group": "tree-money", "target": 100}]},
+        {"id": "ach-distracted", "name": "Distracted Merchant", "gs": 12, "req": "Make 20 visitors abandon your shop", "how": "Put 20 cheap items out at 1 gold each, one per table, and let customers wait in line until they leave without being served. Takes more than one day — sleep and repeat.", "counters": [{"group": "abandoned", "target": 20}]},
+        {"id": "ach-evil", "name": "Evil Merchant", "gs": 12, "req": "Sell 20 items slightly overpriced", "how": "Sell 20 items at the 'expensive' price, one step above optimal — the walkthrough's price tables show the band for each item.", "counters": [{"group": "overpriced", "target": 20}]},
+        {"id": "ach-scammer", "name": "Scammer", "gs": 12, "req": "Receive 60 really expensive valuations", "how": "Price items 'too expensive' and wait for the frowning-face valuation, 60 times. Grind it alongside Evil Merchant.", "counters": [{"group": "expensive-valuations", "target": 60}]},
+        {"id": "ach-naive", "name": "Naive Merchant", "gs": 12, "req": "Sell 40 items really cheap", "how": "Sell 40 items at the 'cheap' price.", "counters": [{"group": "cheap-sales", "target": 40}]},
+        {"id": "ach-good", "name": "Good Merchant", "gs": 12, "req": "Sell 20 items for the perfect price", "how": "Sell 20 items at the 'perfect' (optimal) price — use the walkthrough's price tables.", "counters": [{"group": "perfect-sales", "target": 20}]},
+        {"id": "ach-avarice", "name": "There Is No Avarice Without Penalty", "gs": 12, "req": "Die with your inventory full of items", "how": "Fill every inventory slot, then die in the dungeon. Items in the top row survive, so put anything precious there first."},
+        {"id": "ach-special-place", "name": "Special Place", "gs": 12, "req": "Arrive at Crazy Pete's Special Place", "how": "In any Crazy Pete resting room, walk into the top-right corner — the wet spot by the wall. It can also pop glitched alongside Rage Against the Desert."},
+        {"id": "ach-exterminator", "name": "Exterminator", "gs": 12, "req": "Kill 100 bugs", "how": "Run or roll over the tiny bugs scurrying across dungeon floors — snails and beetles in the Forest, scorpions and dung beetles in the Desert.", "counters": [{"group": "bugs", "target": 100}]},
+        {"id": "ach-no-secrets", "name": "No Secrets", "gs": 12, "req": "Find a secret room 10 times", "how": "Some rooms with pitfalls sparkle for a few seconds after you enter — drop into any pitfall there. 10 secret rooms in total.", "counters": [{"group": "secret-rooms", "target": 10}]},
+        {"id": "ach-horde", "name": "Horde Mode", "gs": 12, "req": "Defeat three waves of enemies in a Wave Room", "how": "In a wave room, activate the stone-slime pillar and beat 3 waves. Don't open the chest first or the pillar implodes and the waves are gone."},
+        {"id": "ach-supplies", "name": "Going for Supplies...", "gs": 12, "req": "Use the Emblem in the room before the boss room", "how": "In the room right before a boss room, use the merchant Emblem to teleport back to town."},
+        {"id": "ach-slime", "name": "Slime Protection Service", "gs": 12, "req": "Hit the Witch's slime 42 times", "how": "In the Witch's shop, hit the slime in the pen in the left corner 42 times — only hits that make it react count, and the tracker is glitchy.", "counters": [{"group": "slime-hits", "target": 42}]},
+        {"id": "ach-saver", "name": "Saver", "gs": 12, "req": "Collect more than 5000 gold", "how": "Cumulative gold collected from selling — comes naturally while working the Golem Dungeon.", "counters": [{"group": "gold-collected", "target": 5000}]},
+        {"id": "ach-first-investment", "name": "First Investment", "gs": 12, "req": "Purchase the second shop upgrade", "how": "Buy the first shop-size upgrade on the Town Board — the shop's starting size counts as the first upgrade."},
+        {"id": "ach-golem-enth", "name": "Golem Enthusiast", "gs": 12, "req": "Arrive at the third floor of the Golem Dungeon 10 times", "how": "Reach floor 3 of the Golem Dungeon 10 times — comes with the material farming runs.", "counters": [{"group": "floor3-golem", "target": 10}]},
+        {"id": "ach-rage-golems", "name": "Rage Against the Golems", "gs": 12, "req": "Kill 1000 golem enemies", "how": "1,000 Golem Dungeon kills — comes with the floor-3 repeats and material farming.", "counters": [{"group": "kills-golem", "target": 1000}]},
+        {"id": "ach-overthrow", "name": "Overthrow the King!", "gs": 12, "req": "Defeat the Golem King", "how": "Beat the Golem King. Three repeating phases: ground pound and shockwave, slime-fist swipe, then the falling fist — the shockwave after the rock-fall doesn't count as a hit."},
+        {"id": "ach-perfect-golem", "name": "Perfect Golem King", "gs": 30, "req": "Perfect Golem King", "how": "Beat him without taking a single hit. Set a portal in the room before the boss, quit to the menu from town as a checkpoint, and retry from there — it doesn't work if you die. Maxed armour and Giant Sword; time charged attacks to the falling-fist strikes for i-frames.", "missable": true}
+      ]
+    },
+    {
+      "id": "forest",
+      "filter_label": "Forest",
+      "title": "Forest Dungeon",
+      "subtitle": "9 achievements",
+      "achievements": [
+        {"id": "ach-wasteful", "name": "Wasteful Merchant", "gs": 12, "req": "Buy more than 10 items at Le Retailer", "how": "Buy 11 items from Le Retailer (daytime, north-west of town). TA says more than 10; the walkthrough's 'buy ten' may already do it.", "counters": [{"group": "retailer-buys", "target": 11}]},
+        {"id": "ach-expansion", "name": "Expansion", "gs": 12, "req": "Purchase the third shop upgrade", "how": "Buy the second shop upgrade — it adds customer requests, waiting at the right side of the shop. Check the calendar page in your notebook and only take requests you can fill easily."},
+        {"id": "ach-sanitary", "name": "Sanitary System", "gs": 12, "req": "Take potions from breakables 20 times", "how": "Potions from breakable objects — urns, corpses, rocks, bushes — 20 times. Comes naturally across the dungeons.", "counters": [{"group": "potion-breakables", "target": 20}]},
+        {"id": "ach-saver-plus", "name": "Saver+", "gs": 12, "req": "Collect more than 50,000 gold", "how": "Cumulative 50,000 gold collected from selling.", "counters": [{"group": "gold-collected", "target": 50000}]},
+        {"id": "ach-saver-plusplus", "name": "Saver++", "gs": 12, "req": "Collect more than 100,000 gold", "how": "Cumulative 100,000 gold collected from selling.", "counters": [{"group": "gold-collected", "target": 100000}]},
+        {"id": "ach-forest-enth", "name": "Forest Enthusiast", "gs": 12, "req": "Arrive at the third floor of the Forest Dungeon 10 times", "how": "Reach floor 3 of the Forest Dungeon 10 times.", "counters": [{"group": "floor3-forest", "target": 10}]},
+        {"id": "ach-rage-forest", "name": "Rage Against the Forest", "gs": 12, "req": "Kill 1000 forest enemies", "how": "1,000 Forest Dungeon kills.", "counters": [{"group": "kills-forest", "target": 1000}]},
+        {"id": "ach-prune", "name": "Prune the Plant!", "gs": 12, "req": "Defeat Carnivorous Mutae", "how": "Beat Carnivorous Mutae. Gloves up close for phase 1; bow or quick combos later. Watch for the spiral seed shots in the final phase, and ignore the respawning minions — their shots don't pass the bushes."},
+        {"id": "ach-perfect-mutae", "name": "Perfect Carnivorous Mutae", "gs": 30, "req": "Perfect Carnivorous Mutae", "how": "No-hit kill — the second hardest perfect. Same portal checkpoint trick. Its minions shoot from random angles; leave them alone and focus the boss.", "missable": true}
+      ]
+    },
+    {
+      "id": "desert",
+      "filter_label": "Desert",
+      "title": "Desert Dungeon",
+      "subtitle": "7 achievements",
+      "achievements": [
+        {"id": "ach-greedy", "name": "Greedy", "gs": 12, "req": "Collect more than 1,000,000 gold", "how": "Hold 1,000,000 gold on you at once — this one is not cumulative. Don't spend below it until it pops."},
+        {"id": "ach-thief", "name": "It Takes a Thief to Catch a Thief", "gs": 12, "req": "Earn money from the Banker 5 times", "how": "Recruit the Banker (the last merchant), lend him gold, and collect a profit 5 times. Aim for +15% returns; he has a cooldown between payouts.", "counters": [{"group": "banker-payouts", "target": 5}]},
+        {"id": "ach-luxury", "name": "Luxury", "gs": 12, "req": "Purchase the fourth shop upgrade", "how": "Buy the third shop upgrade — it adds a shop assistant. It takes 30% of daily earnings and fails requests, so most players never use it."},
+        {"id": "ach-desert-enth", "name": "Desert Enthusiast", "gs": 12, "req": "Arrive at the third floor of the Desert Dungeon 10 times", "how": "Reach floor 3 of the Desert Dungeon 10 times.", "counters": [{"group": "floor3-desert", "target": 10}]},
+        {"id": "ach-rage-desert", "name": "Rage Against the Desert", "gs": 12, "req": "Kill 1000 desert enemies", "how": "1,000 Desert Dungeon kills.", "counters": [{"group": "kills-desert", "target": 1000}]},
+        {"id": "ach-behead", "name": "Behead the Snake!", "gs": 12, "req": "Defeat Naja", "how": "Beat Naja. Destroy the body parts in order 3, 2, 1, 4 — top priority is the flame-spirit part — then the head, which only charges at that point."},
+        {"id": "ach-perfect-naja", "name": "Perfect Naja", "gs": 30, "req": "Perfect Naja", "how": "No-hit kill, the hardest one — Naja's attacks are pure RNG, so watch each body part's tell and use the portal checkpoint. This is the rarest achievement in the game.", "missable": true}
+      ]
+    },
+    {
+      "id": "tech",
+      "filter_label": "Tech",
+      "title": "Tech Dungeon & Finale",
+      "subtitle": "19 achievements",
+      "achievements": [
+        {"id": "ach-heavy", "name": "Heavy Warrior", "gs": 12, "req": "Craft all big swords", "how": "Craft all 9 big swords, Training through Fusion and Storm. Check the merchant log — the tracker is glitchy; wait for each weapon to register before upgrading further.", "steps": [{"id": "step-heavy-training-big-sword", "label": "Training Big Sword"}, {"id": "step-heavy-buster-big-sword", "label": "Buster Big Sword"}, {"id": "step-heavy-rock-big-sword", "label": "Rock Big Sword"}, {"id": "step-heavy-wild-big-sword", "label": "Wild Big Sword"}, {"id": "step-heavy-toxic-big-sword", "label": "Toxic Big Sword"}, {"id": "step-heavy-vulcan-big-sword", "label": "Vulcan Big Sword"}, {"id": "step-heavy-blaze-big-sword", "label": "Blaze Big Sword"}, {"id": "step-heavy-fusion-big-sword", "label": "Fusion Big Sword"}, {"id": "step-heavy-storm-big-sword", "label": "Storm Big Sword"}]},
+        {"id": "ach-distant", "name": "Distant Warrior", "gs": 12, "req": "Craft all bows", "how": "Craft all 9 bows, Training through Exeter and Lightning. Same glitch warning as the other weapon trees.", "steps": [{"id": "step-distant-training-bow", "label": "Training Bow"}, {"id": "step-distant-hunter-bow", "label": "Hunter Bow"}, {"id": "step-distant-catapult-bow", "label": "Catapult Bow"}, {"id": "step-distant-natural-bow", "label": "Natural Bow"}, {"id": "step-distant-poison-bow", "label": "Poison Bow"}, {"id": "step-distant-soldier-bow", "label": "Soldier Bow"}, {"id": "step-distant-flamethrower-bow", "label": "Flamethrower Bow"}, {"id": "step-distant-exeter-bow", "label": "Exeter Bow"}, {"id": "step-distant-lightning-bow", "label": "Lightning Bow"}]},
+        {"id": "ach-berserk", "name": "Berserk Warrior", "gs": 12, "req": "Craft all gloves", "how": "Craft all 9 gloves, Training through Star Platinum and Thunder.", "steps": [{"id": "step-berserk-training-gloves", "label": "Training Gloves"}, {"id": "step-berserk-fighter-gloves", "label": "Fighter Gloves"}, {"id": "step-berserk-rough-gloves", "label": "Rough Gloves"}, {"id": "step-berserk-forest-spirit-gloves", "label": "Forest Spirit Gloves"}, {"id": "step-berserk-venom-twins-gloves", "label": "Venom Twins Gloves"}, {"id": "step-berserk-captain-gloves", "label": "Captain Gloves"}, {"id": "step-berserk-flame-gloves", "label": "Flame Gloves"}, {"id": "step-berserk-star-platinum-gloves", "label": "Star Platinum Gloves"}, {"id": "step-berserk-thunder-gloves", "label": "Thunder Gloves"}]},
+        {"id": "ach-balanced", "name": "Balanced Warrior", "gs": 12, "req": "Craft all short swords", "how": "Craft all 9 short swords, Training through King and Vampire.", "steps": [{"id": "step-balanced-training-short-sword", "label": "Training Short Sword"}, {"id": "step-balanced-soldier-short-sword", "label": "Soldier Short Sword"}, {"id": "step-balanced-rusty-short-sword", "label": "Rusty Short Sword"}, {"id": "step-balanced-knight-short-sword", "label": "Knight Short Sword"}, {"id": "step-balanced-venom-short-sword", "label": "Venom Short Sword"}, {"id": "step-balanced-commander-short-sword", "label": "Commander Short Sword"}, {"id": "step-balanced-reborn-short-sword", "label": "Reborn Short Sword"}, {"id": "step-balanced-king-short-sword", "label": "King Short Sword"}, {"id": "step-balanced-vampire-short-sword", "label": "Vampire Short Sword"}]},
+        {"id": "ach-piercing", "name": "Piercing Warrior", "gs": 12, "req": "Craft all spears", "how": "Craft all 9 spears, Training through Fighter and Lightning Rod. The Broom Spear is your starting weapon and already in your log.", "steps": [{"id": "step-piercing-broom-spear", "label": "Broom Spear"}, {"id": "step-piercing-training-spear", "label": "Training Spear"}, {"id": "step-piercing-warrior-spear", "label": "Warrior Spear"}, {"id": "step-piercing-golem-drill-spear", "label": "Golem Drill Spear"}, {"id": "step-piercing-woods-spear", "label": "Woods Spear"}, {"id": "step-piercing-venom-sting-spear", "label": "Venom Sting Spear"}, {"id": "step-piercing-monkey-spear", "label": "Monkey Spear"}, {"id": "step-piercing-hell-spear", "label": "Hell Spear"}, {"id": "step-piercing-fighter-spear", "label": "Fighter Spear"}, {"id": "step-piercing-lightning-rod-spear", "label": "Lightning Rod Spear"}]},
+        {"id": "ach-weapon-master", "name": "Weapon Master", "gs": 30, "req": "Craft all weapons", "how": "Pops when the last of the five weapon-type achievements pops — every weapon in all five trees, found or crafted."},
+        {"id": "ach-emporium", "name": "Emporium", "gs": 12, "req": "Purchase the last shop upgrade", "how": "Buy the final shop upgrade on the Town Board."},
+        {"id": "ach-rynoka", "name": "Rynoka's Major!", "gs": 30, "req": "Buy all improvements on the Town Board", "how": "Buy every Town Board improvement — all shop upgrades, all merchants, chest, bed, cash register and discount bin. The board shows what's left."},
+        {"id": "ach-archeologist", "name": "Archeologist", "gs": 12, "req": "Read all Crazy Pete's notes", "how": "Read all 12 of Crazy Pete's notes — one per floor in each dungeon, in the abandoned-campsite rooms.", "steps": [{"id": "step-arch-golem", "label": "Golem Dungeon notes (3)"}, {"id": "step-arch-forest", "label": "Forest Dungeon notes (3)"}, {"id": "step-arch-desert", "label": "Desert Dungeon notes (3)"}, {"id": "step-arch-tech", "label": "Tech Dungeon notes (3)"}]},
+        {"id": "ach-scribe", "name": "Scribe", "gs": 12, "req": "Complete the Notebook", "how": "Fill the Notebook — every item in all four dungeons, including each dungeon's unique ring from purple chests.", "steps": [{"id": "step-scribe-golem", "label": "Golem Dungeon notebook"}, {"id": "step-scribe-forest", "label": "Forest Dungeon notebook"}, {"id": "step-scribe-desert", "label": "Desert Dungeon notebook"}, {"id": "step-scribe-tech", "label": "Tech Dungeon notebook"}]},
+        {"id": "ach-decorative", "name": "Decorative Mind", "gs": 12, "req": "Buy all decorative items", "how": "Buy every decorative item from the Peddler — new ones unlock as you reach higher floors and beat bosses.", "steps": [{"id": "step-deco-golem", "label": "Golem Dungeon decorations"}, {"id": "step-deco-forest", "label": "Forest Dungeon decorations"}, {"id": "step-deco-desert", "label": "Desert Dungeon decorations"}, {"id": "step-deco-tech", "label": "Tech Dungeon decorations"}]},
+        {"id": "ach-janitor", "name": "Janitor", "gs": 60, "req": "Kill all bosses with the broom (last hit)", "how": "Land the killing blow on all four bosses with the Broom Spear. Do the perfect kill first, then reload the portal checkpoint and redo it with the broom — the other way round can glitch the tracker.", "missable": true, "steps": [{"id": "step-janitor-golem", "label": "Golem King — broom finish"}, {"id": "step-janitor-forest", "label": "Carnivorous Mutae — broom finish"}, {"id": "step-janitor-desert", "label": "Naja — broom finish"}, {"id": "step-janitor-tech", "label": "Energy Flux — broom finish"}]},
+        {"id": "ach-savage", "name": "Savage!", "gs": 26, "req": "Kill a total of 10,000 enemies", "how": "10,000 kills total. Grind spot: a Tech Dungeon room with a slime and a regenerator — park a shooting pet to kill the respawning slime. Five to eight hours by hand otherwise.", "counters": [{"group": "kills-total", "target": 10000}]},
+        {"id": "ach-tech-enth", "name": "Tech Enthusiast", "gs": 12, "req": "Arrive at the third floor of the Tech Dungeon 10 times", "how": "Reach floor 3 of the Tech Dungeon 10 times.", "counters": [{"group": "floor3-tech", "target": 10}]},
+        {"id": "ach-rage-tech", "name": "Rage Against the Machinery", "gs": 12, "req": "Kill 1000 tech enemies", "how": "1,000 Tech Dungeon kills.", "counters": [{"group": "kills-tech", "target": 1000}]},
+        {"id": "ach-unplug", "name": "Unplug the Energy!", "gs": 12, "req": "Defeat Energy Flux", "how": "Beat Energy Flux — the easiest boss. Hide behind your shield and chip away; only the rush attack needs a dodge."},
+        {"id": "ach-perfect-flux", "name": "Perfect Energy Flux", "gs": 30, "req": "Perfect Energy Flux", "how": "No-hit kill. The shield blocks everything except the rush attack — face the boss behind the shield and strike between attacks.", "missable": true},
+        {"id": "ach-hero", "name": "Hero or Merchant?", "gs": 44, "req": "Finish the game", "how": "Beat the final boss, the Space Pirate Captain — two phases, a sword alien then the big form. Tank it with hero potions and your best armour. Killing him ends the game, so finish everything else first."},
+        {"id": "ach-careful", "name": "Careful Merchant", "gs": 30, "req": "Complete the game with under 40 deaths", "how": "Finish playthrough 1 with fewer than 40 deaths. Don't risk cheap deaths — teleport out of bad rooms instead of pushing on.", "missable": true}
+      ]
+    },
+    {
+      "id": "ngplus",
+      "filter_label": "NG+",
+      "title": "Second Playthrough \u00b7 New Game+",
+      "subtitle": "2 achievements",
+      "achievements": [
+        {"id": "ach-gotta-go", "name": "Gotta Go fast!", "gs": 60, "req": "Beat the game in under 10 hours", "how": "New Game+: beat the game in under 10 hours. Gold doubles, you keep your gear, and +1 items drop — about 3 hours if you rush and skip selling. Carry red crystals and map potions from the Witch.", "missable": true},
+        {"id": "ach-100", "name": "100%", "gs": 60, "req": "Complete all achievements", "how": "Pops when the last achievement does — after the New Game+ final boss."}
+      ]
+    }
+  ]
+}

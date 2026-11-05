@@ -4,6 +4,35 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-05 — Game #11: Moonlighter
+
+### Added
+
+- Moonlighter — all 57 achievements / 1,000G, the
+  full game across five sections: Golem (trees,
+  shop pricing, first shop upgrade, Golem King +
+  perfect), Forest (second shop upgrade, Saver+/++,
+  Carnivorous Mutae + perfect), Desert (Greedy,
+  Banker, Luxury, Naja + perfect — the hardest),
+  Tech & Finale (all five weapon trees as step
+  checklists, Weapon Master, Emporium, Town Board,
+  Notebook, decorations, Janitor, 10,000 kills,
+  Energy Flux + perfect, final boss, under-40-deaths),
+  and New Game+ (sub-10-hour speedrun, 100%). No
+  DLC — Between Dimensions is out of scope, stated
+  on the page. Gamerscore values come from
+  GamesXtreme, cross-checked against
+  mygamerprofile and verified by arithmetic
+  (45×12 + 7×30 + 3×60 + 26 + 44 = 1,000); route
+  notes are paraphrased from the TrueAchievements
+  walkthrough by N18p73pwn3r (linked in the page
+  sources). 7 missable flags: the four perfect
+  boss kills, Janitor, Careful Merchant, and Gotta
+  Go fast! — bosses are once per playthrough, so
+  a missed perfect or broom finish waits for New
+  Game+. About 25–30 hours. Library totals now 11
+  games · 365 achievements · 11,250G.
+
 ## 2026-11-05 — Fix: Irresponsible babysitter order on Great God Grove
 
 ### Fixed
