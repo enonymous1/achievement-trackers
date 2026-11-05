@@ -4,6 +4,18 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-04 — Shaboingboings full-size image
+
+### Added
+
+- The 1920×1080 original for the Shaboingboings
+  shot, downloaded by Justin (the direct link
+  returns 403 from this build box), is now vendored
+  under `walkthrough/full/`, so the card has its
+  "Open larger version" link like the other Grove
+  shots. That closes the one exception noted in the
+  fix entry below.
+
 ## 2026-11-04 — Fix: Shaboingboings image on Great God Grove
 
 ### Fixed
