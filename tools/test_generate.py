@@ -327,6 +327,45 @@ class TestXboxValidation(unittest.TestCase):
         self.assertTrue(
             god["media"][0]["src"].endswith("razzmatazz-eloquent-king.jpg"))
 
+    def test_police_simulator_shares_career_counters(self):
+        """Police Simulator's cumulative achievements must share
+        one counter group per system, with the firsts as the
+        lowest threshold — and the two 'in a single shift'
+        achievements must carry no counter, since a running
+        total cannot track a per-shift feat."""
+        game = next(
+            g for g in load_games()
+            if g["slug"] == "police-simulator-patrol-officers")
+        self.assertEqual(game["total_count"], 25)
+        self.assertEqual(game["total_gs"], 1000)
+        self.assertEqual(len(game["sections"]), 7)
+        achs = {a["id"]: a for s in game["sections"]
+                for a in s["achievements"]}
+
+        def targets(aid):
+            return [(c["group"], c["target"])
+                    for c in achs[aid].get("counters", [])]
+
+        self.assertEqual(targets("ach-wrecker"), [("towed", 1)])
+        self.assertEqual(targets("ach-elite-hauler"), [("towed", 30)])
+        self.assertEqual(targets("ach-no-more-cars"), [("towed", 50)])
+        self.assertEqual(targets("ach-good-eye"), [("evidence", 1)])
+        self.assertEqual(targets("ach-mr-evidence"), [("evidence", 50)])
+        self.assertEqual(targets("ach-paparazzi"), [("evidence", 120)])
+        self.assertEqual(targets("ach-first-aid"), [("ambulances", 1)])
+        self.assertEqual(targets("ach-call-ambulance"),
+                         [("ambulances", 20)])
+        self.assertEqual(targets("ach-saving-lives"),
+                         [("ambulances", 30)])
+        self.assertEqual(targets("ach-dont-drugs"), [("dui-arrests", 1)])
+        self.assertEqual(targets("ach-dont-drink"), [("dui-arrests", 40)])
+        self.assertEqual(targets("ach-remarkable"), [("arrests", 30)])
+        self.assertEqual(targets("ach-citizens-hero"), [("arrests", 50)])
+        self.assertEqual(targets("ach-flash-furious"), [("speeders", 40)])
+        self.assertEqual(targets("ach-not-race"), [("speeders", 100)])
+        self.assertNotIn("counters", achs["ach-impressive"])
+        self.assertNotIn("counters", achs["ach-drive-safe"])
+
     def test_media_without_full_links_to_itself(self):
         """A media image with no larger version must still open
         in the viewer: the viewer binds .ach-media links, so a

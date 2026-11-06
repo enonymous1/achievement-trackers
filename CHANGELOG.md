@@ -4,6 +4,33 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-06 — Game #12: Police Simulator: Patrol Officers
+
+### Added
+
+- Police Simulator: Patrol Officers — all 25
+  achievements / 1,000G, the full game, no DLC.
+  Seven sections in Steam-guide order: the five
+  first shifts (North Point, Beaufort Landing,
+  Chester, Historic Downtown, Alcombey), the Duty
+  Star unlocks (first star at 150 XP, first patrol
+  car at the 3rd star / 650 XP), then arrests,
+  first aid, towing, photography, and the radar,
+  with shared counters per system (towed 1/30/50,
+  evidence 1/50/120, ambulances 1/20/30, DUI
+  arrests 1/40, arrests 30/50, speeders 40/100)
+  and no missables. The two "in a single shift"
+  achievements carry no counter, since a running
+  total cannot track a per-shift feat. No TA
+  walkthrough exists; route notes are paraphrased
+  from the Steam 100% Achievement Guide (Blahaj.exe,
+  2026). Names and Gamerscore come from a saved
+  copy of the TA achievements page Justin sent over
+  — the .mhtml parse settled GS in one shot
+  (data-bf holds the Gamerscore; data-af is the TA
+  score, not GS). About 12–15 hours. Library totals
+  now 12 games · 390 achievements · 12,250G.
+
 ## 2026-11-06 — Counters stop at their card's max, with a yes/no gate
 
 ### Changed

@@ -1,0 +1,94 @@
+{
+  "slug": "police-simulator-patrol-officers",
+  "title": "Police Simulator: Patrol Officers",
+  "tagline": "Patrol Brighton's streets, earn Duty Stars, and keep the Melting Pot clean — one justified action at a time.",
+  "order_note": "Sections follow the Steam 100% guide's grouping: the five first shifts in area order, then the Duty Star unlocks, then the four systems — arrests, first aid, towing, photography, and the radar. The cumulative totals build up across a single career; the two 'in a single shift' achievements need a long shift. Only justified actions count — a random stop and search costs Citizen Points even if you find something.",
+  "scope_note": "All 25 achievements / 1,000G — the full game, no DLC. No TrueAchievements walkthrough exists; route notes are paraphrased from the Steam 100% Achievement Guide (Blahaj.exe, 2026). About 12–15 hours.",
+  "total_gs": 1000,
+  "total_count": 25,
+  "storage_key": "pspo-tracker-v1",
+  "sources": [{"label": "TrueAchievements — Achievements", "url": "https://www.trueachievements.com/game/Police-Simulator-Patrol-Officers/achievements"}, {"label": "Steam — 100% Achievement Guide (Blahaj.exe, 2026)", "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3506187119"}],
+  "sections": [
+    {
+      "id": "first-shifts",
+      "filter_label": "First shifts",
+      "title": "First shifts",
+      "subtitle": "5 achievements",
+      "achievements": [
+        {"id": "ach-welcome-north-point", "name": "Welcome To North Point", "gs": 10, "req": "Start your first shift in North Point.", "how": "North Point is the first area, open from the start — just start a shift there."},
+        {"id": "ach-welcome-beaufort", "name": "Welcome To Beaufort Landing", "gs": 15, "req": "Start your first shift in Beaufort Landing.", "how": "Earn Duty Stars in the district to unlock Beaufort Landing, then start a shift there."},
+        {"id": "ach-welcome-chester", "name": "Welcome To Chester", "gs": 15, "req": "Start your first shift in Chester.", "how": "Earn Duty Stars in the district to unlock Chester, then start a shift there."},
+        {"id": "ach-welcome-downtown", "name": "Welcome To Historic Downtown", "gs": 15, "req": "Start your first shift in Historic Downtown.", "how": "Earn Duty Stars in the district to unlock Historic Downtown, then start a shift there."},
+        {"id": "ach-welcome-alcombey", "name": "Welcome To Alcombey", "gs": 90, "req": "Start your first shift in Alcombey.", "how": "The last area to unlock — keep earning Duty Stars until Alcombey opens, then start a shift there."}
+      ]
+    },
+    {
+      "id": "unlocks",
+      "filter_label": "Unlocks",
+      "title": "Unlocks",
+      "subtitle": "2 achievements",
+      "achievements": [
+        {"id": "ach-star-rise", "name": "A Star On The Rise", "gs": 10, "req": "Collect your first Duty Star.", "how": "Earn 150 XP from callouts and interactions during shifts — that is your first Duty Star."},
+        {"id": "ach-first-car", "name": "Your First Car", "gs": 15, "req": "Unlock your first patrol car.", "how": "Reach the 3rd Duty Star (650 XP) to unlock the Cruiser."}
+      ]
+    },
+    {
+      "id": "arrests",
+      "filter_label": "Arrests",
+      "title": "Arrests",
+      "subtitle": "6 achievements",
+      "achievements": [
+        {"id": "ach-dont-drugs", "name": "Don't Do Drugs", "gs": 15, "req": "Justifiably arrest a person for driving under the influence.", "how": "Pull a vehicle over with cause, then run a drug or alcohol test — arrest them if it comes back positive.", "counters": [{"group": "dui-arrests", "target": 1}]},
+        {"id": "ach-impressive", "name": "An Impressive Cop", "gs": 20, "req": "Justifiably arrest 3 people in a single shift.", "how": "Work a long shift and pull over everyone you can justify — three justified arrests before the shift ends."},
+        {"id": "ach-found-you", "name": "Found You!", "gs": 50, "req": "Justifiably arrest a person with an open warrant on them.", "how": "Check a car's license plate and look it up before you approach — a warrant shows there. Or check IDs at pull-overs and stops."},
+        {"id": "ach-remarkable", "name": "A Remarkable Cop", "gs": 40, "req": "Justifiably arrest 30 people over multiple shifts in a single career.", "how": "Arrest only when you have cause — DUI, illegal items, stolen or fake IDs, stolen vehicles, open warrants. A random stop and search costs Citizen Points even if you find something.", "counters": [{"group": "arrests", "target": 30}]},
+        {"id": "ach-dont-drink", "name": "Don't Ever Drink And Drive!", "gs": 90, "req": "Justifiably arrest 40 people for driving under the influence over multiple shifts in a single career", "how": "Drug, amphetamine, and alcohol DUIs all count — test everyone you justifiably pull over. The legal alcohol limit is 0.08%; anything above it is arrestable.", "counters": [{"group": "dui-arrests", "target": 40}]},
+        {"id": "ach-citizens-hero", "name": "Citizens Hero", "gs": 75, "req": "Justifiably arrest 50 people over multiple shifts in a single career.", "how": "The career arrest total — keep working justified arrests and it comes with the rest.", "counters": [{"group": "arrests", "target": 50}]}
+      ]
+    },
+    {
+      "id": "first-aid",
+      "filter_label": "First aid",
+      "title": "First aid",
+      "subtitle": "3 achievements",
+      "achievements": [
+        {"id": "ach-first-aid", "name": "First Aid", "gs": 20, "req": "Justifiably call for an ambulance.", "how": "At a major accident, go to a person on the ground, interact, and choose 'Release to Ambulance' then 'Dismiss and call Medic'.", "counters": [{"group": "ambulances", "target": 1}]},
+        {"id": "ach-call-ambulance", "name": "Call me Ambulance", "gs": 40, "req": "Justifiable call for an ambulance 20 times over multiple shifts in a single career.", "how": "Twenty justified ambulance calls across your career.", "counters": [{"group": "ambulances", "target": 20}]},
+        {"id": "ach-saving-lives", "name": "Saving Lives!", "gs": 75, "req": "Justifiably call for an ambulance 30 times over multiple shifts in a single career.", "how": "Run long shifts so more accidents come in. Once the injured person is in the ambulance you can leave the scene without finishing it.", "counters": [{"group": "ambulances", "target": 30}]}
+      ]
+    },
+    {
+      "id": "towing",
+      "filter_label": "Towing",
+      "title": "Towing",
+      "subtitle": "3 achievements",
+      "achievements": [
+        {"id": "ach-wrecker", "name": "Wrecker Checker", "gs": 20, "req": "Justifiably order a car towed.", "how": "Order a tow with cause — a parking violation (blocking a fire hydrant or handicap spot), an undrivable car after an accident, or a driver who was arrested.", "counters": [{"group": "towed", "target": 1}]},
+        {"id": "ach-elite-hauler", "name": "Elite Hauler", "gs": 40, "req": "Justifiably order 30 cars towed over multiple shifts in a single career.", "how": "Thirty justified tows across your career. Towing for invalid insurance or registration needs a traffic stop or an active violation — not just a parked car with expired tags.", "counters": [{"group": "towed", "target": 30}]},
+        {"id": "ach-no-more-cars", "name": "No More Cars", "gs": 75, "req": "Justifiably order 50 cars towed over multiple shifts in a single career.", "how": "Fifty justified tows across your career.", "counters": [{"group": "towed", "target": 50}]}
+      ]
+    },
+    {
+      "id": "photography",
+      "filter_label": "Photography",
+      "title": "Photography",
+      "subtitle": "3 achievements",
+      "achievements": [
+        {"id": "ach-good-eye", "name": "A Good Eye", "gs": 20, "req": "Photograph your first piece of evidence.", "how": "At a crime scene, take an evidence marker from your car's trunk, place it by a piece of evidence, then photograph it.", "counters": [{"group": "evidence", "target": 1}]},
+        {"id": "ach-mr-evidence", "name": "Mr. Evidence", "gs": 40, "req": "Photograph 50 pieces of evidence over multiple shifts in a single career.", "how": "Evidence is anything from a crime left in the world — guns, knives, bumpers, plates, mirrors. Mark each piece first, then snap the photo.", "counters": [{"group": "evidence", "target": 50}]},
+        {"id": "ach-paparazzi", "name": "Real Paparazzi", "gs": 75, "req": "Photograph 120 pieces of evidence over multiple shifts in a single career.", "how": "The career photo total — mark and photograph evidence at every scene you work.", "counters": [{"group": "evidence", "target": 120}]}
+      ]
+    },
+    {
+      "id": "speed-radar",
+      "filter_label": "Speed radar",
+      "title": "Speed radar",
+      "subtitle": "3 achievements",
+      "achievements": [
+        {"id": "ach-drive-safe", "name": "Drive Safe", "gs": 20, "req": "Justifiably report 10 speeders in a single shift.", "how": "Report ten speeders before the shift ends — use the handheld radar gun or pace them in your car. A long shift gives you more chances."},
+        {"id": "ach-flash-furious", "name": "Flash the Furious", "gs": 40, "req": "Justifiable report 40 speeders over multiple shifts in a single career.", "how": "Forty reported speeders across your career.", "counters": [{"group": "speeders", "target": 40}]},
+        {"id": "ach-not-race", "name": "It's Not A Race!", "gs": 75, "req": "Justifiably report 100 speeders over multiple shifts in a single career.", "how": "Aim the radar gun at a vehicle and fire, or pace it and watch your dash speed against the limit — then use the Blip button (Y / Triangle) to record the offense.", "counters": [{"group": "speeders", "target": 100}]}
+      ]
+    }
+  ]
+}

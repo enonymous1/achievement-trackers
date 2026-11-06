@@ -26,8 +26,8 @@ The hub is the landing page: a welcome line, a how-it-works card, a
 search box with a sort control beside it (name, completion,
 achievements, started), and one card per game showing its achievement count,
 Gamerscore total, and your saved progress on this browser. The footer
-totals the whole library (currently: 11 games · 365 achievements ·
-11,250G) and links to this repo.
+totals the whole library (currently: 12 games · 390 achievements ·
+12,250G) and links to this repo.
 
 Each game page has a Gamerscore progress bar, search, an
 incomplete-only toggle, phase filters, and export / import / reset for
@@ -165,6 +165,15 @@ playthroughs, seven missables (the four no-hit boss
 kills, the janitor and careful-merchant runs, and the
 speedrun). The Between Dimensions DLC has its own
 achievements and is out of scope.
+Police Simulator: Patrol Officers — 25 achievements,
+1,000G, the full game in Steam-guide order: the five
+first shifts, the Duty Star unlocks, then arrests,
+first aid, towing, photography, and the radar — with
+shared counters per system and no missables. No TA
+walkthrough exists, so route notes are paraphrased
+from the Steam 100% Achievement Guide. Names and
+Gamerscore come from a saved copy of the TA
+achievements page.
 
 ## Prerequisites
 
