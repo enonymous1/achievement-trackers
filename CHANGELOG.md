@@ -4,6 +4,23 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-06 — Grove: Da God Awards steps + slideshow
+
+### Fixed
+
+- Da God Awards (Great God Grove #14) used to jump
+  straight from the ham to the bakery TV — the
+  Milldread steps in between were missing. It now
+  carries a five-step checklist (Rodney's
+  "ROUGHFFF!!!", Pollina's school-door phrase,
+  Saul and Goody, the Bayker and the edible
+  lipstick, then the TV) and a six-slide slideshow
+  of the walkthrough shots in order, replacing the
+  single TV image. The five new shots come from
+  the complete walkthrough Justin sent over; only
+  the TV shot has a full-size original, the rest
+  link to themselves.
+
 ## 2026-11-06 — Game #14: Total Chaos
 
 ### Added

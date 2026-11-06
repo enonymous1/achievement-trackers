@@ -428,6 +428,28 @@ class TestXboxValidation(unittest.TestCase):
         self.assertFalse(any("counters" in a for a in achs.values()))
         self.assertIn("45 journals", achs["ach-journal"]["how"])
 
+    def test_da_god_awards_lists_milldread_steps(self):
+        """Da God Awards must carry the five Milldread steps
+        between the ham and the bakery TV, with a six-slide
+        slideshow of the walkthrough shots in order — the
+        single media image it had before showed only the
+        TV, skipping Rodney, Pollina, Goody, and the bakery."""
+        game = next(g for g in load_games() if g["slug"] == "great-god-grove")
+        achs = {a["id"]: a for s in game["sections"]
+                for a in s["achievements"]}
+        awards = achs["ach-godawards"]
+        self.assertEqual(len(awards["steps"]), 5)
+        self.assertEqual(len(awards["slideshow"]), 6)
+        self.assertNotIn("media", awards)
+        slugs = [s["src"].split("/")[-1] for s in awards["slideshow"]]
+        self.assertEqual(slugs, ["rodney-dog-roughfff.jpg",
+                                 "pollina-smash-the-door.jpg",
+                                 "goody-edible-lipstick.jpg",
+                                 "bakery.jpg",
+                                 "edible-lipstick.jpg",
+                                 "milldread-tv-and-bunny.jpg"])
+        self.assertIn("full", awards["slideshow"][-1])
+
     def test_media_without_full_links_to_itself(self):
         """A media image with no larger version must still open
         in the viewer: the viewer binds .ach-media links, so a
