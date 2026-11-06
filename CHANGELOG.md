@@ -29,8 +29,17 @@ versioned; the git log is the release history.
   progress bar there) — otherwise the sidebar
   toggle scrolled out of reach on those pages too.
 
-### Added
+### Fixed
 
+- Great God Grove, Da Rift an' You: the route used to
+  say only "across the repaired bridge" with no route
+  to repairing it. It now lists the five necessary
+  steps as a checklist — Marsha's phrase, shooting
+  Miss Mitternacht for the next phrase, the 3 pieces
+  of wood from the river, opening the bridge with
+  Lumber Jacqueline, then the front TV (fast-forward
+  works, it pops on exit). Caught from a reader's
+  walkthrough screenshot.
 - Ticking an achievement now fills its
   sub-requirements, and unchecking clears them:
   every step is checked/unchecked, and each

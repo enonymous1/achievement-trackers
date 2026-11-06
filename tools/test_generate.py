@@ -275,6 +275,24 @@ class TestXboxValidation(unittest.TestCase):
         self.assertTrue(
             shaboing["media"][0]["src"].endswith("bizzyboy-snack-break.jpg"))
 
+    def test_da_rift_lists_bridge_steps(self):
+        """Da Rift an' You must list the bridge-opening chain:
+        it shipped as just 'across the repaired bridge' with no
+        route to repairing it, and the gap was caught from a
+        reader's walkthrough screenshot."""
+        game = next(g for g in load_games() if g["slug"] == "great-god-grove")
+        rift = next(
+            a for s in game["sections"] for a in s["achievements"]
+            if a["id"] == "ach-rift")
+        steps = rift["steps"]
+        self.assertEqual(len(steps), 5)
+        self.assertIn("Marsha", steps[0]["label"])
+        self.assertIn("INSPEKTA WILL SAVE THE DAY", steps[0]["label"])
+        self.assertIn("wood", steps[2]["label"])
+        self.assertIn("Jacqueline", steps[3]["label"])
+        self.assertIn("front TV", steps[4]["label"])
+        self.assertIn("broken bridge", rift["how"])
+
     def test_media_without_full_links_to_itself(self):
         """A media image with no larger version must still open
         in the viewer: the viewer binds .ach-media links, so a
