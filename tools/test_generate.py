@@ -306,6 +306,27 @@ class TestXboxValidation(unittest.TestCase):
         self.assertTrue(slides[4]["src"].endswith("bizzyboy-tv-video-1.jpg"))
         self.assertNotIn("media", rift)
 
+    def test_godwhisperer_lists_razzmatazz_steps(self):
+        """Godwhisperer must list the Razzmatazz chain: it
+        shipped as a vague 'deliver Razzmatazz's line' with no
+        route to Razzmatazz or which phrase to use, and the gap
+        was caught from a reader's walkthrough screenshot."""
+        game = next(g for g in load_games() if g["slug"] == "great-god-grove")
+        god = next(
+            a for s in game["sections"] for a in s["achievements"]
+            if a["id"] == "ach-godwhisperer")
+        steps = god["steps"]
+        self.assertEqual(len(steps), 4)
+        self.assertIn("Razzmatazz", steps[0]["label"])
+        self.assertIn("eloquent KING", steps[0]["label"])
+        self.assertIn("power of communication", steps[1]["label"])
+        self.assertIn("Mitternacht", steps[2]["label"])
+        self.assertIn("yes", steps[3]["label"])
+        self.assertIn("Razzmatazz", god["how"])
+        self.assertEqual(len(god["media"]), 1)
+        self.assertTrue(
+            god["media"][0]["src"].endswith("razzmatazz-eloquent-king.jpg"))
+
     def test_media_without_full_links_to_itself(self):
         """A media image with no larger version must still open
         in the viewer: the viewer binds .ach-media links, so a

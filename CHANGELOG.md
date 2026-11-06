@@ -31,6 +31,17 @@ versioned; the git log is the release history.
 
 ### Fixed
 
+- Great God Grove, Godwhisperer: the route used to
+  say only "deliver Razzmatazz's line" with no route
+  to Razzmatazz or which phrase to use. It now lists
+  the four necessary steps as a checklist — shoot
+  Razzmatazz (just up from the TVs) with "I miss
+  what my eloquent KING had to say!", take "With
+  the power of communication, I can bring the gods
+  together!" from the conversation, shoot Miss
+  Mitternacht with it, and answer "yes" — with the
+  Razzmatazz walkthrough shot on the card. Caught
+  from a reader's walkthrough screenshot.
 - Great God Grove, Da Rift an' You: the five
   walkthrough shots are a slideshow now, not five
   stacked figures — one slide at a time with
