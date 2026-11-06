@@ -23,14 +23,19 @@ through a game in order instead of hunting through a flat list.
 ![Dungeons tracker on a phone](docs/screenshots/tracker-mobile.png)
 
 The hub is the landing page: a welcome line, a how-it-works card, a
-search box, and one card per game showing its achievement count,
+search box with a sort control beside it (name, completion,
+achievements, started), and one card per game showing its achievement count,
 Gamerscore total, and your saved progress on this browser. The footer
 totals the whole library (currently: 11 games · 365 achievements ·
 11,250G) and links to this repo.
 
 Each game page has a Gamerscore progress bar, search, an
 incomplete-only toggle, phase filters, and export / import / reset for
-your progress. Progress saves in your browser only (localStorage, one
+your progress. Ticking an achievement fills its steps and counters,
+and unticking clears them; counters stop at their target with a
+yes/no gate to go past it. The top bar stays frozen while scrolling
+and carries the compact progress. Cards can carry notes, a Missable
+pill, and screenshots or step-by-step slideshows. Progress saves in your browser only (localStorage, one
 key per game); nothing is uploaded, and the hub can show progress
 across games because they share the same Pages origin. Each page also
 has an Xbox sync card (when a game is mapped) that ticks from your
@@ -153,6 +158,13 @@ Conton City cleanup, ending with the 0G completion
 achievement. No TA walkthrough exists, so route
 notes are paraphrased from the GameFAQs trophy
 guide.
+Moonlighter — 57 achievements, 1,000G, the full base
+game in walkthrough order: Golem, Forest, Desert,
+Tech and the finale, plus a New Game+ speedrun — two
+playthroughs, seven missables (the four no-hit boss
+kills, the janitor and careful-merchant runs, and the
+speedrun). The Between Dimensions DLC has its own
+achievements and is out of scope.
 
 ## Prerequisites
 
@@ -237,9 +249,11 @@ Schema, per game file:
   default; later sections start collapsed. If `subtitle` is set on
   an achievement section it replaces the computed
   "N achievements, XG" summary; otherwise that summary is computed.
-- Achievements: `id`, `name`, `gs` (positive integer), `req`, `how`,
+- Achievements: `id`, `name`, `gs` (non-negative integer — a
+  genuine 0G achievement exists), `req`, `how`,
   optional `steps` (`id`, `label`) — ticking every step auto-ticks
-  the achievement — and optional `counters` (`group`, `target`).
+  the achievement, and ticking the achievement fills its steps
+  and counters (unticking clears them) — and optional `counters` (`group`, `target`).
   Counters with the same `group` share one number across
   achievements, and different achievements in one group may have
   different targets (one shared value, several thresholds — e.g.
@@ -334,11 +348,12 @@ Bootstrap 5.3.8 + Bootstrap Icons 1.11.3, vendored under
 `assets/vendor/` (see `THIRD_PARTY_NOTICES.md` there) — is shared by
 every page, in a left-sidebar layout: the sidebar holds the
 "Achievement Trackers" brand, Home, a Games header with the games
-listed flat under it, and a How it works link anchored to the
+grouped under A–Z letter headers, and a How it works link anchored to the
 bottom; the sidebar collapses with the hamburger in the top bar,
 and that state persists across pages on its own localStorage key.
-The top bar also carries the light/dark toggle, on the shared
-`at-theme` localStorage key. The generator computes the relative
+The top bar is frozen while scrolling and carries the compact
+progress (text plus a thin bar) and the icon light/dark toggle, on
+the shared `at-theme` localStorage key. The generator computes the relative
 asset prefix per page (`./assets/` from the hub, `../assets/` from a
 game or How page), and refuses to emit absolute paths.
 
