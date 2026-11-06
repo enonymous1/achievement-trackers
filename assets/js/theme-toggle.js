@@ -5,9 +5,14 @@
 (function () {
   var button = document.getElementById("theme-toggle");
   if (!button) return;
+  /* The icon shows the mode a tap would switch to, matching the
+     icon-only sidebar toggle and note buttons: moon in light
+     mode, sun in dark mode. */
   function label() {
     var dark = document.documentElement.getAttribute("data-bs-theme") === "dark";
-    button.textContent = dark ? "Light" : "Dark";
+    var icon = button.querySelector("i");
+    if (icon) icon.className = dark ? "bi bi-sun-fill" : "bi bi-moon-fill";
+    button.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
   }
   button.addEventListener("click", function () {
     var next = document.documentElement.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";

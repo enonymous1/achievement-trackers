@@ -573,11 +573,11 @@ def render_xbox_sync_card(game):
 
 
 def sidebar_menu(all_games, prefix, current):
-    """Sidebar menu items: Home, a Games header, then the games flat
-    under it (no dropdown — the list is short for now, and the user
-    expects to revisit this when it grows).
-    ``current`` is 'home', 'how', or a game slug. ``prefix`` is the
-    relative path back to the site root from the page using it."""
+    """Sidebar menu items: Home, a Games header, then the games
+    grouped under A–Z letter headers (titles starting with a digit
+    go under '#'), sorted by title. ``current`` is 'home', 'how',
+    or a game slug. ``prefix`` is the relative path back to the
+    site root from the page using it."""
     items = []
     home_active = ' active' if current == 'home' else ''
     items.append(
@@ -586,13 +586,19 @@ def sidebar_menu(all_games, prefix, current):
         f'<p>Home</p></a></li>'
     )
     items.append('              <li class="nav-header">Games</li>')
-    for game in all_games:
-        active = ' active' if game["slug"] == current else ""
-        items.append(
-            f'              <li class="nav-item"><a href="{prefix}{esc(game["slug"])}/" '
-            f'class="nav-link{active}"><i class="nav-icon bi bi-controller"></i>'
-            f'<p>{esc(game["title"])}</p></a></li>'
-        )
+    grouped = {}
+    for game in sorted(all_games, key=lambda g: g["title"].lower()):
+        first = game["title"][:1].upper()
+        grouped.setdefault(first if first.isalpha() else "#", []).append(game)
+    for letter in sorted(grouped):
+        items.append(f'              <li class="nav-header">{letter}</li>')
+        for game in grouped[letter]:
+            active = ' active' if game["slug"] == current else ""
+            items.append(
+                f'              <li class="nav-item"><a href="{prefix}{esc(game["slug"])}/" '
+                f'class="nav-link{active}"><i class="nav-icon bi bi-controller"></i>'
+                f'<p>{esc(game["title"])}</p></a></li>'
+            )
     return "\n".join(items)
 
 
@@ -667,7 +673,8 @@ def render_hub(games):
         slug = esc(game["slug"])
         cards.append(
             f'<div class="game item col-12 col-md-6" '
-            f'data-name="{esc(game["title"])}">'
+            f'data-name="{esc(game["title"])}" data-slug="{slug}" '
+            f'data-count="{total_count}" data-gs="{total_gs}">'
             f'<div class="card h-100">'
             f'<div class="card-header"><h3 class="fs-5 mb-0">'
             f'<a href="{slug}/">{esc(game["title"])}</a></h3></div>'

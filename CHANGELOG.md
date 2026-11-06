@@ -8,7 +8,15 @@ versioned; the git log is the release history.
 
 ### Changed
 
-- The top bar is frozen instead of the Gamerscore
+- The theme toggle is an icon-only button now
+  (moon in light mode, sun in dark mode, with a
+  matching aria-label), like the icon-only sidebar
+  toggle and note buttons — no more "Theme" text.
+- The sidebar Games list is grouped under A–Z
+  letter headers (titles starting with a digit go
+  under '#'), sorted by title, so the list stays
+  scannable as it grows. The top bar is frozen
+  instead of the Gamerscore
   progress card: the navbar sticks to the top while
   scrolling (sidebar toggle always reachable), and
   it carries the compact progress — the text was
@@ -23,6 +31,15 @@ versioned; the git log is the release history.
 
 ### Added
 
+- The Home page has a sort control beside search:
+  Name, Completion (highest first), Achievements
+  (most first), Started (games with progress first,
+  most complete first). Ties always fall back to
+  name, and the choice is remembered across visits
+  (`at-hub-sort`). Completion and Started read the
+  saved progress, so they are computed in the
+  browser; the cards carry the static values as
+  data attributes.
 - The How page's "How the site is built" card now
   shows an example of the format: one real
   achievement as JSON (Scrappy Scout), inside a

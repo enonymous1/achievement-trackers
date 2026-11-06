@@ -298,6 +298,22 @@ class TestXboxValidation(unittest.TestCase):
         self.assertIn('<div class="card h-100">', html)
         self.assertNotIn("card col-12", html)
 
+    def test_hub_sort_control(self):
+        # The hub carries a sort control (name / completion /
+        # achievements / started), remembered across visits, and
+        # each card carries the static values sorting needs.
+        html = render_hub([validate_game("test.json", make_game())])
+        self.assertIn('id="sort"', html)
+        self.assertIn('value="completion"', html)
+        self.assertIn('value="achievements"', html)
+        self.assertIn('value="started"', html)
+        self.assertIn('data-count="1"', html)
+        self.assertIn('data-gs="10"', html)
+        self.assertIn('data-slug="test"', html)
+        template = (Path(__file__).parent / "hub_template.html").read_text()
+        self.assertIn("at-hub-sort", template)
+        self.assertIn("sortCards", template)
+
     def test_no_privacy_import_on_game_pages(self):
         # The Microsoft export import was removed (the archive holds
         # app usage, not achievement records); its explainer lives on
@@ -436,6 +452,36 @@ class TestRender(unittest.TestCase):
         for name in ("hub_template.html", "how_template.html"):
             template = (Path(__file__).parent / name).read_text()
             self.assertIn(".app-header{position:sticky;top:0", template)
+
+    def test_theme_toggle_is_icon(self):
+        # The toggle is an icon-only button (moon in light mode,
+        # sun in dark mode), matching the icon-only sidebar toggle
+        # and note buttons — not a text button.
+        for name in ("template.html", "hub_template.html", "how_template.html"):
+            html = (Path(__file__).parent / name).read_text()
+            self.assertIn('<i class="bi bi-moon-fill"', html)
+            self.assertNotIn(">Theme</button>", html)
+        js = (Path(__file__).parent.parent / "assets" / "js"
+              / "theme-toggle.js").read_text()
+        self.assertIn("bi-sun-fill", js)
+        self.assertIn("bi-moon-fill", js)
+        self.assertNotIn("textContent", js)
+
+    def test_sidebar_menu_groups_by_letter(self):
+        # Games sit under A–Z letter headers (digits under '#'),
+        # sorted by title — the flat list is gone.
+        games = [
+            make_game(slug="b", title="Barbie"),
+            make_game(slug="a", title="1000xRESIST"),
+            make_game(slug="m", title="Moonlighter"),
+        ]
+        html = sidebar_menu(games, "./", "home")
+        self.assertIn('<li class="nav-header">#</li>', html)
+        self.assertIn('<li class="nav-header">B</li>', html)
+        self.assertIn('<li class="nav-header">M</li>', html)
+        self.assertLess(html.index("#</li>"), html.index("B</li>"))
+        self.assertLess(html.index("B</li>"), html.index("M</li>"))
+        self.assertLess(html.index("1000xRESIST"), html.index("Barbie"))
 
     def test_sidebar_menu_and_how_href(self):
         games = [make_game(), make_game(slug="other", title="Other")]

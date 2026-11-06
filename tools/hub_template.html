@@ -57,7 +57,7 @@
         <li class="nav-item"><a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" aria-label="Toggle sidebar"><i class="bi bi-list"></i></a></li>
       </ul>
       <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><button type="button" id="theme-toggle" class="btn btn-sm btn-outline-secondary" aria-label="Toggle dark mode">Theme</button></li>
+        <li class="nav-item"><button type="button" id="theme-toggle" class="btn btn-sm btn-outline-secondary" aria-label="Toggle dark mode"><i class="bi bi-moon-fill" aria-hidden="true"></i></button></li>
       </ul>
     </div>
   </nav>
@@ -93,11 +93,17 @@
     <div class="app-content">
       <div class="container-fluid">
 
-        <div class="mb-3">
+        <div class="mb-3 d-flex gap-2">
           <input type="search" id="search" class="form-control" placeholder="Search games…" aria-label="Search games">
+          <select id="sort" class="form-select w-auto" aria-label="Sort games">
+            <option value="name">Sort: Name</option>
+            <option value="completion">Sort: Completion</option>
+            <option value="achievements">Sort: Achievements</option>
+            <option value="started">Sort: Started</option>
+          </select>
         </div>
 
-        <div class="row g-3 mb-3">
+        <div class="row g-3 mb-3" id="games">
 @@GAMES_CARDS@@
         </div>
 
@@ -119,7 +125,14 @@
 (function(){
   var GAMES=@@HUB_DATA@@;
   var search=document.getElementById('search');
+  var sort=document.getElementById('sort');
+  var grid=document.getElementById('games');
+  /* Per-game progress, filled in by the display loop below and
+     reused by sorting: completion and started both come from the
+     saved progress, so they are only known here, in the browser. */
+  var stats={};
   GAMES.forEach(function(game){
+    stats[game.slug]={done:0,total:game.achievements.length};
     var el=document.querySelector('.game-progress[data-slug="'+game.slug+'"]');
     if(!el) return;
     var raw; try{ raw=localStorage.getItem(game.storage_key); }catch(e){ return; }
@@ -129,9 +142,52 @@
       game.achievements.forEach(function(a){
         if(data.checked&&data.checked[a.id]){ done++; gs+=a.gs; }
       });
+      stats[game.slug].done=done;
       if(done) el.textContent=done+' / '+game.achievements.length+' achievements · '+gs.toLocaleString('en-US')+'G';
     }catch(e){}
   });
+  function byName(a,b){
+    var an=(a.getAttribute('data-name')||'').toLowerCase();
+    var bn=(b.getAttribute('data-name')||'').toLowerCase();
+    return an<bn?-1:an>bn?1:0;
+  }
+  function pct(slug){
+    var s=stats[slug]||{done:0,total:0};
+    return s.total?s.done/s.total:0;
+  }
+  /* Sorting reorders the cards in place; ties always fall back
+     to name, so every order is stable and predictable. Started
+     puts games with any progress first, most complete first. */
+  function sortCards(){
+    var mode=sort.value;
+    var cards=[].slice.call(grid.querySelectorAll('.game'));
+    cards.sort(function(a,b){
+      var aslug=a.getAttribute('data-slug'), bslug=b.getAttribute('data-slug');
+      if(mode==='completion'){
+        var d=pct(bslug)-pct(aslug);
+        return d!==0?d:byName(a,b);
+      }
+      if(mode==='achievements'){
+        var d=parseInt(b.getAttribute('data-count'),10)-parseInt(a.getAttribute('data-count'),10);
+        return d!==0?d:byName(a,b);
+      }
+      if(mode==='started'){
+        var ad=pct(aslug)>0?0:1, bd=pct(bslug)>0?0:1;
+        if(ad!==bd) return ad-bd;
+        var d2=pct(bslug)-pct(aslug);
+        return d2!==0?d2:byName(a,b);
+      }
+      return byName(a,b);
+    });
+    cards.forEach(function(card){ grid.appendChild(card); });
+    try{ localStorage.setItem('at-hub-sort',mode); }catch(e){}
+  }
+  try{
+    var saved=localStorage.getItem('at-hub-sort');
+    if(saved&&['name','completion','achievements','started'].indexOf(saved)>-1) sort.value=saved;
+  }catch(e){}
+  sortCards();
+  sort.addEventListener('change',sortCards);
   search.addEventListener('input',function(){
     var q=search.value.toLowerCase().trim();
     document.querySelectorAll('.game').forEach(function(card){
