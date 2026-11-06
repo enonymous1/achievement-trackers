@@ -163,6 +163,23 @@
           <div class="card-body">
             <p class="mb-1">One JSON file per game is the source of truth. A generator validates it — Gamerscore must sum to the declared total, IDs must be unique, counters must be well-formed — and renders a tracker page from it. The generated pages are committed to the repo and deployed to GitHub Pages; there is no backend and no build step at deploy time.</p>
             <p class="mb-0">Adding a game means writing a JSON file, not hand-editing HTML — see the README in the <a href="https://github.com/enonymous1/achievement-trackers">repo</a>. Scope is stated honestly on each game page: a tracker that covers only part of a game's achievements says so.</p>
+            <details class="mt-2">
+              <summary>Show an example — one achievement as JSON</summary>
+              <p class="mb-1 mt-2">Each game file holds metadata, then sections, each holding achievements. One achievement looks like this — the example is generated from the real Minecraft Dungeons data, so it is always current. The full field list lives in <a href="https://github.com/enonymous1/achievement-trackers/blob/main/data/schema.json">data/schema.json</a>.</p>
+              <pre class="mb-0 p-2 border rounded bg-body-tertiary"><code>{
+  "id": "ach-scrappy",
+  "name": "Scrappy Scout",
+  "gs": 10,
+  "req": "Reach Level 10.",
+  "how": "Level comes from XP for defeating enemies. This level box is shared with #12 and #22 — enter your current level once.",
+  "counters": [
+    {
+      "group": "level",
+      "target": 10
+    }
+  ]
+}</code></pre>
+            </details>
           </div>
         </div>
 

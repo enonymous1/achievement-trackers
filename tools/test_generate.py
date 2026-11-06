@@ -17,6 +17,7 @@ from generate import (
     render_game,
     render_how,
     render_hub,
+    render_json_example,
     render_media,
     render_sections,
     render_slideshow,
@@ -499,6 +500,29 @@ class TestRender(unittest.TestCase):
             render_demos([make_game()])
         with self.assertRaises(SystemExit):
             render_how([make_game()])
+
+    def test_how_page_json_example(self):
+        # The example is one real achievement, pretty-printed from
+        # the data — never pasted — so it can never drift, and it
+        # lives in a collapsed details element at the bottom of
+        # the How page, not in the way of players.
+        game = make_game(slug="minecraft-dungeons")
+        game["sections"][0]["achievements"][0] = {
+            "id": "ach-scrappy", "name": "Scrappy Scout", "gs": 10,
+            "req": "Reach Level 10.", "how": "H",
+            "counters": [{"group": "level", "target": 10}],
+        }
+        example = render_json_example([game])
+        self.assertIn('"id": "ach-scrappy"', example)
+        self.assertIn('"name": "Scrappy Scout"', example)
+        self.assertIn('"group": "level"', example)
+        self.assertIn('"target": 10', example)
+        with self.assertRaises(SystemExit):
+            render_json_example([make_game()])
+        template = (Path(__file__).parent / "how_template.html").read_text()
+        self.assertIn("@@GAME_JSON_EXAMPLE@@", template)
+        self.assertIn("Show an example", template)
+        self.assertIn("data/schema.json", template)
 
     def test_notes_modal_and_icons(self):
         # Game pages carry a notes popup and a note icon per card

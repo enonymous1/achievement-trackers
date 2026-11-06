@@ -6,6 +6,18 @@ versioned; the git log is the release history.
 
 ## 2026-11-06 — Counters stop at their card's max, with a yes/no gate
 
+### Added
+
+- The How page's "How the site is built" card now
+  shows an example of the format: one real
+  achievement as JSON (Scrappy Scout), inside a
+  collapsed "Show an example" details element at
+  the bottom of the page, with a link to
+  `data/schema.json`. The example is generated
+  from the Minecraft Dungeons data at build time,
+  never pasted, so it can never drift from what
+  the pages render; a unit test pins it.
+
 ### Fixed
 
 - Counter steppers no longer run past the card's

@@ -821,6 +821,25 @@ def render_demos(all_games):
     return "\n".join(demos)
 
 
+def render_json_example(all_games):
+    """One real achievement, pretty-printed as JSON, for the
+    How page's example. Generated from the data, never pasted,
+    so the example can never drift from what the pages render.
+    Quotes stay literal (a code block needs no quote escaping);
+    only & < > are escaped."""
+    dungeons = next(
+        (g for g in all_games if g["slug"] == "minecraft-dungeons"), None
+    )
+    if dungeons is None:
+        fail("How page example needs the minecraft-dungeons game")
+    ach, _number = _find_achievement(dungeons, "ach-scrappy")
+    if ach is None:
+        fail("How page example achievement missing: ach-scrappy")
+    return html.escape(
+        json.dumps(ach, indent=2, ensure_ascii=False), quote=False
+    )
+
+
 def render_how(all_games):
     """Render the standalone How it works page (no game data)."""
     template = (TOOLS_DIR / "how_template.html").read_text(encoding="utf-8")
@@ -831,6 +850,7 @@ def render_how(all_games):
         "HOW_HREF": sidebar_how_href("../", "how"),
         "HOW_ACTIVE": " active",
         "DEMO_CARDS": render_demos(all_games),
+        "GAME_JSON_EXAMPLE": render_json_example(all_games),
         "REPO_URL": REPO_URL,
     }
     for key in replacements:
