@@ -31,6 +31,13 @@ versioned; the git log is the release history.
 
 ### Fixed
 
+- Great God Grove, Da Rift an' You: the five
+  walkthrough shots are a slideshow now, not five
+  stacked figures — one slide at a time with
+  Previous/Next and "N of 5", like INSPEKTA's, so
+  the card stops taking up so much vertical space.
+  The third wood location (by the van) is in as
+  slide 4, completing the set.
 - Great God Grove, Da Rift an' You: the route used to
   say only "across the repaired bridge" with no route
   to repairing it. It now lists the five necessary

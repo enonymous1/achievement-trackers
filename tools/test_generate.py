@@ -292,14 +292,19 @@ class TestXboxValidation(unittest.TestCase):
         self.assertIn("Jacqueline", steps[3]["label"])
         self.assertIn("front TV", steps[4]["label"])
         self.assertIn("broken bridge", rift["how"])
-        # The four walkthrough shots, in step order: Marsha's
-        # phrase, two of the three wood locations, then the TVs.
-        media = rift["media"]
-        self.assertEqual(len(media), 4)
-        self.assertTrue(media[0]["src"].endswith("marsha-inspekta-phrase.jpg"))
-        self.assertTrue(media[1]["src"].endswith("river-wood-posters.jpg"))
-        self.assertTrue(media[2]["src"].endswith("river-wood-dogs.jpg"))
-        self.assertTrue(media[3]["src"].endswith("bizzyboy-tv-video-1.jpg"))
+        # The five walkthrough shots as a slideshow, in step
+        # order: Marsha's phrase, the three wood locations,
+        # then the TVs. Five stacked figures took too much
+        # vertical space, so the card is a slideshow like
+        # INSPEKTA's.
+        slides = rift["slideshow"]
+        self.assertEqual(len(slides), 5)
+        self.assertTrue(slides[0]["src"].endswith("marsha-inspekta-phrase.jpg"))
+        self.assertTrue(slides[1]["src"].endswith("river-wood-posters.jpg"))
+        self.assertTrue(slides[2]["src"].endswith("river-wood-dogs.jpg"))
+        self.assertTrue(slides[3]["src"].endswith("river-wood-van.jpg"))
+        self.assertTrue(slides[4]["src"].endswith("bizzyboy-tv-video-1.jpg"))
+        self.assertNotIn("media", rift)
 
     def test_media_without_full_links_to_itself(self):
         """A media image with no larger version must still open
