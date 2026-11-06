@@ -418,6 +418,17 @@ class TestRender(unittest.TestCase):
         self.assertIn("Max reached", how)
         self.assertIn("Add anyway?", how)
 
+    def test_progress_lives_in_sticky_header(self):
+        # The top bar is frozen and carries the compact progress
+        # (text already lived there; the thin bar along its bottom
+        # edge mirrors the card's bar). The big progress card is
+        # no longer sticky — it scrolls away with the page.
+        template = (Path(__file__).parent / "template.html").read_text()
+        self.assertIn(".app-header{position:sticky;top:0", template)
+        self.assertIn('id="overallBarNav"', template)
+        self.assertIn("overallBarNav.style.width", template)
+        self.assertNotIn("progress-card{position:sticky", template)
+
     def test_sidebar_menu_and_how_href(self):
         games = [make_game(), make_game(slug="other", title="Other")]
         html = sidebar_menu(games, "../", "test")

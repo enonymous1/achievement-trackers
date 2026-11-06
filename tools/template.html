@@ -32,19 +32,23 @@
      assets/css/tracker-cards.css, shared with the How page demos. */
   /* v2's contained column, not AdminLTE's full-width fluid layout. */
   .app-main .container-fluid{max-width:1100px;margin-left:auto;margin-right:auto}
-  /* Only the progress bar card is pinned: the slim card holding the
-     Gamerscore title, counts and bar sticks to the top of the
-     viewport while scrolling (the top header scrolls away in this
-     layout, so top: 0 is right). Search, filters and the
-     Order/Scope text live in the card below it and scroll away. */
-  .progress-card{position:sticky;top:0;z-index:1030;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  /* The top bar is frozen, and it carries the compact progress:
+     the text was already in the navbar, and the thin bar along
+     its bottom edge mirrors the card's bar. The big progress
+     card below is not pinned — it scrolls away with the rest of
+     the page. Search, filters and the Order/Scope text live in
+     the card below it and scroll away too. */
+  .app-header{position:sticky;top:0;z-index:1030}
+  .nav-progress{position:absolute;left:0;right:0;bottom:0;height:3px}
+  #overallBarNav{height:100%;width:0%;background:linear-gradient(90deg,var(--at-green),#a8e07a)}
+  .progress-card{margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.15)}
   /* AdminLTE's layout-fixed sets .app-main to overflow:auto (via
-     .sidebar-expand-lg.layout-fixed .app-main), which makes it the
-     sticky element's scrolling ancestor — and since it never
-     scrolls itself, position:sticky on the progress card stops
-     working. Restore visible overflow at the same specificity, so
-     the card sticks to the viewport scroll, as it did in the
-     top-nav layout. */
+     .sidebar-expand-lg.layout-fixed .app-main), which would make
+     it its own scroll container. Keep visible overflow at the
+     same specificity, so the page keeps scrolling on the
+     viewport — the behaviour the frozen header and the rest of
+     the page rely on. (Added for the old sticky progress card;
+     the card is gone, but the scrolling behaviour stays.) */
   .sidebar-expand-lg.layout-fixed .app-main{overflow:visible}
   /* Sections read as a group again (v2's card background), not as a
      bare bordered box on the page background. */
@@ -65,7 +69,7 @@
   .filter.active{background:var(--at-green) !important;border-color:var(--at-green) !important;font-weight:700}
   [data-bs-theme="dark"] .filter.active{color:#12140f !important}
   .hidden{display:none !important}
-  @media print{.app-header,.controls,#xbox-sync{display:none !important}.progress-card{position:static}details{break-inside:avoid}}
+  @media print{.app-header,.controls,#xbox-sync{display:none !important}details{break-inside:avoid}}
 </style>
 </head>
 <body class="layout-fixed sidebar-expand-lg">
@@ -86,6 +90,7 @@
         <li class="nav-item ms-2"><button type="button" id="theme-toggle" class="btn btn-sm btn-outline-secondary" aria-label="Toggle dark mode">Theme</button></li>
       </ul>
     </div>
+    <div class="nav-progress" aria-hidden="true"><div id="overallBarNav"></div></div>
   </nav>
   <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
     <div class="sidebar-brand">
@@ -223,6 +228,7 @@
   var overallText=document.getElementById('overallText');
   var overallTextNav=document.getElementById('overallTextNav');
   var overallBar=document.getElementById('overallBar');
+  var overallBarNav=document.getElementById('overallBarNav');
 
   /* Save dedupes shared counters: several achievements render an input
      for the same group, but localStorage stores one value per group. */
@@ -279,6 +285,7 @@
     overallText.textContent=text;
     if(overallTextNav) overallTextNav.textContent=done.length+' / '+tasks.length+' · '+gs.toLocaleString('en-US')+'G';
     overallBar.style.width=Math.round(gs/TOTAL_GS*100)+'%';
+    if(overallBarNav) overallBarNav.style.width=Math.round(gs/TOTAL_GS*100)+'%';
     document.querySelectorAll('details[data-cat]').forEach(function(sec){
       var box=sec.querySelectorAll('button.task');
       if(!box.length) return;

@@ -6,6 +6,18 @@ versioned; the git log is the release history.
 
 ## 2026-11-06 — Counters stop at their card's max, with a yes/no gate
 
+### Changed
+
+- The top bar is frozen instead of the Gamerscore
+  progress card: the navbar sticks to the top while
+  scrolling (sidebar toggle always reachable), and
+  it carries the compact progress — the text was
+  already up there, and a thin bar along its bottom
+  edge now mirrors the card's bar. The big progress
+  card scrolls away with the rest of the page. A
+  unit test pins the sticky header, the navbar bar,
+  and the card no longer being sticky.
+
 ### Added
 
 - The How page's "How the site is built" card now
