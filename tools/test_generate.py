@@ -292,6 +292,14 @@ class TestXboxValidation(unittest.TestCase):
         self.assertIn("Jacqueline", steps[3]["label"])
         self.assertIn("front TV", steps[4]["label"])
         self.assertIn("broken bridge", rift["how"])
+        # The four walkthrough shots, in step order: Marsha's
+        # phrase, two of the three wood locations, then the TVs.
+        media = rift["media"]
+        self.assertEqual(len(media), 4)
+        self.assertTrue(media[0]["src"].endswith("marsha-inspekta-phrase.jpg"))
+        self.assertTrue(media[1]["src"].endswith("river-wood-posters.jpg"))
+        self.assertTrue(media[2]["src"].endswith("river-wood-dogs.jpg"))
+        self.assertTrue(media[3]["src"].endswith("bizzyboy-tv-video-1.jpg"))
 
     def test_media_without_full_links_to_itself(self):
         """A media image with no larger version must still open
