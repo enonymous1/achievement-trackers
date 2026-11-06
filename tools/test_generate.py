@@ -467,6 +467,18 @@ class TestRender(unittest.TestCase):
         self.assertIn("bi-moon-fill", js)
         self.assertNotIn("textContent", js)
 
+    def test_ticking_achievement_fills_sub_requirements(self):
+        # Clicking an achievement header fills its sub-requirements
+        # (all steps checked, counters raised to target) and
+        # unchecking clears them (steps unchecked, counters dropped
+        # to what a still-ticked sibling needs, or 0). The How
+        # page demos share the behaviour.
+        template = (Path(__file__).parent / "template.html").read_text()
+        self.assertIn("syncSubRequirements", template)
+        self.assertIn("fills its sub-requirements", template)
+        how = (Path(__file__).parent / "how_template.html").read_text()
+        self.assertIn("syncDemoSubs", how)
+
     def test_sidebar_menu_groups_by_letter(self):
         # Games sit under A–Z letter headers (digits under '#'),
         # sorted by title — the flat list is gone.

@@ -449,9 +449,46 @@
   /* Header toggle: clicking anywhere in the header flips aria-pressed.
      Steps still use the change handler below; a button does not fire
      change, so this click handler is the task toggle. */
+  /* Ticking an achievement fills its sub-requirements, unticking
+     clears them: every step is checked/unchecked, and each
+     counter is raised to at least its target on tick, or dropped
+     on untick to the highest target still needed by a ticked
+     sibling sharing the counter group (or 0). Ticking never
+     lowers a counter that already sits above the target, and
+     unticking never raises one — the shared value only ever
+     reflects what ticked achievements still need, or the higher
+     count already entered by hand. Programmatic fills never
+     fire the max gate: the target is allowed by definition. */
+  function syncSubRequirements(task, pressed){
+    var id=task.getAttribute('id');
+    document.querySelectorAll('.step[data-parent="'+id+'"]').forEach(function(s){ s.checked=pressed; });
+    var card=task.closest('article');
+    if(!card) return;
+    card.querySelectorAll('input.count').forEach(function(input){
+      var g=input.getAttribute('data-counter');
+      var target=parseInt(input.getAttribute('data-target'),10)||0;
+      var val=parseInt(input.value,10)||0;
+      if(pressed){
+        if(val<target){ input.value=target; syncCounters(input); }
+      }else{
+        var keep=0;
+        document.querySelectorAll('input.count[data-counter="'+g+'"]').forEach(function(other){
+          if(other===input) return;
+          var otherCard=other.closest('article');
+          var otherTask=otherCard?otherCard.querySelector('button.task'):null;
+          if(otherTask&&otherTask.getAttribute('aria-pressed')==='true'){
+            keep=Math.max(keep,parseInt(other.getAttribute('data-target'),10)||0);
+          }
+        });
+        if(val>keep){ input.value=keep; syncCounters(input); }
+      }
+    });
+  }
   tasks.forEach(function(t){
     t.addEventListener('click',function(){
-      t.setAttribute('aria-pressed', t.getAttribute('aria-pressed')==='true' ? 'false' : 'true');
+      var pressed=t.getAttribute('aria-pressed')!=='true';
+      t.setAttribute('aria-pressed', pressed?'true':'false');
+      syncSubRequirements(t, pressed);
       save(); updateProgress(); applyFilters();
     });
   });

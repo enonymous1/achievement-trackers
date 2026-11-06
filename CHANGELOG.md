@@ -31,6 +31,19 @@ versioned; the git log is the release history.
 
 ### Added
 
+- Ticking an achievement now fills its
+  sub-requirements, and unchecking clears them:
+  every step is checked/unchecked, and each
+  counter is raised to at least its target on
+  tick, or dropped on untick to the highest
+  target still needed by a ticked sibling sharing
+  the counter (or 0). Ticking never lowers a
+  counter that already sits above the target,
+  and unticking never raises one. The How page
+  demo cards share the behaviour. Programmatic
+  fills never trip the max gate, and Xbox sync
+  is untouched — it sets achievements directly,
+  so its counters stay manual as designed.
 - The Home page has a sort control beside search:
   Name, Completion (highest first), Achievements
   (most first), Started (games with progress first,

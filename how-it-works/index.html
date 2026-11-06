@@ -248,9 +248,43 @@
       if(bar) bar.style.width=pct+'%';
     });
   }
+  /* Same auto-fill as the game pages, scoped to #card-demos:
+     ticking fills steps and counters, unticking clears them.
+     Demo counters are not shared between cards, so clearing
+     just drops them to 0; the sibling check below keeps the
+     logic identical to the real pages if one ever is. */
+  function syncDemoSubs(task, pressed){
+    var id=task.getAttribute('id');
+    root.querySelectorAll('.step[data-parent="'+id+'"]').forEach(function(s){ s.checked=pressed; });
+    var card=task.closest('.ach');
+    if(!card) return;
+    card.querySelectorAll('input.count').forEach(function(input){
+      var g=input.getAttribute('data-counter');
+      var target=parseInt(input.getAttribute('data-target'),10)||0;
+      var val=parseInt(input.value,10)||0;
+      if(pressed){
+        if(val<target) input.value=target;
+      }else{
+        var keep=0;
+        root.querySelectorAll('input.count[data-counter="'+g+'"]').forEach(function(other){
+          if(other===input) return;
+          var otherCard=other.closest('.ach');
+          var otherTask=otherCard?otherCard.querySelector('button.task'):null;
+          if(otherTask&&otherTask.getAttribute('aria-pressed')==='true'){
+            keep=Math.max(keep,parseInt(other.getAttribute('data-target'),10)||0);
+          }
+        });
+        if(val>keep) input.value=keep;
+      }
+      updateCounter(input);
+    });
+    updateStepBars();
+  }
   root.querySelectorAll('button.task').forEach(function(t){
     t.addEventListener('click',function(){
-      t.setAttribute('aria-pressed', t.getAttribute('aria-pressed')==='true' ? 'false' : 'true');
+      var pressed=t.getAttribute('aria-pressed')!=='true';
+      t.setAttribute('aria-pressed', pressed?'true':'false');
+      syncDemoSubs(t, pressed);
     });
   });
   root.addEventListener('change',function(e){
