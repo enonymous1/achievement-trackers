@@ -402,6 +402,21 @@ class TestRender(unittest.TestCase):
         self.assertIn('data-step="1"', html)
         self.assertIn('data-counter="mobs"', html)
 
+    def test_counter_stops_at_max_with_confirm(self):
+        # Steppers stop at the card's own target: pushing past it
+        # pops a yes/no gate, and Yes only unlocks that card for
+        # the visit (in-memory override, never saved). Typed values
+        # are gated on change, and declining reverts to the
+        # pre-edit value. The How page demos share the guard.
+        template = (Path(__file__).parent / "template.html").read_text()
+        self.assertIn("Max reached", template)
+        self.assertIn("Add anyway?", template)
+        self.assertIn("overMax", template)
+        self.assertIn("_prev", template)
+        how = (Path(__file__).parent / "how_template.html").read_text()
+        self.assertIn("Max reached", how)
+        self.assertIn("Add anyway?", how)
+
     def test_sidebar_menu_and_how_href(self):
         games = [make_game(), make_game(slug="other", title="Other")]
         html = sidebar_menu(games, "../", "test")

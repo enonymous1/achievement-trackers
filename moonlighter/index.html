@@ -497,7 +497,37 @@
       save(); updateProgress(); applyFilters();
     });
   });
-  /* Counter steppers: -/+ buttons beside the input, clamped at 0.
+  /* Counter maximum: a counter stops at its own card's target.
+     Pushing past it pops a yes/no gate ("Max reached — no need
+     to add more. Add anyway?"). Yes lets that card keep counting
+     for this visit — the shared value feeds sibling achievements
+     with higher targets — and No leaves the value where it was.
+     The override lives in memory only; it never reaches the
+     saved progress, so the gate asks again after a reload. */
+  var overMax={};
+  function counterTarget(input){
+    return parseInt(input.getAttribute('data-target'),10)||0;
+  }
+  function counterKey(input){
+    return (input.getAttribute('data-counter')||'')+':'+counterTarget(input);
+  }
+  function counterName(input){
+    var card=input.closest('article');
+    var n=card?card.querySelector('.ach-name'):null;
+    return n?n.textContent.trim():'this achievement';
+  }
+  function allowOverMax(input,next){
+    var target=counterTarget(input);
+    if(next<=target) return true;
+    if(overMax[counterKey(input)]) return true;
+    if(confirm('Max reached — '+counterName(input)+' needs '+target+'. No need to add more. Add anyway?')){
+      overMax[counterKey(input)]=true;
+      return true;
+    }
+    return false;
+  }
+  /* Counter steppers: -/+ buttons beside the input, clamped at 0
+     below and at the card's target above (via the gate above).
      A programmatic value change fires no input event, so sync, save
      and progress are called explicitly here. */
   document.addEventListener('click',function(e){
@@ -507,9 +537,19 @@
     var input=wrap?wrap.querySelector('input.count'):null;
     if(!input) return;
     var val=parseInt(input.value,10)||0;
-    val=Math.max(0, val + (parseInt(btn.getAttribute('data-step'),10)||0));
-    input.value=val;
+    var next=Math.max(0, val + (parseInt(btn.getAttribute('data-step'),10)||0));
+    if(next>val && !allowOverMax(input,next)) return;
+    input.value=next;
     syncCounters(input); save(); updateProgress();
+  });
+  /* Typed values are gated on change (blur/Enter), not on input:
+     prompting mid-keystroke would fire while the number is still
+     being typed. Declining reverts to the value the field had
+     when it was focused, not to the target — the count may
+     already sit above it from a sibling card. */
+  document.addEventListener('focusin',function(e){
+    var t=e.target;
+    if(t.classList && t.classList.contains('count')) t._prev=t.value;
   });
   document.addEventListener('change',function(e){
     var t=e.target;
@@ -519,6 +559,12 @@
         var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+t.getAttribute('data-parent')+'"]'));
         if(sibs.length&&sibs.every(function(s){return s.checked;})) parent.setAttribute('aria-pressed','true');
       }
+    }
+    if(t.classList.contains('count')){
+      var v=parseInt(t.value,10)||0;
+      var prev=parseInt(t._prev,10);
+      if(isNaN(prev)) prev=counterTarget(t);
+      if(v>counterTarget(t) && v>prev && !allowOverMax(t,v)){ t.value=prev; syncCounters(t); }
     }
     save(); updateProgress(); applyFilters();
   });

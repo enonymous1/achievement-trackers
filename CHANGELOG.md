@@ -4,6 +4,29 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-06 — Counters stop at their card's max, with a yes/no gate
+
+### Fixed
+
+- Counter steppers no longer run past the card's
+  own target (Scrappy Scout's level counter ran
+  past 10, and the same applied to every counter).
+  Pushing past the target pops "Max reached —
+  <name> needs <target>. No need to add more.
+  Add anyway?": No leaves the value where it was,
+  Yes lets that card keep counting for the visit.
+  Saying Yes once unlocks that card until reload
+  (the override is in-memory only, never saved),
+  so counting on toward a sibling achievement
+  with a higher target doesn't nag on every tap.
+  Typed values are gated the same way on
+  blur/Enter, and declining reverts to the value
+  the field had before the edit — not to the
+  target, since the shared count may already sit
+  above it from a sibling card. The How page
+  demo counters share the guard. A unit test
+  pins the guard text in both templates.
+
 ## 2026-11-05 — Game #11: Moonlighter
 
 ### Added

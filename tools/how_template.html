@@ -220,6 +220,27 @@
       updateStepBars();
     }
   });
+  /* Same maximum gate as the game pages: a demo counter stops
+     at its card's target, and pushing past it pops the yes/no
+     gate. The override is in-memory only, like the real one. */
+  var demoOverMax={};
+  function demoCounterTarget(input){
+    return parseInt(input.getAttribute('data-target'),10)||0;
+  }
+  function demoAllowOverMax(input,next){
+    var target=demoCounterTarget(input);
+    if(next<=target) return true;
+    var key=(input.getAttribute('data-counter')||'')+':'+target;
+    if(demoOverMax[key]) return true;
+    var card=input.closest('.ach');
+    var n=card?card.querySelector('.ach-name'):null;
+    var name=n?n.textContent.trim():'this achievement';
+    if(confirm('Max reached — '+name+' needs '+target+'. No need to add more. Add anyway?')){
+      demoOverMax[key]=true;
+      return true;
+    }
+    return false;
+  }
   root.addEventListener('click',function(e){
     var btn=e.target.closest ? e.target.closest('.counter-btn') : null;
     if(!btn) return;
@@ -227,9 +248,23 @@
     var input=wrap?wrap.querySelector('input.count'):null;
     if(!input) return;
     var val=parseInt(input.value,10)||0;
-    val=Math.max(0, val + (parseInt(btn.getAttribute('data-step'),10)||0));
-    input.value=val;
+    var next=Math.max(0, val + (parseInt(btn.getAttribute('data-step'),10)||0));
+    if(next>val && !demoAllowOverMax(input,next)) return;
+    input.value=next;
     updateCounter(input);
+  });
+  root.addEventListener('focusin',function(e){
+    var t=e.target;
+    if(t.classList && t.classList.contains('count')) t._prev=t.value;
+  });
+  root.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.classList.contains('count')){
+      var v=parseInt(t.value,10)||0;
+      var prev=parseInt(t._prev,10);
+      if(isNaN(prev)) prev=demoCounterTarget(t);
+      if(v>demoCounterTarget(t) && v>prev && !demoAllowOverMax(t,v)){ t.value=prev; updateCounter(t); }
+    }
   });
   root.addEventListener('input',function(e){
     if(e.target.classList.contains('count')) updateCounter(e.target);
