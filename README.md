@@ -26,8 +26,8 @@ The hub is the landing page: a welcome line, a how-it-works card, a
 search box with a sort control beside it (name, completion,
 achievements, started), and one card per game showing its achievement count,
 Gamerscore total, and your saved progress on this browser. The footer
-totals the whole library (currently: 12 games · 390 achievements ·
-12,250G) and links to this repo.
+totals the whole library (currently: 14 games · 457 achievements ·
+14,250G) and links to this repo.
 
 Each game page has a Gamerscore progress bar, search, an
 incomplete-only toggle, phase filters, and export / import / reset for
@@ -174,6 +174,31 @@ walkthrough exists, so route notes are paraphrased
 from the Steam 100% Achievement Guide. Names and
 Gamerscore come from a saved copy of the TA
 achievements page.
+Firefighting Simulator: The Squad — 30 achievements,
+1,000G, the full game in walkthrough order:
+tutorials, the mission grind, multiplayer and
+victims alongside, the five trucks and the ladder
+tools, then the water and driving grinds last.
+Shared counters per grind (missions 1/5/10/50/100,
+multiplayer 1/10/30/50, victims 1/10/100/200,
+water 1,000/10,000/100,000 litres, distance
+50/100/1,000 km) and no missables. Names,
+Gamerscore, and route notes come from saved
+copies of the TA achievements page and the
+single-page TA walkthrough.
+Total Chaos — 37 achievements, 1,000G, the full
+game in chapter order (Arrival through Resolve),
+then the merciful run, the endings, combat,
+crafting, and the collectibles. Six missables —
+the five chapter variants and the good ending —
+with step checklists on each; the good ending
+and the full 45-journal set can't be done in one
+playthrough. No counters: every achievement is a
+one-time feat. No TA walkthrough exists, so route
+notes are paraphrased from the Twinfinite
+good-ending walkthrough and TA achievement
+solutions. Names and Gamerscore come from a saved
+copy of the TA achievements page.
 
 ## Prerequisites
 

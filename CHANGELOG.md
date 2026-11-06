@@ -4,6 +4,62 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-06 — Game #14: Total Chaos
+
+### Added
+
+- Total Chaos — all 37 achievements / 1,000G, the
+  full game, no DLC. Six sections in chapter order
+  (the nine chapters, the merciful run, the
+  endings, combat, crafting, collectibles). Six
+  missables: the five chapter variants (spare the
+  Protector, spare the Forgotten Ones in Storm and
+  Chaos, stay insane through Crossroads, spare the
+  Tree Lurker) plus the good ending, each with a
+  step checklist — the good-ending card carries the
+  eight per-chapter mercies. The good ending and
+  the full 45-journal set can't be done in one
+  playthrough (a journal in Forgotten sits behind
+  the Protector fight), so plan on two runs, with
+  the journal run pairing well with Survivalist.
+  No counters: every achievement is a one-time
+  feat. No TA walkthrough exists (live-checked);
+  route notes are paraphrased from the Twinfinite
+  good-ending walkthrough (Serhii Patskan, Nov
+  2025) and TA achievement solutions. Names and
+  Gamerscore come from a saved copy of the TA
+  achievements page Justin sent over — and the
+  first naive parse was badly misaligned (secret
+  achievements carry data-af on the <p> before
+  data-bf, so it paired the wrong descriptions and
+  missed 10 rows: 27 rows / 680G). The panel-by-
+  panel parse gives the correct 37 / 1,000G.
+  About 40–50 hours. Library totals now 14 games ·
+  457 achievements · 14,250G.
+
+## 2026-11-06 — Game #13: Firefighting Simulator: The Squad
+
+### Added
+
+- Firefighting Simulator: The Squad — all 30
+  achievements / 1,000G, the full game, no DLC.
+  Eight sections in walkthrough order: tutorials,
+  the mission grind (Burning News, Explosive Hot
+  Dogs, Inflaming of a Dumpster, Red-Hot Party!),
+  multiplayer, victims, the five trucks, the
+  ladder tools, then the water and driving grinds
+  last. Shared counters per grind (missions
+  1/5/10/50/100, multiplayer 1/10/30/50, victims
+  1/10/100/200, water 1,000/10,000/100,000 litres,
+  distance 50/100/1,000 km) and no missables.
+  Co-op makes both grinds far faster: water is
+  shared between human players (30 hours solo, 7.5
+  with a full squad of four), and passengers earn
+  driving kilometres too. Names, Gamerscore, and
+  route notes come from saved copies of the TA
+  achievements page and the single-page TA
+  walkthrough Justin sent over. About 50–60 hours.
+
 ## 2026-11-06 — Game #12: Police Simulator: Patrol Officers
 
 ### Added

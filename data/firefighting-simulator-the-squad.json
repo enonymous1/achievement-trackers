@@ -1,0 +1,107 @@
+{
+  "slug": "firefighting-simulator-the-squad",
+  "title": "Firefighting Simulator: The Squad",
+  "tagline": "Four firefighters, one squad — grind missions, water, and kilometres until the whole list is done.",
+  "order_note": "Sections follow the walkthrough's route: tutorials, then the mission grind (Burning News, Explosive Hot Dogs, Inflaming of a Dumpster, Red-Hot Party!), multiplayer and victims alongside, the five trucks and the ladder tools, then the two big grinds — water and driving — last. Co-op makes both grinds far faster: water is shared between human players (30 hours solo, 7.5 with a full squad of four), and passengers earn driving kilometres too.",
+  "scope_note": "All 30 achievements / 1,000G — the full game, no DLC. Route notes are paraphrased from the TrueAchievements walkthrough (single-page version). About 50–60 hours.",
+  "total_gs": 1000,
+  "total_count": 30,
+  "storage_key": "fs-tracker-v1",
+  "sources": [{"label": "TrueAchievements — Achievements", "url": "https://www.trueachievements.com/game/Firefighting-Simulator-The-Squad/achievements"}, {"label": "TrueAchievements — Walkthrough (single-page version)", "url": "https://www.trueachievements.com/game/Firefighting-Simulator-The-Squad/walkthrough"}],
+  "sections": [
+    {
+      "id": "tutorials",
+      "filter_label": "Tutorials",
+      "title": "Tutorials",
+      "subtitle": "2 achievements",
+      "achievements": [
+        {"id": "ach-first-steps", "name": "First Steps", "gs": 15, "req": "Complete Intro Mission", "how": "Follow the intro's prompts — carry the victim to the ambulance gurney, then put out the garage fire with the hose."},
+        {"id": "ach-good-prep", "name": "Good Preparation", "gs": 100, "req": "Complete every Tutorial", "how": "Complete every tutorial at the training facility (the target icon left of the map, above the Industrial Port). Follow the prompts — skipping steps in a couple of tutorials can stop it unlocking."}
+      ]
+    },
+    {
+      "id": "missions",
+      "filter_label": "Missions",
+      "title": "Missions",
+      "subtitle": "5 achievements",
+      "achievements": [
+        {"id": "ach-rookie", "name": "Firefighter Rookie", "gs": 15, "req": "Complete 1st Mission", "how": "Complete your first mission — Burning News in Downtown is the walkthrough's pick. Deploy on scene and put out the fire.", "counters": [{"group": "missions", "target": 1}]},
+        {"id": "ach-firefighter", "name": "Firefighter", "gs": 15, "req": "Complete 5 Missions", "how": "Complete 5 missions — repeat Explosive Hot Dogs, skipping the start and end scenes.", "counters": [{"group": "missions", "target": 5}]},
+        {"id": "ach-lieutenant", "name": "Lieutenant", "gs": 15, "req": "Complete 10 Missions", "how": "Complete 10 missions in one career.", "counters": [{"group": "missions", "target": 10}]},
+        {"id": "ach-captain", "name": "Captain Competent", "gs": 30, "req": "Complete 50 Missions", "how": "Complete 50 missions in one career — repeat Inflaming of a Dumpster (around 34 reps from the Explosive Hot Dogs stage).", "counters": [{"group": "missions", "target": 50}]},
+        {"id": "ach-work-horse", "name": "Work Horse", "gs": 90, "req": "Complete 100 Missions", "how": "Complete 100 missions in one career. It comes naturally during the water and driving grinds.", "counters": [{"group": "missions", "target": 100}]}
+      ]
+    },
+    {
+      "id": "multiplayer",
+      "filter_label": "Multiplayer",
+      "title": "Multiplayer",
+      "subtitle": "4 achievements",
+      "achievements": [
+        {"id": "ach-part-team", "name": "Part of the Team", "gs": 15, "req": "Complete 1st Multiplayer Mission", "how": "Complete a mission with at least one other human player — no cross-play, and AI teammates don't count.", "counters": [{"group": "mp-missions", "target": 1}]},
+        {"id": "ach-team-player", "name": "Team Player", "gs": 15, "req": "Complete 10 Multiplayer Missions", "how": "Complete 10 multiplayer missions.", "counters": [{"group": "mp-missions", "target": 10}]},
+        {"id": "ach-gang", "name": "Me and the Gang", "gs": 30, "req": "Complete 30 Multiplayer Missions", "how": "Complete 30 multiplayer missions.", "counters": [{"group": "mp-missions", "target": 30}]},
+        {"id": "ach-not-alone", "name": "You Are Not Alone – Ever!", "gs": 90, "req": "Complete 50 Multiplayer Missions", "how": "Complete 50 multiplayer missions — you need another player (or a boosting account) for at least these 50.", "counters": [{"group": "mp-missions", "target": 50}]}
+      ]
+    },
+    {
+      "id": "victims",
+      "filter_label": "Victims",
+      "title": "Victims",
+      "subtitle": "4 achievements",
+      "achievements": [
+        {"id": "ach-saved-life", "name": "You Saved My Life", "gs": 15, "req": "Save 1 Victim", "how": "Save a victim — carry them to the ambulance gurney, or order an AI teammate to do it. Victims rescued by AI count.", "counters": [{"group": "victims", "target": 1}]},
+        {"id": "ach-semi-pro", "name": "Getting it Done – Semi-Pro Lifesaver", "gs": 15, "req": "Save 10 Victims", "how": "Save 10 victims across your career.", "counters": [{"group": "victims", "target": 10}]},
+        {"id": "ach-cannot-stopped", "name": "Cannot Be Stopped", "gs": 30, "req": "Save 100 Victims", "how": "Save 100 victims — around 44 reps of Inflaming of a Dumpster (2 victims each) from the Explosive Hot Dogs stage.", "counters": [{"group": "victims", "target": 100}]},
+        {"id": "ach-guardian", "name": "Guardian Angel", "gs": 90, "req": "Save 200 Victims", "how": "Save 200 victims — 11 completions of Red-Hot Party! (9 victims each) or another 50 of Inflaming of a Dumpster.", "counters": [{"group": "victims", "target": 200}]}
+      ]
+    },
+    {
+      "id": "vehicles",
+      "filter_label": "Vehicles",
+      "title": "Vehicles",
+      "subtitle": "5 achievements",
+      "achievements": [
+        {"id": "ach-tp3", "name": "TP3 Driver", "gs": 15, "req": "Drive the TP3", "how": "Drive the Rosenbauer TP3 to a mission — it's the default truck; Red-Hot Party! is the walkthrough's pick."},
+        {"id": "ach-viper", "name": "Viper Driver", "gs": 15, "req": "Drive the Viper", "how": "Drive the Rosenbauer Viper to a mission — Burning News, driving to the scene."},
+        {"id": "ach-trex", "name": "T-Rex Driver", "gs": 15, "req": "Drive the T-Rex", "how": "Drive the Rosenbauer T-Rex to a mission — Burning News, driving to the scene."},
+        {"id": "ach-walk-in", "name": "Walk-In Rescue Driver", "gs": 15, "req": "Drive the Walk-In Rescue", "how": "Drive the Walk-In Rescue to a mission — the Container and Pallets driving grind only offers the Walk-In trucks."},
+        {"id": "ach-command-walk-in", "name": "Command Walk-In Rescue Driver", "gs": 15, "req": "Drive the Command Walk-In Rescue", "how": "Drive the Command Walk-In Rescue to a mission — the other Walk-In truck on the same grind."}
+      ]
+    },
+    {
+      "id": "tools",
+      "filter_label": "Tools & ladder",
+      "title": "Tools & ladder",
+      "subtitle": "4 achievements",
+      "achievements": [
+        {"id": "ach-tool-master", "name": "Tool Master", "gs": 30, "req": "Use Every Tool in the Game Once", "how": "Use every tool once at Oh, What a Shed! (west side of Lakeview Park): axe, crowbar (pry tool), Halligan, circular saw, fire extinguisher — air swings count. If it won't pop, drive to the scene, don't skip the cutscenes, and use the tools near a fire."},
+        {"id": "ach-hero", "name": "Firefighting Hero", "gs": 15, "req": "Quench Fire with the Viper Nozzle", "how": "In Burning News with the Viper, extend the outriggers, choose 'Control Ladder' (not 'Climb Ladder'), rotate toward the news stand, switch to the nozzle and put out the flames."},
+        {"id": "ach-brave-man", "name": "A Brave Man up in the Sky", "gs": 15, "req": "Quench Fire with the T-Rex Basket", "how": "In Burning News with the T-Rex, extend the outriggers, get in the basket, switch to the nozzle and extinguish at least one fire marker."},
+        {"id": "ach-spectacular", "name": "Spectacular Rescue", "gs": 15, "req": "Save 1 Victim with the T-Rex Basket", "how": "In Red-Hot Party! with the T-Rex, leave one prone victim until everything else is done, carry them outside, walk around the T-Rex, extend the outriggers and get in the basket — the victim registers as saved."}
+      ]
+    },
+    {
+      "id": "water",
+      "filter_label": "Water",
+      "title": "Water",
+      "subtitle": "3 achievements",
+      "achievements": [
+        {"id": "ach-hose", "name": "Hose Operator", "gs": 15, "req": "Use 1000 Liters of Water", "how": "Use 1,000 litres of water with hoses — extinguishers don't count, and water used by AI doesn't count.", "counters": [{"group": "water", "target": 1000}]},
+        {"id": "ach-spray", "name": "Spray and Quench", "gs": 30, "req": "Use 10,000 Liters of Water", "how": "Use 10,000 litres of water with hoses.", "counters": [{"group": "water", "target": 10000}]},
+        {"id": "ach-let-flow", "name": "Let it Flow", "gs": 90, "req": "Use 100,000 Liters of Water", "how": "Use 100,000 litres of water with hoses. Idle it on Burning News: set up your hoses, toggle the water on, and don't let the AI fight the fire. Finish the mission about every hour or you lose the progress — solo it's about 30 hours, a full squad of four shares the water and cuts it to 7.5.", "counters": [{"group": "water", "target": 100000}]}
+      ]
+    },
+    {
+      "id": "driving",
+      "filter_label": "Driving",
+      "title": "Driving",
+      "subtitle": "3 achievements",
+      "achievements": [
+        {"id": "ach-road-master", "name": "On the Road Master", "gs": 15, "req": "Drive 50 Kilometers", "how": "Drive 50 km in one career — passengers earn kilometres too.", "counters": [{"group": "distance", "target": 50}]},
+        {"id": "ach-asphalt", "name": "Asphalt Cowboy", "gs": 30, "req": "Drive 100 Kilometers", "how": "Drive 100 km in one career.", "counters": [{"group": "distance", "target": 100}]},
+        {"id": "ach-forever", "name": "Firefighting Forever", "gs": 90, "req": "Drive 1000 Kilometers", "how": "Drive 1,000 km in one career. Repeat Container and Pallets in Downtown — over 30 km per completion, about 33 runs, a little over 10 hours. You have 20 minutes to reach the scene per run; a good run takes just over 18.", "counters": [{"group": "distance", "target": 1000}]}
+      ]
+    }
+  ]
+}

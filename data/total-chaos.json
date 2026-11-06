@@ -1,0 +1,98 @@
+{
+  "slug": "total-chaos",
+  "title": "Total Chaos",
+  "tagline": "Washed ashore on Fort Oasis — survive the island, spare what you can, and find the way out.",
+  "order_note": "Sections run in chapter order — Arrival through Resolve — then the merciful run (the five chapter variants plus the good ending), the endings, combat, crafting, and the collectibles. The good ending and the full journal can't be done in one playthrough: a journal in Forgotten sits behind the Protector fight, and killing her locks the good ending out. Plan on at least two runs — a merciful run for the good ending, and a journal run (which pairs well with Survivalist) for the rest.",
+  "scope_note": "All 37 achievements / 1,000G — the full game, no DLC. No TrueAchievements walkthrough exists; route notes are paraphrased from the Twinfinite good-ending walkthrough (Serhii Patskan, Nov 2025) and TA achievement solutions. About 40–50 hours — and the Survivalist run is the hard part.",
+  "total_gs": 1000,
+  "total_count": 37,
+  "storage_key": "tc-tracker-v1",
+  "sources": [{"label": "TrueAchievements — Achievements", "url": "https://www.trueachievements.com/game/Total-Chaos/achievements"}, {"label": "Twinfinite — Good Ending Walkthrough (Serhii Patskan)", "url": "https://twinfinite.net/guides/total-chaos-walkthrough/"}],
+  "sections": [
+    {
+      "id": "story",
+      "filter_label": "Story",
+      "title": "Story",
+      "subtitle": "9 achievements",
+      "achievements": [
+        {"id": "ach-arrival", "name": "Welcome To Fort Oasis", "gs": 30, "req": "Complete Arrival", "how": "Complete Chapter 1, Arrival — from the beach, through the sewers and the switch puzzles, to the hammer at the end."},
+        {"id": "ach-decay", "name": "Don't Take Your Eyes Off Her", "gs": 30, "req": "Complete Decay", "how": "Complete Chapter 2, Decay — through the utility tunnels, the cog puzzle, and the Blue Block access."},
+        {"id": "ach-forgotten", "name": "They Have Found You", "gs": 30, "req": "Complete Forgotten", "how": "Complete Chapter 3, Forgotten — past the Protector and the flooded hall."},
+        {"id": "ach-storm", "name": "Closure", "gs": 30, "req": "Complete Storm", "how": "Complete Chapter 4, Storm — through the Oasis Arcade, Floor 8, and the Connections wall."},
+        {"id": "ach-crossroads", "name": "All Alone In A Dying World", "gs": 30, "req": "Complete Crossroads", "how": "Complete Chapter 5, Crossroads — the library puzzle (ROWELL – ADLE – MATHOS – ROCA – ELENA – RYTLE) and the secret ladder."},
+        {"id": "ach-regression", "name": "Dragged Down", "gs": 30, "req": "Complete Regression", "how": "Complete Chapter 6, Regression — the chasm harpoon bridges, the pump room, and the Tree Lurker."},
+        {"id": "ach-madness", "name": "You Loved This Place Once", "gs": 30, "req": "Complete Madness", "how": "Complete Chapter 7, Madness — the Fort Oasis Catacombs and the flooded passages, following the flares."},
+        {"id": "ach-chaos", "name": "The Source Of Suffering", "gs": 30, "req": "Complete Chaos", "how": "Complete Chapter 8, Chaos — Fort Oasis Central, the Hazard Suit, and the mines."},
+        {"id": "ach-resolve", "name": "The Solution", "gs": 30, "req": "Complete Resolve", "how": "Complete Chapter 9, Resolve — the mine, the wired cube, and the forest finale."}
+      ]
+    },
+    {
+      "id": "merciful",
+      "filter_label": "Merciful run",
+      "title": "Merciful run",
+      "subtitle": "6 achievements",
+      "achievements": [
+        {"id": "ach-love-kid", "name": "I Love You, Kid", "gs": 30, "req": "Complete Forgotten without killing the Protector", "how": "Spare the Protector: lure her to the 'They're gone…' wall so her scream cracks it, then slip out through the secret exit with the fuses. Killing her locks this out for the run.", "missable": true, "steps": [{"id": "step-love-kid-1", "label": "Collect 3 fuses"}, {"id": "step-love-kid-2", "label": "Lure the Protector to the 'They're gone…' wall twice"}, {"id": "step-love-kid-3", "label": "Damage her to trigger the explosion that cracks the wall"}, {"id": "step-love-kid-4", "label": "Kill only the flesh pillars"}, {"id": "step-love-kid-5", "label": "Ignore the downed boss — use the fuses in the slots for the secret exit"}]},
+        {"id": "ach-keep-touch", "name": "We Keep In Touch", "gs": 30, "req": "Complete Storm without killing the Forgotten Ones or burning the Connections", "how": "Play Storm without killing a single Forgotten One and without burning the wall of Connections — bait them past instead.", "missable": true, "steps": [{"id": "step-keep-touch-1", "label": "Skip the save at the record player in the shop"}, {"id": "step-keep-touch-2", "label": "Bait the Forgotten Ones but don't kill them"}, {"id": "step-keep-touch-3", "label": "Don't burn the Connections wall with Molotovs"}]},
+        {"id": "ach-thought", "name": "Thought Patterns", "gs": 30, "req": "Complete Crossroads while being insane", "how": "Stay insane for the whole chapter: take the High Dose Medication, answer all four phones, and don't touch a record player after the pills — saving cures the Madness and breaks the route.", "missable": true, "steps": [{"id": "step-thought-1", "label": "Take the High Dose Medication from the shelf"}, {"id": "step-thought-2", "label": "Answer all 4 phones"}, {"id": "step-thought-3", "label": "Don't save at record players after taking the pills"}, {"id": "step-thought-4", "label": "Collect all the tapes"}]},
+        {"id": "ach-keep-growing", "name": "Keep Growing", "gs": 30, "req": "Complete Regression without killing the Tree Lurker", "how": "Don't pull any valve until the final one at the end of the level — the Radio Voice will tell you to, ignore it — and spare the Tree Lurker.", "missable": true, "steps": [{"id": "step-keep-growing-1", "label": "Ignore every valve except the final one"}, {"id": "step-keep-growing-2", "label": "Spare the Tree Lurker"}]},
+        {"id": "ach-wont-kill", "name": "I Won't Kill Them", "gs": 30, "req": "Complete Chaos without killing the Forgotten Ones", "how": "Take the alternate paths around every Forgotten One in Chaos — killing even one locks this out.", "missable": true, "steps": [{"id": "step-wont-kill-1", "label": "Take the alternate paths around the Forgotten Ones"}, {"id": "step-wont-kill-2", "label": "Don't kill any of them"}]},
+        {"id": "ach-good-ending", "name": "I Was Wrong", "gs": 50, "req": "Finish Total Chaos by getting the Good Ending", "how": "The merciful run: ignore the Radio Voice, spare or bypass every boss and Forgotten One, and do the chapter mercies below. Missing even one locks the good ending out for that playthrough.", "missable": true, "steps": [{"id": "step-good-ending-1", "label": "Ch 1: avoid unnecessary kills"}, {"id": "step-good-ending-2", "label": "Ch 2: grab Leda's cassette under the graveyard"}, {"id": "step-good-ending-3", "label": "Ch 3: spare the Protector"}, {"id": "step-good-ending-4", "label": "Ch 4: spare the Forgotten Ones, don't burn the Connections"}, {"id": "step-good-ending-5", "label": "Ch 5: stay insane (pills, phones, no record-player saves)"}, {"id": "step-good-ending-6", "label": "Ch 6: spare the Tree Lurker"}, {"id": "step-good-ending-7", "label": "Ch 7: find the hidden tape"}, {"id": "step-good-ending-8", "label": "Ch 8: spare the Forgotten Ones, take the alternate paths"}]}
+      ]
+    },
+    {
+      "id": "endings",
+      "filter_label": "Endings",
+      "title": "Endings",
+      "subtitle": "3 achievements",
+      "achievements": [
+        {"id": "ach-death-sentence", "name": "Death Sentence", "gs": 50, "req": "Finish Total Chaos", "how": "Finish the game — any ending counts."},
+        {"id": "ach-chaotic", "name": "Chaotic Excursion", "gs": 50, "req": "Finish Total Chaos in Survivalist Mode", "how": "Finish the game on Survivalist difficulty: far fewer resources, no autosave (you spend disc records to save), and enemies hit much harder. It has a reputation for soft-locks — keep spare saves, and if the Chapter 4 record player freezes you, save with a disc record, quit, and reload. Tip: drop everything before putting on the radiation suit in Chaos, then pick it all back up — equipping it wipes your inventory."},
+        {"id": "ach-boat", "name": "Plenty Of Fish In The Sea", "gs": 15, "req": "Leave the island with your boat", "how": "Do this first: at the very start of a fresh run, walk forward to your boat and leave. It ends the game on the spot."}
+      ]
+    },
+    {
+      "id": "combat",
+      "filter_label": "Combat",
+      "title": "Combat",
+      "subtitle": "9 achievements",
+      "achievements": [
+        {"id": "ach-parry", "name": "Try Again If You Dare", "gs": 15, "req": "Repel a monster attack by parrying", "how": "Deflect a monster's attack with your pickaxe — the strengthened pickaxe from the Coastline Bench works for this. Don't kill it if you're on the merciful run."},
+        {"id": "ach-kill", "name": "Nightmare Hunter", "gs": 15, "req": "Kill a monster", "how": "Kill any monster. Kills count against the merciful run — do your killing on the journal or Survivalist run."},
+        {"id": "ach-nail-bomb", "name": "DIY Explosion", "gs": 20, "req": "Kill at least 3 monsters with only 1 Nail Bomb", "how": "Lure at least three monsters close together, then detonate a single Nail Bomb among them."},
+        {"id": "ach-toss", "name": "Take That!", "gs": 20, "req": "Kill a monster by tossing a weapon at it", "how": "Throw a weapon (a crafted shiv works) at a monster to finish it off."},
+        {"id": "ach-screamer", "name": "You Can Kill What You Can't See", "gs": 30, "req": "Kill a Screamer", "how": "Kill a Screamer — the shrieking flyers in the dark areas (the flying monster in Forgotten's flooded hall is the first one you'll meet). Killing it conflicts with the merciful run, so do it on the journal run."},
+        {"id": "ach-harpoons", "name": "Monster Fishing", "gs": 20, "req": "Impale 3 harpoons into a single monster", "how": "Stick three harpoons into one monster — load the harpoon (picked up in Forgotten) and fire all three into the same target before it dies."},
+        {"id": "ach-brute", "name": "Don't Come Near Me", "gs": 20, "req": "Escape the first Brute in Arrival without taking damage", "how": "In Arrival, avoid the first Brute entirely — don't fight it, pull the switches and hide behind the rolling gate until you can move on. Reload your save if it lands a hit."},
+        {"id": "ach-slammer", "name": "Knock, Knock!", "gs": 15, "req": "Die by being burned by a Slammer", "how": "Let a Slammer burn you to death — just stand in its fire until you drop."},
+        {"id": "ach-drowning", "name": "Drowning Not Allowed", "gs": 15, "req": "Die by drowning", "how": "Stay underwater too long — in Forgotten's flooded sections, don't surface and you'll drown."}
+      ]
+    },
+    {
+      "id": "crafting",
+      "filter_label": "Crafting & survival",
+      "title": "Crafting & survival",
+      "subtitle": "7 achievements",
+      "achievements": [
+        {"id": "ach-weight", "name": "Prepared For All Situations", "gs": 20, "req": "Exceed your inventory weight limit", "how": "Pick up items until you go over your weight limit — the game will tell you you're overencumbered."},
+        {"id": "ach-craft", "name": "Crafty Miner", "gs": 15, "req": "Craft an item", "how": "Craft anything at a workbench — glass or metal shivs in Decay are the first chance."},
+        {"id": "ach-syringe", "name": "Back To Formula", "gs": 20, "req": "Craft something from a syringe", "how": "Craft an item that uses a syringe as an ingredient at a workbench."},
+        {"id": "ach-tape-wire", "name": "It's Going To Hit Hard", "gs": 30, "req": "Upgrade a melee weapon with tape and barbed wire", "how": "At a workbench, upgrade a melee weapon with tape and barbed wire."},
+        {"id": "ach-cook", "name": "Winner Winner Monster Dinner!", "gs": 20, "req": "Cook a monster meat", "how": "Cook monster meat on the gas cooker (picked up in Crossroads) — heat it until it's done."},
+        {"id": "ach-bandage", "name": "I'm Not Going To Die, Not Yet", "gs": 15, "req": "Stop your bleeding with a bandage", "how": "When you're bleeding, use a bandage from your inventory. Bandages are craftable from Decay on."},
+        {"id": "ach-madness-clear", "name": "Down In My Cellar", "gs": 15, "req": "Clear your Madness level at a save zone", "how": "Let your Madness build up, then clear it at a save zone (a shrine or record player). Note: clearing Madness this way can break the Crossroads insane run — do that one without saving."}
+      ]
+    },
+    {
+      "id": "collectibles",
+      "filter_label": "Collectibles",
+      "title": "Collectibles",
+      "subtitle": "3 achievements",
+      "achievements": [
+        {"id": "ach-cassette", "name": "Things Best Left Undisturbed", "gs": 30, "req": "Find the cassette tape under the graveyard in Decay", "how": "In Decay's graveyard, break the boards on the ground to reach the secret area underneath and grab Leda's cassette tape. Also needed for the good ending."},
+        {"id": "ach-miller", "name": "I Will Make Good Use Of It", "gs": 30, "req": "Open Miller's storage in Decay", "how": "In Decay, drop through the vertical tunnel and pick up Miller's Key behind the rolling gate, then use it to open Miller's storage."},
+        {"id": "ach-journal", "name": "I Know Who I Am", "gs": 50, "req": "Complete the Journal with everything there is to find in Fort Oasis", "how": "Collect all 45 journals: Arrival 5, Decay 8, Forgotten 7, Storm 7, Crossroads 5, Regression 4, Madness 5, Chaos 3, Resolve 1. One journal in Forgotten sits behind the Protector fight — killing her for it locks out the good ending, so the full journal and the good ending need separate playthroughs; combine the journal run with Survivalist to save a run."}
+      ]
+    }
+  ]
+}

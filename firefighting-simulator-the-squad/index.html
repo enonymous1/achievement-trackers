@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Firefighting Simulator: The Squad — Achievement Tracker</title>
+<meta name="description" content="Achievement-first tracker for Firefighting Simulator: The Squad: achievements grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<meta property="og:title" content="Firefighting Simulator: The Squad — Achievement Tracker">
+<meta property="og:description" content="Achievement-first tracker for Firefighting Simulator: The Squad: achievements grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<script>
+  /* Theme before first paint: saved choice wins, otherwise follow the
+     system. AdminLTE 4 / Bootstrap 5.3 read data-bs-theme. */
+  (function () {
+    try {
+      var theme = localStorage.getItem("at-theme");
+      if (!theme) {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      document.documentElement.setAttribute("data-bs-theme", theme);
+    } catch (e) {}
+  })();
+</script>
+<link rel="stylesheet" href="../assets/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="../assets/vendor/bootstrap-icons.min.css">
+<link rel="stylesheet" href="../assets/vendor/adminlte.min.css">
+<link rel="stylesheet" href="../assets/css/sidebar.css">
+<link rel="stylesheet" href="../assets/css/tracker-cards.css">
+<style>
+  /* Page rules only: the card language itself lives in
+     assets/css/tracker-cards.css, shared with the How page demos. */
+  /* v2's contained column, not AdminLTE's full-width fluid layout. */
+  .app-main .container-fluid{max-width:1100px;margin-left:auto;margin-right:auto}
+  /* The top bar is frozen, and it carries the compact progress:
+     the text was already in the navbar, and the thin bar along
+     its bottom edge mirrors the card's bar. The big progress
+     card below is not pinned — it scrolls away with the rest of
+     the page. Search, filters and the Order/Scope text live in
+     the card below it and scroll away too. */
+  .app-header{position:sticky;top:0;z-index:1030}
+  .nav-progress{position:absolute;left:0;right:0;bottom:0;height:3px}
+  #overallBarNav{height:100%;width:0%;background:linear-gradient(90deg,var(--at-green),#a8e07a)}
+  .progress-card{margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  /* AdminLTE's layout-fixed sets .app-main to overflow:auto (via
+     .sidebar-expand-lg.layout-fixed .app-main), which would make
+     it its own scroll container. Keep visible overflow at the
+     same specificity, so the page keeps scrolling on the
+     viewport — the behaviour the frozen header and the rest of
+     the page rely on. (Added for the old sticky progress card;
+     the card is gone, but the scrolling behaviour stays.) */
+  .sidebar-expand-lg.layout-fixed .app-main{overflow:visible}
+  /* Sections read as a group again (v2's card background), not as a
+     bare bordered box on the page background. */
+  details{background:var(--bs-card-bg);border:1px solid var(--bs-border-color);border-radius:12px;margin-bottom:1rem;overflow:hidden}
+  details summary{cursor:pointer;padding:1rem;font-weight:700;font-size:1.1rem}
+  details summary::marker{color:var(--bs-secondary-color)}
+  details summary small{display:block;font-weight:400;color:var(--bs-secondary-color);font-size:.9rem;margin-top:2px}
+  .section-body{padding:0 1rem 1rem}
+  /* Overall progress bar: v2's rounded gradient pill, not the flat
+     Bootstrap bar. The counter bars keep Bootstrap's flat bar. */
+  #overallBar{background:linear-gradient(90deg,var(--at-green),#a8e07a);border-radius:99px}
+  .progress:has(#overallBar){height:14px;border-radius:99px;overflow:hidden}
+  /* Phase filters are separate pills (v2), not a joined button group;
+     the active pill is solid green with dark text, as in v2. */
+  /* Phase pills read as normal text (v2), not Bootstrap's dark-green
+     outline-success text, which is near-illegible on a dark card. */
+  .filter{--bs-btn-color:var(--bs-body-color);--bs-btn-border-color:var(--bs-border-color);--bs-btn-hover-color:var(--bs-body-color);--bs-btn-hover-border-color:var(--at-green);--bs-btn-active-color:var(--bs-body-color)}
+  .filter.active{background:var(--at-green) !important;border-color:var(--at-green) !important;font-weight:700}
+  [data-bs-theme="dark"] .filter.active{color:#12140f !important}
+  .hidden{display:none !important}
+  @media print{.app-header,.controls,#xbox-sync{display:none !important}details{break-inside:avoid}}
+</style>
+</head>
+<body class="layout-fixed sidebar-expand-lg">
+<script>
+  /* Restore the sidebar's collapsed/open state before AdminLTE's
+     own init runs, so the drawer does not flash open on every page.
+     The observer in assets/js/sidebar-state.js saves each change. */
+  (function(){try{var s=localStorage.getItem('at-sidebar');if(s==='collapsed')document.body.classList.add('sidebar-collapse');if(s==='open')document.body.classList.add('sidebar-open');}catch(e){}})();
+</script>
+<div class="app-wrapper">
+  <nav class="app-header navbar navbar-expand bg-body">
+    <div class="container-fluid">
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" aria-label="Toggle sidebar"><i class="bi bi-list"></i></a></li>
+      </ul>
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item"><span class="nav-link" id="overallTextNav">0 / 30 · 0G</span></li>
+        <li class="nav-item ms-2"><button type="button" id="theme-toggle" class="btn btn-sm btn-outline-secondary" aria-label="Toggle dark mode"><i class="bi bi-moon-fill" aria-hidden="true"></i></button></li>
+      </ul>
+    </div>
+    <div class="nav-progress" aria-hidden="true"><div id="overallBarNav"></div></div>
+  </nav>
+  <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+    <div class="sidebar-brand">
+      <a href="../" class="brand-link"><span class="brand-text fw-light">🏆 Achievement Trackers</span></a>
+    </div>
+    <div class="sidebar-wrapper">
+      <nav class="mt-2">
+        <ul class="nav sidebar-menu flex-column" role="menu">
+              <li class="nav-item"><a href="../" class="nav-link"><i class="nav-icon bi bi-house"></i><p>Home</p></a></li>
+              <li class="nav-header">Games</li>
+              <li class="nav-header">#</li>
+              <li class="nav-item"><a href="../1000xresist/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>1000xRESIST</p></a></li>
+              <li class="nav-header">B</li>
+              <li class="nav-item"><a href="../barbie-horse-trails/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Barbie Horse Trails</p></a></li>
+              <li class="nav-header">D</li>
+              <li class="nav-item"><a href="../dragon-ball-xenoverse-2/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Dragon Ball Xenoverse 2</p></a></li>
+              <li class="nav-header">F</li>
+              <li class="nav-item"><a href="../firefighting-simulator-the-squad/" class="nav-link active"><i class="nav-icon bi bi-controller"></i><p>Firefighting Simulator: The Squad</p></a></li>
+              <li class="nav-header">G</li>
+              <li class="nav-item"><a href="../goldeneye-007/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>GoldenEye 007</p></a></li>
+              <li class="nav-item"><a href="../great-god-grove/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Great God Grove</p></a></li>
+              <li class="nav-header">M</li>
+              <li class="nav-item"><a href="../minecraft-dungeons/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Minecraft Dungeons</p></a></li>
+              <li class="nav-item"><a href="../moonlighter/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Moonlighter</p></a></li>
+              <li class="nav-header">P</li>
+              <li class="nav-item"><a href="../pigeon-simulator/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Pigeon Simulator</p></a></li>
+              <li class="nav-item"><a href="../police-simulator-patrol-officers/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Police Simulator: Patrol Officers</p></a></li>
+              <li class="nav-header">R</li>
+              <li class="nav-item"><a href="../relic-hunters-legend/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Relic Hunters Legend</p></a></li>
+              <li class="nav-header">T</li>
+              <li class="nav-item"><a href="../total-chaos/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Total Chaos</p></a></li>
+              <li class="nav-header">W</li>
+              <li class="nav-item"><a href="../winter-burrow/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Winter Burrow</p></a></li>
+              <li class="nav-item"><a href="../wreckfest/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Wreckfest</p></a></li>
+        </ul>
+      </nav>
+      <div class="sidebar-bottom">
+        <ul class="nav sidebar-menu flex-column" role="menu">
+          <li class="nav-item"><a href="../how-it-works/" class="nav-link"><i class="nav-icon bi bi-question-circle"></i><p>How it works</p></a></li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+  <main class="app-main">
+    <div class="app-content-header">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-12">
+            <h3 class="mb-0">Firefighting Simulator: The Squad <small class="text-secondary">— Achievement Tracker</small></h3>
+            <p class="text-secondary mb-0">Four firefighters, one squad — grind missions, water, and kilometres until the whole list is done.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="app-content">
+      <div class="container-fluid">
+
+        <div class="card progress-card">
+          <div class="card-header d-flex justify-content-between flex-wrap gap-2">
+            <h3 class="card-title">Gamerscore progress</h3>
+            <span id="overallText">0 / 30 achievements · 0 / 1000G</span>
+          </div>
+          <div class="card-body">
+            <div class="progress" role="progressbar" aria-label="Gamerscore progress">
+              <div class="progress-bar bg-success" id="overallBar" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="controls d-flex flex-wrap gap-2 align-items-center">
+              <input type="search" id="search" class="form-control flex-grow-1" style="min-width:220px" placeholder="Search achievements, missions, gear…" aria-label="Search tracker">
+              <label class="form-check-label"><input type="checkbox" id="incompleteOnly" class="form-check-input me-1"> Incomplete only</label>
+              <button type="button" id="exportBtn" class="btn btn-outline-secondary btn-sm">Export progress</button>
+              <label class="btn btn-outline-secondary btn-sm mb-0" for="importFile">Import progress</label>
+              <input type="file" id="importFile" accept=".json,application/json" class="d-none">
+              <button type="button" id="resetBtn" class="btn btn-outline-danger btn-sm">Reset all</button>
+              <button type="button" class="note-btn" data-note-key="game" title="Game notes" aria-label="Game notes"><i class="bi bi-journal-text"></i></button>
+            </div>
+            <div class="controls d-flex flex-wrap gap-2 mt-2" role="group" aria-label="Filter by phase">
+              <button type="button" class="filter btn btn-outline-success active" data-filter="all">All</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="tutorials">Tutorials</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="missions">Missions</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="multiplayer">Multiplayer</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="victims">Victims</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="vehicles">Vehicles</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="tools">Tools &amp; ladder</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="water">Water</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="driving">Driving</button>
+            </div>
+            <p class="text-secondary mt-3 mb-0"><strong>Order:</strong> Sections follow the walkthrough&#x27;s route: tutorials, then the mission grind (Burning News, Explosive Hot Dogs, Inflaming of a Dumpster, Red-Hot Party!), multiplayer and victims alongside, the five trucks and the ladder tools, then the two big grinds — water and driving — last. Co-op makes both grinds far faster: water is shared between human players (30 hours solo, 7.5 with a full squad of four), and passengers earn driving kilometres too.</p>
+            <p class="text-secondary mb-0"><strong>Scope:</strong> All 30 achievements / 1,000G — the full game, no DLC. Route notes are paraphrased from the TrueAchievements walkthrough (single-page version). About 50–60 hours.</p>
+          </div>
+        </div>
+
+
+
+<details open data-cat="tutorials">
+<summary>Tutorials <small>2 achievements · <span class="sec-progress" data-section="tutorials"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="First Steps Complete Intro Mission Follow the intro&#x27;s prompts — carry the victim to the ambulance gurney, then put out the garage fire with the hose."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-first-steps" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#1</span><span class="ach-name">First Steps</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-first-steps" title="Notes for First Steps" aria-label="Notes for First Steps"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete Intro Mission</p><p class="how">Follow the intro&#x27;s prompts — carry the victim to the ambulance gurney, then put out the garage fire with the hose.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Good Preparation Complete every Tutorial Complete every tutorial at the training facility (the target icon left of the map, above the Industrial Port). Follow the prompts — skipping steps in a couple of tutorials can stop it unlocking."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-good-prep" data-gs="100" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#2</span><span class="ach-name">Good Preparation</span><span class="gs badge text-bg-warning ms-auto">100G</span></button><button type="button" class="note-btn" data-note-key="ach-good-prep" title="Notes for Good Preparation" aria-label="Notes for Good Preparation"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete every Tutorial</p><p class="how">Complete every tutorial at the training facility (the target icon left of the map, above the Industrial Port). Follow the prompts — skipping steps in a couple of tutorials can stop it unlocking.</p></div></article></div>
+</div></div></details>
+<details data-cat="missions">
+<summary>Missions <small>5 achievements · <span class="sec-progress" data-section="missions"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Firefighter Rookie Complete 1st Mission Complete your first mission — Burning News in Downtown is the walkthrough&#x27;s pick. Deploy on scene and put out the fire."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-rookie" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#3</span><span class="ach-name">Firefighter Rookie</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-rookie" title="Notes for Firefighter Rookie" aria-label="Notes for Firefighter Rookie"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="missions" data-target="1"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Complete 1st Mission</p><p class="how">Complete your first mission — Burning News in Downtown is the walkthrough&#x27;s pick. Deploy on scene and put out the fire.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease missions counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="missions" data-target="1" min="0" value="0" aria-label="missions counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase missions counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Firefighter Complete 5 Missions Complete 5 missions — repeat Explosive Hot Dogs, skipping the start and end scenes."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-firefighter" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#4</span><span class="ach-name">Firefighter</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-firefighter" title="Notes for Firefighter" aria-label="Notes for Firefighter"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="missions" data-target="5"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Complete 5 Missions</p><p class="how">Complete 5 missions — repeat Explosive Hot Dogs, skipping the start and end scenes.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease missions counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="missions" data-target="5" min="0" value="0" aria-label="missions counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase missions counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Lieutenant Complete 10 Missions Complete 10 missions in one career."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-lieutenant" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#5</span><span class="ach-name">Lieutenant</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-lieutenant" title="Notes for Lieutenant" aria-label="Notes for Lieutenant"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="missions" data-target="10"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Complete 10 Missions</p><p class="how">Complete 10 missions in one career.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease missions counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="missions" data-target="10" min="0" value="0" aria-label="missions counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase missions counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Captain Competent Complete 50 Missions Complete 50 missions in one career — repeat Inflaming of a Dumpster (around 34 reps from the Explosive Hot Dogs stage)."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-captain" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#6</span><span class="ach-name">Captain Competent</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-captain" title="Notes for Captain Competent" aria-label="Notes for Captain Competent"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="missions" data-target="50"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Complete 50 Missions</p><p class="how">Complete 50 missions in one career — repeat Inflaming of a Dumpster (around 34 reps from the Explosive Hot Dogs stage).</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease missions counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="missions" data-target="50" min="0" value="0" aria-label="missions counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase missions counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Work Horse Complete 100 Missions Complete 100 missions in one career. It comes naturally during the water and driving grinds."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-work-horse" data-gs="90" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#7</span><span class="ach-name">Work Horse</span><span class="gs badge text-bg-warning ms-auto">90G</span></button><button type="button" class="note-btn" data-note-key="ach-work-horse" title="Notes for Work Horse" aria-label="Notes for Work Horse"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="missions" data-target="100"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Complete 100 Missions</p><p class="how">Complete 100 missions in one career. It comes naturally during the water and driving grinds.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease missions counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="missions" data-target="100" min="0" value="0" aria-label="missions counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase missions counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+</div></div></details>
+<details data-cat="multiplayer">
+<summary>Multiplayer <small>4 achievements · <span class="sec-progress" data-section="multiplayer"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Part of the Team Complete 1st Multiplayer Mission Complete a mission with at least one other human player — no cross-play, and AI teammates don&#x27;t count."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-part-team" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#8</span><span class="ach-name">Part of the Team</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-part-team" title="Notes for Part of the Team" aria-label="Notes for Part of the Team"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="mp-missions" data-target="1"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Complete 1st Multiplayer Mission</p><p class="how">Complete a mission with at least one other human player — no cross-play, and AI teammates don&#x27;t count.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease mp-missions counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="mp-missions" data-target="1" min="0" value="0" aria-label="mp-missions counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase mp-missions counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Team Player Complete 10 Multiplayer Missions Complete 10 multiplayer missions."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-team-player" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#9</span><span class="ach-name">Team Player</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-team-player" title="Notes for Team Player" aria-label="Notes for Team Player"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="mp-missions" data-target="10"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Complete 10 Multiplayer Missions</p><p class="how">Complete 10 multiplayer missions.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease mp-missions counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="mp-missions" data-target="10" min="0" value="0" aria-label="mp-missions counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase mp-missions counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Me and the Gang Complete 30 Multiplayer Missions Complete 30 multiplayer missions."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-gang" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#10</span><span class="ach-name">Me and the Gang</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-gang" title="Notes for Me and the Gang" aria-label="Notes for Me and the Gang"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="mp-missions" data-target="30"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Complete 30 Multiplayer Missions</p><p class="how">Complete 30 multiplayer missions.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease mp-missions counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="mp-missions" data-target="30" min="0" value="0" aria-label="mp-missions counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase mp-missions counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="You Are Not Alone – Ever! Complete 50 Multiplayer Missions Complete 50 multiplayer missions — you need another player (or a boosting account) for at least these 50."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-not-alone" data-gs="90" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#11</span><span class="ach-name">You Are Not Alone – Ever!</span><span class="gs badge text-bg-warning ms-auto">90G</span></button><button type="button" class="note-btn" data-note-key="ach-not-alone" title="Notes for You Are Not Alone – Ever!" aria-label="Notes for You Are Not Alone – Ever!"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="mp-missions" data-target="50"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Complete 50 Multiplayer Missions</p><p class="how">Complete 50 multiplayer missions — you need another player (or a boosting account) for at least these 50.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease mp-missions counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="mp-missions" data-target="50" min="0" value="0" aria-label="mp-missions counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase mp-missions counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+</div></div></details>
+<details data-cat="victims">
+<summary>Victims <small>4 achievements · <span class="sec-progress" data-section="victims"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="You Saved My Life Save 1 Victim Save a victim — carry them to the ambulance gurney, or order an AI teammate to do it. Victims rescued by AI count."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-saved-life" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#12</span><span class="ach-name">You Saved My Life</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-saved-life" title="Notes for You Saved My Life" aria-label="Notes for You Saved My Life"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="victims" data-target="1"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Save 1 Victim</p><p class="how">Save a victim — carry them to the ambulance gurney, or order an AI teammate to do it. Victims rescued by AI count.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease victims counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="victims" data-target="1" min="0" value="0" aria-label="victims counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase victims counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Getting it Done – Semi-Pro Lifesaver Save 10 Victims Save 10 victims across your career."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-semi-pro" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#13</span><span class="ach-name">Getting it Done – Semi-Pro Lifesaver</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-semi-pro" title="Notes for Getting it Done – Semi-Pro Lifesaver" aria-label="Notes for Getting it Done – Semi-Pro Lifesaver"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="victims" data-target="10"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Save 10 Victims</p><p class="how">Save 10 victims across your career.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease victims counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="victims" data-target="10" min="0" value="0" aria-label="victims counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase victims counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Cannot Be Stopped Save 100 Victims Save 100 victims — around 44 reps of Inflaming of a Dumpster (2 victims each) from the Explosive Hot Dogs stage."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-cannot-stopped" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#14</span><span class="ach-name">Cannot Be Stopped</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-cannot-stopped" title="Notes for Cannot Be Stopped" aria-label="Notes for Cannot Be Stopped"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="victims" data-target="100"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Save 100 Victims</p><p class="how">Save 100 victims — around 44 reps of Inflaming of a Dumpster (2 victims each) from the Explosive Hot Dogs stage.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease victims counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="victims" data-target="100" min="0" value="0" aria-label="victims counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase victims counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Guardian Angel Save 200 Victims Save 200 victims — 11 completions of Red-Hot Party! (9 victims each) or another 50 of Inflaming of a Dumpster."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-guardian" data-gs="90" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#15</span><span class="ach-name">Guardian Angel</span><span class="gs badge text-bg-warning ms-auto">90G</span></button><button type="button" class="note-btn" data-note-key="ach-guardian" title="Notes for Guardian Angel" aria-label="Notes for Guardian Angel"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="victims" data-target="200"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Save 200 Victims</p><p class="how">Save 200 victims — 11 completions of Red-Hot Party! (9 victims each) or another 50 of Inflaming of a Dumpster.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease victims counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="victims" data-target="200" min="0" value="0" aria-label="victims counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase victims counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+</div></div></details>
+<details data-cat="vehicles">
+<summary>Vehicles <small>5 achievements · <span class="sec-progress" data-section="vehicles"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="TP3 Driver Drive the TP3 Drive the Rosenbauer TP3 to a mission — it&#x27;s the default truck; Red-Hot Party! is the walkthrough&#x27;s pick."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-tp3" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#16</span><span class="ach-name">TP3 Driver</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-tp3" title="Notes for TP3 Driver" aria-label="Notes for TP3 Driver"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Drive the TP3</p><p class="how">Drive the Rosenbauer TP3 to a mission — it&#x27;s the default truck; Red-Hot Party! is the walkthrough&#x27;s pick.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Viper Driver Drive the Viper Drive the Rosenbauer Viper to a mission — Burning News, driving to the scene."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-viper" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#17</span><span class="ach-name">Viper Driver</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-viper" title="Notes for Viper Driver" aria-label="Notes for Viper Driver"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Drive the Viper</p><p class="how">Drive the Rosenbauer Viper to a mission — Burning News, driving to the scene.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="T-Rex Driver Drive the T-Rex Drive the Rosenbauer T-Rex to a mission — Burning News, driving to the scene."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-trex" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#18</span><span class="ach-name">T-Rex Driver</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-trex" title="Notes for T-Rex Driver" aria-label="Notes for T-Rex Driver"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Drive the T-Rex</p><p class="how">Drive the Rosenbauer T-Rex to a mission — Burning News, driving to the scene.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Walk-In Rescue Driver Drive the Walk-In Rescue Drive the Walk-In Rescue to a mission — the Container and Pallets driving grind only offers the Walk-In trucks."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-walk-in" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#19</span><span class="ach-name">Walk-In Rescue Driver</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-walk-in" title="Notes for Walk-In Rescue Driver" aria-label="Notes for Walk-In Rescue Driver"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Drive the Walk-In Rescue</p><p class="how">Drive the Walk-In Rescue to a mission — the Container and Pallets driving grind only offers the Walk-In trucks.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Command Walk-In Rescue Driver Drive the Command Walk-In Rescue Drive the Command Walk-In Rescue to a mission — the other Walk-In truck on the same grind."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-command-walk-in" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#20</span><span class="ach-name">Command Walk-In Rescue Driver</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-command-walk-in" title="Notes for Command Walk-In Rescue Driver" aria-label="Notes for Command Walk-In Rescue Driver"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Drive the Command Walk-In Rescue</p><p class="how">Drive the Command Walk-In Rescue to a mission — the other Walk-In truck on the same grind.</p></div></article></div>
+</div></div></details>
+<details data-cat="tools">
+<summary>Tools &amp; ladder <small>4 achievements · <span class="sec-progress" data-section="tools"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Tool Master Use Every Tool in the Game Once Use every tool once at Oh, What a Shed! (west side of Lakeview Park): axe, crowbar (pry tool), Halligan, circular saw, fire extinguisher — air swings count. If it won&#x27;t pop, drive to the scene, don&#x27;t skip the cutscenes, and use the tools near a fire."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-tool-master" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#21</span><span class="ach-name">Tool Master</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-tool-master" title="Notes for Tool Master" aria-label="Notes for Tool Master"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Use Every Tool in the Game Once</p><p class="how">Use every tool once at Oh, What a Shed! (west side of Lakeview Park): axe, crowbar (pry tool), Halligan, circular saw, fire extinguisher — air swings count. If it won&#x27;t pop, drive to the scene, don&#x27;t skip the cutscenes, and use the tools near a fire.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Firefighting Hero Quench Fire with the Viper Nozzle In Burning News with the Viper, extend the outriggers, choose &#x27;Control Ladder&#x27; (not &#x27;Climb Ladder&#x27;), rotate toward the news stand, switch to the nozzle and put out the flames."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-hero" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#22</span><span class="ach-name">Firefighting Hero</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-hero" title="Notes for Firefighting Hero" aria-label="Notes for Firefighting Hero"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Quench Fire with the Viper Nozzle</p><p class="how">In Burning News with the Viper, extend the outriggers, choose &#x27;Control Ladder&#x27; (not &#x27;Climb Ladder&#x27;), rotate toward the news stand, switch to the nozzle and put out the flames.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="A Brave Man up in the Sky Quench Fire with the T-Rex Basket In Burning News with the T-Rex, extend the outriggers, get in the basket, switch to the nozzle and extinguish at least one fire marker."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-brave-man" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#23</span><span class="ach-name">A Brave Man up in the Sky</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-brave-man" title="Notes for A Brave Man up in the Sky" aria-label="Notes for A Brave Man up in the Sky"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Quench Fire with the T-Rex Basket</p><p class="how">In Burning News with the T-Rex, extend the outriggers, get in the basket, switch to the nozzle and extinguish at least one fire marker.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Spectacular Rescue Save 1 Victim with the T-Rex Basket In Red-Hot Party! with the T-Rex, leave one prone victim until everything else is done, carry them outside, walk around the T-Rex, extend the outriggers and get in the basket — the victim registers as saved."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-spectacular" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#24</span><span class="ach-name">Spectacular Rescue</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-spectacular" title="Notes for Spectacular Rescue" aria-label="Notes for Spectacular Rescue"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Save 1 Victim with the T-Rex Basket</p><p class="how">In Red-Hot Party! with the T-Rex, leave one prone victim until everything else is done, carry them outside, walk around the T-Rex, extend the outriggers and get in the basket — the victim registers as saved.</p></div></article></div>
+</div></div></details>
+<details data-cat="water">
+<summary>Water <small>3 achievements · <span class="sec-progress" data-section="water"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Hose Operator Use 1000 Liters of Water Use 1,000 litres of water with hoses — extinguishers don&#x27;t count, and water used by AI doesn&#x27;t count."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-hose" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#25</span><span class="ach-name">Hose Operator</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-hose" title="Notes for Hose Operator" aria-label="Notes for Hose Operator"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="water" data-target="1000"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Use 1000 Liters of Water</p><p class="how">Use 1,000 litres of water with hoses — extinguishers don&#x27;t count, and water used by AI doesn&#x27;t count.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease water counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="water" data-target="1000" min="0" value="0" aria-label="water counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase water counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Spray and Quench Use 10,000 Liters of Water Use 10,000 litres of water with hoses."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-spray" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#26</span><span class="ach-name">Spray and Quench</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-spray" title="Notes for Spray and Quench" aria-label="Notes for Spray and Quench"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="water" data-target="10000"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Use 10,000 Liters of Water</p><p class="how">Use 10,000 litres of water with hoses.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease water counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="water" data-target="10000" min="0" value="0" aria-label="water counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase water counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Let it Flow Use 100,000 Liters of Water Use 100,000 litres of water with hoses. Idle it on Burning News: set up your hoses, toggle the water on, and don&#x27;t let the AI fight the fire. Finish the mission about every hour or you lose the progress — solo it&#x27;s about 30 hours, a full squad of four shares the water and cuts it to 7.5."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-let-flow" data-gs="90" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#27</span><span class="ach-name">Let it Flow</span><span class="gs badge text-bg-warning ms-auto">90G</span></button><button type="button" class="note-btn" data-note-key="ach-let-flow" title="Notes for Let it Flow" aria-label="Notes for Let it Flow"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="water" data-target="100000"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Use 100,000 Liters of Water</p><p class="how">Use 100,000 litres of water with hoses. Idle it on Burning News: set up your hoses, toggle the water on, and don&#x27;t let the AI fight the fire. Finish the mission about every hour or you lose the progress — solo it&#x27;s about 30 hours, a full squad of four shares the water and cuts it to 7.5.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease water counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="water" data-target="100000" min="0" value="0" aria-label="water counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase water counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+</div></div></details>
+<details data-cat="driving">
+<summary>Driving <small>3 achievements · <span class="sec-progress" data-section="driving"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="On the Road Master Drive 50 Kilometers Drive 50 km in one career — passengers earn kilometres too."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-road-master" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#28</span><span class="ach-name">On the Road Master</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-road-master" title="Notes for On the Road Master" aria-label="Notes for On the Road Master"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="distance" data-target="50"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Drive 50 Kilometers</p><p class="how">Drive 50 km in one career — passengers earn kilometres too.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease distance counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="distance" data-target="50" min="0" value="0" aria-label="distance counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase distance counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Asphalt Cowboy Drive 100 Kilometers Drive 100 km in one career."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-asphalt" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#29</span><span class="ach-name">Asphalt Cowboy</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-asphalt" title="Notes for Asphalt Cowboy" aria-label="Notes for Asphalt Cowboy"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="distance" data-target="100"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Drive 100 Kilometers</p><p class="how">Drive 100 km in one career.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease distance counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="distance" data-target="100" min="0" value="0" aria-label="distance counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase distance counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Firefighting Forever Drive 1000 Kilometers Drive 1,000 km in one career. Repeat Container and Pallets in Downtown — over 30 km per completion, about 33 runs, a little over 10 hours. You have 20 minutes to reach the scene per run; a good run takes just over 18."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-forever" data-gs="90" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#30</span><span class="ach-name">Firefighting Forever</span><span class="gs badge text-bg-warning ms-auto">90G</span></button><button type="button" class="note-btn" data-note-key="ach-forever" title="Notes for Firefighting Forever" aria-label="Notes for Firefighting Forever"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="distance" data-target="1000"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Drive 1000 Kilometers</p><p class="how">Drive 1,000 km in one career. Repeat Container and Pallets in Downtown — over 30 km per completion, about 33 runs, a little over 10 hours. You have 20 minutes to reach the scene per run; a good run takes just over 18.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease distance counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="distance" data-target="1000" min="0" value="0" aria-label="distance counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase distance counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+</div></div></details>
+
+        <div class="card">
+          <div class="card-body text-secondary">
+            <p class="mb-1"><strong>Sources:</strong> achievement names, requirements and Gamerscore from the achievement list linked below; route notes are short paraphrases of the linked walkthrough — the full guide text is not reproduced here. <a href="https://www.trueachievements.com/game/Firefighting-Simulator-The-Squad/achievements">TrueAchievements — Achievements</a> · <a href="https://www.trueachievements.com/game/Firefighting-Simulator-The-Squad/walkthrough">TrueAchievements — Walkthrough (single-page version)</a></p>
+            <p class="mb-0">Unofficial fan tracker, not affiliated with the achievement site, the walkthrough author, or the game's publisher. Shell: AdminLTE 4.10.0 + Bootstrap 5.3.8 + Bootstrap Icons 1.11.3, vendored under <code>assets/vendor/</code> (see <code>THIRD_PARTY_NOTICES.md</code>).</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+  <footer class="app-footer">
+    <strong>Achievement Trackers</strong> — <a href="../">back to all games</a>
+  </footer>
+</div>
+<script src="../assets/vendor/bootstrap.bundle.min.js"></script>
+<script src="../assets/vendor/adminlte.min.js"></script>
+<script src="../assets/js/theme-toggle.js"></script>
+<script src="../assets/js/sidebar-state.js"></script>
+<dialog id="media-modal" aria-label="Image viewer">
+  <div class="media-modal-inner">
+    <button type="button" class="media-modal-close" aria-label="Close image viewer">×</button>
+    <img id="media-modal-img" alt="">
+    <p id="media-modal-caption" class="media-modal-caption"></p>
+    <div id="media-modal-nav" class="media-modal-nav" style="display:none">
+      <button type="button" class="media-modal-prev btn btn-outline-light btn-sm">← Previous</button>
+      <span id="media-modal-count" class="media-modal-count"></span>
+      <button type="button" class="media-modal-next btn btn-outline-light btn-sm">Next →</button>
+    </div>
+  </div>
+</dialog>
+<dialog id="notes-modal" aria-label="Notes">
+  <div class="notes-modal-inner">
+    <div class="d-flex justify-content-between align-items-center gap-3">
+      <h3 id="notes-modal-title" class="mb-0 fs-5">Notes</h3>
+      <button type="button" class="notes-modal-close" aria-label="Close notes">×</button>
+    </div>
+    <textarea id="notes-modal-text" class="form-control mt-2" rows="5" placeholder="Anything you want to remember for this one…"></textarea>
+    <p class="text-secondary mt-2 mb-0">Saved in this browser only, alongside your progress.</p>
+  </div>
+</dialog>
+<script>
+/* Tracker progress. The hub never writes progress, only reads it;
+   this script is the single writer for a game page. */
+(function(){
+  var KEY='fs-tracker-v1';
+  var OLD='';
+  var MIGRATION={};
+  var TOTAL_GS=1000;
+  /* Tasks are now header toggle buttons, not checkboxes: the pressed
+     state lives in aria-pressed, and the id / data-gs contract with
+     save, export and the step auto-tick code is unchanged. */
+  var tasks=[].slice.call(document.querySelectorAll('button.task'));
+  var steps=[].slice.call(document.querySelectorAll('input.step'));
+  var counts=[].slice.call(document.querySelectorAll('input.count'));
+  var notesModal=document.getElementById('notes-modal');
+  var notesModalTitle=document.getElementById('notes-modal-title');
+  var notesModalText=document.getElementById('notes-modal-text');
+  /* Notes are one object, not one string: the game-wide note
+     lives under 'game', each achievement's under its card id.
+     Old saves and exports stored a single string — that was
+     the game-wide note, so it migrates to the 'game' key. */
+  var notesData={};
+  var notesKey=null;
+  var search=document.getElementById('search');
+  var incompleteOnly=document.getElementById('incompleteOnly');
+  var overallText=document.getElementById('overallText');
+  var overallTextNav=document.getElementById('overallTextNav');
+  var overallBar=document.getElementById('overallBar');
+  var overallBarNav=document.getElementById('overallBarNav');
+
+  /* Save dedupes shared counters: several achievements render an input
+     for the same group, but localStorage stores one value per group. */
+  function save(){
+    var data={checked:{},steps:{},counters:{},notes:notesData};
+    tasks.forEach(function(t){ if(t.getAttribute('aria-pressed')==='true') data.checked[t.id]=true; });
+    steps.forEach(function(s){ if(s.checked) data.steps[s.id]=true; });
+    var seen={};
+    counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(!seen[g]){ data.counters[g]=c.value; seen[g]=true; } });
+    try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(e){}
+  }
+  function applyData(data){
+    tasks.forEach(function(t){ t.setAttribute('aria-pressed', (data.checked&&data.checked[t.id]) ? 'true' : 'false'); });
+    steps.forEach(function(s){ s.checked=!!(data.steps&&data.steps[s.id]); });
+    counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(data.counters&&data.counters[g]!==undefined) c.value=data.counters[g]; });
+    var n=data.notes;
+    if(typeof n==='string'){ notesData=n?{game:n}:{}; }
+    else if(n&&typeof n==='object'){ notesData=n; }
+    else { notesData={}; }
+    refreshNoteIcons();
+  }
+  /* Migration runs ONLY when no new-format progress exists. If a player
+     already has new progress, legacy data must not overwrite it; the
+     old key is left alone rather than deleted. */
+  function migrateLegacy(){
+    var raw; try{ raw=localStorage.getItem(OLD); }catch(e){ return; }
+    if(!raw||!MIGRATION) return;
+    try{
+      var d=JSON.parse(raw), checked=d.checked||{}, cnts=d.counts||{};
+      var out={checked:{},steps:{},counters:{},notes:{}};
+      Object.keys(MIGRATION.checked_map||{}).forEach(function(k){ if(checked[k]) MIGRATION.checked_map[k].forEach(function(a){ out.checked[a]=true; }); });
+      Object.keys(MIGRATION.step_map||{}).forEach(function(k){ if(checked[k]) out.steps[MIGRATION.step_map[k]]=true; });
+      Object.keys(MIGRATION.counter_map||{}).forEach(function(k){ if(cnts[k]) out.counters[MIGRATION.counter_map[k]]=cnts[k]; });
+      if(Object.keys(out.checked).length||Object.keys(out.steps).length||Object.keys(out.counters).length){
+        try{ localStorage.setItem(KEY,JSON.stringify(out)); }catch(e){}
+        applyData(out);
+      }
+    }catch(e){}
+  }
+  function load(){
+    var raw; try{ raw=localStorage.getItem(KEY); }catch(e){ return; }
+    if(!raw){ migrateLegacy(); return; }
+    try{ applyData(JSON.parse(raw)); }catch(e){}
+  }
+  function syncCounters(source){
+    if(!source) return;
+    var g=source.getAttribute('data-counter');
+    counts.forEach(function(c){ if(c.getAttribute('data-counter')===g) c.value=source.value; });
+  }
+  function updateProgress(){
+    var done=tasks.filter(function(t){return t.getAttribute('aria-pressed')==='true';});
+    var gs=done.reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+    var text=done.length+' / '+tasks.length+' achievements · '+gs.toLocaleString('en-US')+' / '+TOTAL_GS.toLocaleString('en-US')+'G';
+    overallText.textContent=text;
+    if(overallTextNav) overallTextNav.textContent=done.length+' / '+tasks.length+' · '+gs.toLocaleString('en-US')+'G';
+    overallBar.style.width=Math.round(gs/TOTAL_GS*100)+'%';
+    if(overallBarNav) overallBarNav.style.width=Math.round(gs/TOTAL_GS*100)+'%';
+    document.querySelectorAll('details[data-cat]').forEach(function(sec){
+      var box=sec.querySelectorAll('button.task');
+      if(!box.length) return;
+      var pressed=function(t){return t.getAttribute('aria-pressed')==='true';};
+      var d=[].slice.call(box).filter(pressed).length;
+      var g=[].slice.call(box).filter(pressed).reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+      var el=sec.querySelector('.sec-progress');
+      if(el) el.textContent=d+' / '+box.length+' · '+g+'G';
+    });
+    counts.forEach(function(c){
+      var target=parseInt(c.getAttribute('data-target'),10)||0;
+      var val=parseInt(c.value,10)||0;
+      var pct=target?Math.min(100,Math.round(val/target*100)):0;
+      var wrap=c.closest('.counter');
+      var txt=wrap?wrap.querySelector('.count-text'):null;
+      if(txt) txt.textContent=' '+val.toLocaleString('en-US')+' / '+target.toLocaleString('en-US')+' ('+pct+'%)';
+      /* Bars live under the card header, not next to the input, and
+         are matched by group AND target: a shared group can feed
+         several thresholds, and each bar must show its own target. */
+      var g=c.getAttribute('data-counter');
+      document.querySelectorAll('.counter-bar[data-counter="'+g+'"][data-target="'+target+'"]').forEach(function(barEl){
+        var bar=barEl.querySelector('.progress-bar');
+        if(bar) bar.style.width=pct+'%';
+      });
+    });
+    /* Step progress bars under the headers of multi-step
+       achievements: the bar shows how many of that achievement's
+       sub-steps are ticked. Step cards have no parent, so they
+       carry no bar — this is only for achievement cards. */
+    document.querySelectorAll('.step-bar').forEach(function(barEl){
+      var parent=barEl.getAttribute('data-step-parent');
+      var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+parent+'"]'));
+      var done=sibs.filter(function(s){return s.checked;}).length;
+      var pct=sibs.length?Math.round(done/sibs.length*100):0;
+      var bar=barEl.querySelector('.progress-bar');
+      if(bar) bar.style.width=pct+'%';
+    });
+  }
+  /* applyFilters hides whole sections, not just cards: a section with
+     no visible cards after filtering must not leave an empty heading
+     and an empty bordered box behind. */
+  function applyFilters(){
+    var q=(search.value||'').toLowerCase().trim();
+    var active=document.querySelector('.filter.active');
+    var cat=active?active.getAttribute('data-filter'):'all';
+    var inc=incompleteOnly.checked;
+    document.querySelectorAll('details[data-cat]').forEach(function(sec){
+      var secCat=sec.getAttribute('data-cat');
+      var catMatch=(cat==='all'||cat===secCat);
+      var visibleItems=0;
+      sec.querySelectorAll('.item').forEach(function(item){
+        var name=(item.getAttribute('data-name')||'')+' '+item.textContent.toLowerCase();
+        var qMatch=!q||name.indexOf(q)>-1;
+        var task=item.querySelector('button.task');
+        var incMatch=!inc||!task||task.getAttribute('aria-pressed')!=='true';
+        var show=catMatch&&qMatch&&incMatch;
+        item.classList.toggle('hidden',!show);
+        if(show) visibleItems++;
+      });
+      var hasItems=sec.querySelectorAll('.item').length>0;
+      sec.classList.toggle('hidden',!catMatch||(hasItems&&visibleItems===0));
+    });
+    fitHeaders();
+  }
+  /* Header normalisation: long names shrink toward a floor
+     (1.05rem to 0.85rem) before they are allowed to wrap, and
+     headers in the same visible row are then equalised to the
+     row's tallest, so card bodies start on one line instead of
+     staggering. Runs after every filter pass (which is also
+     every search, reset and import path), on resize, when a
+     section opens or closes, and once fonts arrive. */
+  function fitHeaders(){
+    document.querySelectorAll('.ach-head').forEach(function(h){ h.style.minHeight = ''; });
+    document.querySelectorAll('.ach-name').forEach(function(n){ n.style.fontSize = ''; });
+    document.querySelectorAll('.ach-name').forEach(function(n){
+      var floors = ['0.95rem', '0.85rem'];
+      for(var i = 0; i < floors.length; i++){
+        var line = parseFloat(getComputedStyle(n).lineHeight);
+        if(n.offsetHeight <= line + 1) break;
+        n.style.fontSize = floors[i];
+      }
+    });
+    var rows = {};
+    document.querySelectorAll('.item').forEach(function(item){
+      if(item.classList.contains('hidden') || !item.offsetParent) return;
+      var head = item.querySelector('.ach-head');
+      if(!head) return;
+      var sec = item.closest('details');
+      var key = (sec ? sec.getAttribute('data-cat') : '') + ':' + item.offsetTop;
+      (rows[key] = rows[key] || []).push(head);
+    });
+    Object.keys(rows).forEach(function(key){
+      var max = 0;
+      rows[key].forEach(function(h){ max = Math.max(max, h.offsetHeight); });
+      rows[key].forEach(function(h){ h.style.minHeight = max + 'px'; });
+    });
+  }
+  var fitTimer = null;
+  window.addEventListener('resize', function(){
+    if(fitTimer) clearTimeout(fitTimer);
+    fitTimer = setTimeout(fitHeaders, 150);
+  });
+  document.querySelectorAll('details[data-cat]').forEach(function(d){
+    d.addEventListener('toggle', fitHeaders);
+  });
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeaders);
+  document.querySelectorAll('.filter').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.filter').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active'); applyFilters();
+    });
+  });
+  /* Header toggle: clicking anywhere in the header flips aria-pressed.
+     Steps still use the change handler below; a button does not fire
+     change, so this click handler is the task toggle. */
+  /* Ticking an achievement fills its sub-requirements, unticking
+     clears them: every step is checked/unchecked, and each
+     counter is raised to at least its target on tick, or dropped
+     on untick to the highest target still needed by a ticked
+     sibling sharing the counter group (or 0). Ticking never
+     lowers a counter that already sits above the target, and
+     unticking never raises one — the shared value only ever
+     reflects what ticked achievements still need, or the higher
+     count already entered by hand. Programmatic fills never
+     fire the max gate: the target is allowed by definition. */
+  function syncSubRequirements(task, pressed){
+    var id=task.getAttribute('id');
+    document.querySelectorAll('.step[data-parent="'+id+'"]').forEach(function(s){ s.checked=pressed; });
+    var card=task.closest('article');
+    if(!card) return;
+    card.querySelectorAll('input.count').forEach(function(input){
+      var g=input.getAttribute('data-counter');
+      var target=parseInt(input.getAttribute('data-target'),10)||0;
+      var val=parseInt(input.value,10)||0;
+      if(pressed){
+        if(val<target){ input.value=target; syncCounters(input); }
+      }else{
+        var keep=0;
+        document.querySelectorAll('input.count[data-counter="'+g+'"]').forEach(function(other){
+          if(other===input) return;
+          var otherCard=other.closest('article');
+          var otherTask=otherCard?otherCard.querySelector('button.task'):null;
+          if(otherTask&&otherTask.getAttribute('aria-pressed')==='true'){
+            keep=Math.max(keep,parseInt(other.getAttribute('data-target'),10)||0);
+          }
+        });
+        if(val>keep){ input.value=keep; syncCounters(input); }
+      }
+    });
+  }
+  tasks.forEach(function(t){
+    t.addEventListener('click',function(){
+      var pressed=t.getAttribute('aria-pressed')!=='true';
+      t.setAttribute('aria-pressed', pressed?'true':'false');
+      syncSubRequirements(t, pressed);
+      save(); updateProgress(); applyFilters();
+    });
+  });
+  /* Counter maximum: a counter stops at its own card's target.
+     Pushing past it pops a yes/no gate ("Max reached — no need
+     to add more. Add anyway?"). Yes lets that card keep counting
+     for this visit — the shared value feeds sibling achievements
+     with higher targets — and No leaves the value where it was.
+     The override lives in memory only; it never reaches the
+     saved progress, so the gate asks again after a reload. */
+  var overMax={};
+  function counterTarget(input){
+    return parseInt(input.getAttribute('data-target'),10)||0;
+  }
+  function counterKey(input){
+    return (input.getAttribute('data-counter')||'')+':'+counterTarget(input);
+  }
+  function counterName(input){
+    var card=input.closest('article');
+    var n=card?card.querySelector('.ach-name'):null;
+    return n?n.textContent.trim():'this achievement';
+  }
+  function allowOverMax(input,next){
+    var target=counterTarget(input);
+    if(next<=target) return true;
+    if(overMax[counterKey(input)]) return true;
+    if(confirm('Max reached — '+counterName(input)+' needs '+target+'. No need to add more. Add anyway?')){
+      overMax[counterKey(input)]=true;
+      return true;
+    }
+    return false;
+  }
+  /* Counter steppers: -/+ buttons beside the input, clamped at 0
+     below and at the card's target above (via the gate above).
+     A programmatic value change fires no input event, so sync, save
+     and progress are called explicitly here. */
+  document.addEventListener('click',function(e){
+    var btn=e.target.closest ? e.target.closest('.counter-btn') : null;
+    if(!btn) return;
+    var wrap=btn.closest('.counter');
+    var input=wrap?wrap.querySelector('input.count'):null;
+    if(!input) return;
+    var val=parseInt(input.value,10)||0;
+    var next=Math.max(0, val + (parseInt(btn.getAttribute('data-step'),10)||0));
+    if(next>val && !allowOverMax(input,next)) return;
+    input.value=next;
+    syncCounters(input); save(); updateProgress();
+  });
+  /* Typed values are gated on change (blur/Enter), not on input:
+     prompting mid-keystroke would fire while the number is still
+     being typed. Declining reverts to the value the field had
+     when it was focused, not to the target — the count may
+     already sit above it from a sibling card. */
+  document.addEventListener('focusin',function(e){
+    var t=e.target;
+    if(t.classList && t.classList.contains('count')) t._prev=t.value;
+  });
+  document.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.classList.contains('step')&&t.getAttribute('data-parent')){
+      var parent=document.getElementById(t.getAttribute('data-parent'));
+      if(parent){
+        var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+t.getAttribute('data-parent')+'"]'));
+        if(sibs.length&&sibs.every(function(s){return s.checked;})) parent.setAttribute('aria-pressed','true');
+      }
+    }
+    if(t.classList.contains('count')){
+      var v=parseInt(t.value,10)||0;
+      var prev=parseInt(t._prev,10);
+      if(isNaN(prev)) prev=counterTarget(t);
+      if(v>counterTarget(t) && v>prev && !allowOverMax(t,v)){ t.value=prev; syncCounters(t); }
+    }
+    save(); updateProgress(); applyFilters();
+  });
+  document.addEventListener('input',function(e){
+    if(e.target===search){ applyFilters(); return; }
+    if(e.target===incompleteOnly){ applyFilters(); return; }
+    if(e.target.classList.contains('count')) syncCounters(e.target);
+    save(); updateProgress();
+  });
+  document.getElementById('resetBtn').addEventListener('click',function(){
+    if(!confirm('Reset all achievements, steps, counters and notes?')) return;
+    tasks.forEach(function(t){t.setAttribute('aria-pressed','false');});
+    steps.forEach(function(s){s.checked=false;});
+    counts.forEach(function(c){c.value=0;});
+    notesData={}; refreshNoteIcons();
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    updateProgress(); applyFilters();
+  });
+  document.getElementById('exportBtn').addEventListener('click',function(){
+    save();
+    var raw; try{ raw=localStorage.getItem(KEY)||'{}'; }catch(e){ raw='{}'; }
+    var blob=new Blob([raw],{type:'application/json'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='firefighting-simulator-the-squad-progress.json'; a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); },1000);
+  });
+  document.getElementById('importFile').addEventListener('change',function(e){
+    var f=e.target.files&&e.target.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{
+        var data=JSON.parse(r.result);
+        try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(err){}
+        applyData(data); updateProgress(); applyFilters();
+      }catch(err){ alert('That file did not look like a tracker export.'); }
+    };
+    r.readAsText(f);
+  });
+  /* Shared import preview/apply machinery, used by the Xbox sync
+     card. Only one import preview is live at a time, and Confirm
+     applies whichever is pending. Sync is additive only — it ticks
+     newly unlocked achievements and their sub-steps, and never
+     unticks, never touches notes or counters. */
+  function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function achName(achId){ var b=document.getElementById(achId); var n=b?b.querySelector('.ach-name'):null; return n?n.textContent.trim():achId; }
+  function achHasCounter(achId){ var b=document.getElementById(achId); var it=b?b.closest('.item'):null; return !!(it&&it.querySelector('input.count')); }
+  /* planFor splits a candidate set into what is new, what is
+     already ticked, and the sub-steps/counters that go with the new
+     ones. matchedIds is the wider matched set (for the "left as
+     they are" count); appliedIds is the subset the preview will
+     actually tick. */
+  function planFor(appliedIds, matchedIds){
+    var isPressed=function(achId){ var b=document.getElementById(achId); return b&&b.getAttribute('aria-pressed')==='true'; };
+    var newAch=[], already=0;
+    appliedIds.forEach(function(achId){ if(isPressed(achId)) already++; else newAch.push(achId); });
+    var stepIds=[], stepNames=[];
+    newAch.forEach(function(achId){
+      [].slice.call(document.querySelectorAll('.step[data-parent="'+achId+'"]')).forEach(function(s){
+        if(!s.checked){ stepIds.push(s.id); stepNames.push((s.parentNode?s.parentNode.textContent:'').trim()); }
+      });
+    });
+    var counterNames=[];
+    newAch.forEach(function(achId){ if(achHasCounter(achId)) counterNames.push(achName(achId)); });
+    var matchedSet={};
+    matchedIds.forEach(function(id){ matchedSet[id]=true; });
+    var lockedCount=tasks.filter(function(t){ return !matchedSet[t.id]; }).length;
+    return {newAch:newAch, already:already, stepIds:stepIds, stepNames:stepNames, counterNames:counterNames, lockedCount:lockedCount};
+  }
+  var importPending=null;
+  function hideImportPreviews(){
+    document.querySelectorAll('.import-preview').forEach(function(el){ el.classList.add('hidden'); });
+    importPending=null;
+  }
+  /* opts: bodyEl, previewEl, confirmBtn, plan (from planFor),
+     warnings (strings), dates (achId -> date string), statsHtml
+     (an already rendered stats paragraph, or ''). */
+  function showImportPreview(opts){
+    hideImportPreviews();
+    var plan=opts.plan, html='';
+    (opts.warnings||[]).forEach(function(w){ html+='<p class="text-warning mb-2">'+escHtml(w)+'</p>'; });
+    if(plan.newAch.length){
+      html+='<p><strong>'+plan.newAch.length+' new achievement'+(plan.newAch.length===1?'':'s')+' will be ticked:</strong></p><ul>';
+      plan.newAch.forEach(function(achId){
+        html+='<li>'+escHtml(achName(achId));
+        if(opts.dates&&opts.dates[achId]) html+=' <span class="text-secondary">— unlocked '+escHtml(opts.dates[achId])+'</span>';
+        html+='</li>';
+      });
+      html+='</ul>';
+    } else {
+      html+='<p>Nothing new — every matched achievement is already ticked here.</p>';
+    }
+    if(plan.stepNames.length){
+      html+='<p><strong>'+plan.stepNames.length+' sub-step'+(plan.stepNames.length===1?'':'s')+' will also be ticked</strong> (they are the route to the achievements above):</p><ul>';
+      plan.stepNames.forEach(function(n){ html+='<li>'+escHtml(n)+'</li>'; });
+      html+='</ul>';
+    }
+    if(plan.counterNames.length){
+      html+='<p class="text-secondary">Counters stay manual: the source does not report raw counts, so the counters for '+plan.counterNames.map(escHtml).join(', ')+' are left as they are.</p>';
+    }
+    if(opts.statsHtml) html+=opts.statsHtml;
+    opts.bodyEl.innerHTML=html;
+    opts.previewEl.classList.remove('hidden');
+    opts.confirmBtn.style.display=plan.newAch.length?'':'none';
+    importPending={achIds:plan.newAch, stepIds:plan.stepIds};
+  }
+  /* Applies the pending import through the normal save path and
+     returns how many achievements were ticked (0 if none pending). */
+  function applyImportPending(){
+    if(!importPending) return 0;
+    var n=importPending.achIds.length;
+    importPending.achIds.forEach(function(achId){
+      var b=document.getElementById(achId);
+      if(b) b.setAttribute('aria-pressed','true');
+    });
+    importPending.stepIds.forEach(function(stepId){
+      var s=document.getElementById(stepId);
+      if(s) s.checked=true;
+    });
+    importPending=null;
+    save(); updateProgress(); applyFilters();
+    return n;
+  }
+  /* Xbox sync via OpenXBL (user-supplied key). The sync card is only
+     rendered for games whose JSON carries xbox_title_id and an
+     xbox_id per achievement; without the card this block is a no-op.
+     Sync is additive and previewed: it ticks newly unlocked
+     achievements (and their sub-steps) and never unticks, never
+     touches notes or counters. The key and gamertag live under the
+     separate 'at-xbox' localStorage key, so Export/Import — which
+     only read and write the progress key above — can never leak
+     them. Response shapes are handled tolerantly (see the extract
+     helpers): OpenXBL's published spec documents endpoints but no
+     response schema, so the first live response may still refine
+     these, and anything unrecognised fails loudly instead of
+     guessing a tick. */
+  var syncCard=document.getElementById('xbox-sync');
+  if(syncCard){
+    var XBOX_API='https://api.xbl.io/api/v2';
+    var XBOX_META_KEY='at-xbox';
+    var syncMap={};
+    try{ syncMap=JSON.parse(syncCard.getAttribute('data-xbox-map')||'{}'); }catch(e){ syncMap={}; }
+    var syncTitleId=syncCard.getAttribute('data-xbox-title-id')||'';
+    var gtInput=document.getElementById('xbox-gamertag');
+    var keyInput=document.getElementById('xbox-key');
+    var syncBtn=document.getElementById('xbox-sync-btn');
+    var clearKeyBtn=document.getElementById('xbox-clear-key');
+    var statusEl=document.getElementById('xbox-status');
+    var previewEl=document.getElementById('xbox-preview');
+    var previewBody=document.getElementById('xbox-preview-body');
+    var confirmBtn=document.getElementById('xbox-confirm');
+    var cancelBtn=document.getElementById('xbox-cancel');
+    var pasteInput=document.getElementById('xbox-paste');
+    var pasteBtn=document.getElementById('xbox-paste-btn');
+    function metaLoad(){ try{ return JSON.parse(localStorage.getItem(XBOX_META_KEY)||'{}'); }catch(e){ return {}; } }
+    function metaSave(m){ try{ localStorage.setItem(XBOX_META_KEY,JSON.stringify(m)); }catch(e){} }
+    var xboxMeta=metaLoad();
+    if(xboxMeta.gamertag) gtInput.value=xboxMeta.gamertag;
+    if(xboxMeta.key) keyInput.value=xboxMeta.key;
+    function setStatus(msg){ statusEl.textContent=msg; }
+    function persistInputs(){
+      var m=metaLoad();
+      var gt=gtInput.value.trim();
+      if(m.gamertag!==gt) m.xuid='';
+      m.gamertag=gt; m.key=keyInput.value.trim(); metaSave(m); xboxMeta=m;
+    }
+    gtInput.addEventListener('change',persistInputs);
+    keyInput.addEventListener('change',persistInputs);
+    function xboxFetch(path,key){
+      return fetch(XBOX_API+path,{headers:{'X-Authorization':key,'Accept':'application/json'}}).then(function(r){
+        if(!r.ok){ var err=new Error('HTTP '+r.status); err.status=r.status; throw err; }
+        return r.json();
+      });
+    }
+    /* Shape tolerance: the gamertag endpoint documents a flat
+       {xuid, gamertag, gamerscore} body, while profile endpoints
+       return profileUsers[0].id. Accept both, plus a bare array. */
+    function extractXuid(data){
+      if(!data) return null;
+      if(typeof data==='string') return data;
+      if(data.xuid) return String(data.xuid);
+      if(data.profileUsers&&data.profileUsers[0]&&data.profileUsers[0].id) return String(data.profileUsers[0].id);
+      if(Array.isArray(data)&&data[0]) return extractXuid(data[0]);
+      return null;
+    }
+    function extractAchievements(data){
+      if(!data) return null;
+      if(Array.isArray(data)) return data;
+      if(Array.isArray(data.achievements)) return data.achievements;
+      return null;
+    }
+    function isUnlocked(a){
+      return a.progressState==='Achieved'||!!(a.progression&&a.progression.timeUnlocked);
+    }
+    function fetchTitlePages(xuid,key){
+      var entries=[], token='', prevToken=null, pages=0;
+      function next(){
+        if(pages>=5) return Promise.reject(new Error('too many pages'));
+        pages++;
+        var url='/achievements/player/'+encodeURIComponent(xuid)+'/title/'+encodeURIComponent(syncTitleId);
+        if(token) url+='?continuationToken='+encodeURIComponent(token);
+        return xboxFetch(url,key).then(function(data){
+          var list=extractAchievements(data);
+          if(!list) throw new Error('unexpected response shape');
+          entries=entries.concat(list);
+          var t=(data.pagingInfo&&data.pagingInfo.continuationToken)||data.continuationToken||'';
+          if(!t) return entries;
+          if(t===prevToken) throw new Error('pagination loop');
+          prevToken=token; token=t; return next();
+        });
+      }
+      return next();
+    }
+    function buildPreview(entries,warnings){
+      var unlocked=[], skipped=0, seenIds={};
+      entries.forEach(function(a){
+        var id=(a&&a.id!==undefined)?String(a.id):null;
+        if(id===null){ skipped++; return; }
+        if(seenIds[id]) return; seenIds[id]=true;
+        if(isUnlocked(a)) unlocked.push(id);
+      });
+      var mapped=[], unmapped=0;
+      unlocked.forEach(function(id){
+        if(syncMap[id]) mapped.push(syncMap[id]); else unmapped++;
+      });
+      var plan=planFor(mapped,mapped);
+      showImportPreview({
+        bodyEl:previewBody, previewEl:previewEl, confirmBtn:confirmBtn,
+        warnings:warnings, plan:plan,
+        statsHtml:'<p class="text-secondary mb-0">Already ticked: '+plan.already+' · Xbox achievements not in this tracker: '+unmapped+' · Tracker achievements Xbox does not report unlocked (left exactly as they are, including manual ticks from other platforms): '+plan.lockedCount+(skipped?' · Entries without an id, ignored: '+skipped:'')+'.</p>'
+      });
+      setStatus('Preview ready — nothing has changed yet. Confirm to apply, or Cancel.');
+    }
+    function syncError(e){
+      hideImportPreviews();
+      if(e&&e.status===401) setStatus('That key was rejected — check it at xbl.io, or create a new one.');
+      else if(e&&e.status===429) setStatus('OpenXBL rate limit — wait a while and try again.');
+      else if(e&&e.status===403) setStatus('Xbox returned no data for this title — check your Xbox privacy settings (achievement history) or that you have played this game on Xbox.');
+      else if(e&&e.status===404) setStatus('No Xbox profile or title data found — check the gamertag spelling and that you have played this game on Xbox.');
+      else if(e&&e.message==='gamertag not found') setStatus('No Xbox profile found for that gamertag — check the spelling.');
+      else if(e&&e.message==='too many pages') setStatus('OpenXBL paginated this title beyond what this page follows — sync stopped rather than applying a partial result.');
+      else if(e&&e.message==='pagination loop') setStatus('OpenXBL returned the same page twice — sync stopped rather than applying a partial result.');
+      else if(e&&e.message==='unexpected response shape') setStatus('OpenXBL returned a response this page does not recognise — sync stopped, nothing changed.');
+      else if(e instanceof TypeError) setStatus('The browser could not reach OpenXBL — check your connection, or use the paste-JSON option below.');
+      else setStatus('Sync failed — nothing changed. ('+(e&&e.message?e.message:'unknown error')+')');
+    }
+    syncBtn.addEventListener('click',function(){
+      var key=keyInput.value.trim(), gt=gtInput.value.trim();
+      if(!gt){ setStatus('Enter a gamertag first.'); return; }
+      if(!key){ setStatus('Paste your OpenXBL API key first.'); return; }
+      persistInputs();
+      hideImportPreviews();
+      setStatus('Fetching…');
+      syncBtn.disabled=true;
+      var warnings=[];
+      var xuidPromise;
+      if(xboxMeta.xuid&&xboxMeta.gamertag===gt){
+        xuidPromise=Promise.resolve(xboxMeta.xuid);
+      } else {
+        xuidPromise=xboxFetch('/player/gamertag/'+encodeURIComponent(gt),key).then(function(prof){
+          var xuid=extractXuid(prof);
+          if(!xuid) throw new Error('gamertag not found');
+          return xboxFetch('/account',key).then(function(acct){
+            var acctXuid=extractXuid(acct);
+            if(acctXuid&&acctXuid!==xuid) warnings.push('This key belongs to a different gamertag — sync may return public-only data.');
+            xboxMeta.xuid=xuid; metaSave(xboxMeta);
+            return xuid;
+          });
+        });
+      }
+      xuidPromise.then(function(xuid){
+        return fetchTitlePages(xuid,key);
+      }).then(function(entries){
+        buildPreview(entries,warnings);
+      }).catch(syncError).then(function(){ syncBtn.disabled=false; });
+    });
+    pasteBtn.addEventListener('click',function(){
+      var text=pasteInput.value.trim();
+      if(!text){ setStatus('Paste an OpenXBL JSON response first.'); return; }
+      hideImportPreviews();
+      try{
+        var entries=extractAchievements(JSON.parse(text));
+        if(!entries) throw new Error('shape');
+        buildPreview(entries,['Pasted JSON — no gamertag or key was used.']);
+      }catch(e){
+        hideImportPreviews();
+        setStatus('That text did not look like an OpenXBL achievements response.');
+      }
+    });
+    confirmBtn.addEventListener('click',function(){
+      var n=applyImportPending();
+      hideImportPreviews();
+      var m=metaLoad(); m.lastSyncAt=new Date().toISOString(); metaSave(m); xboxMeta=m;
+      setStatus('Synced '+n+' new achievement'+(n===1?'':'s')+' from Xbox at '+new Date().toLocaleString()+'.');
+    });
+    cancelBtn.addEventListener('click',function(){
+      hideImportPreviews();
+      setStatus('Sync cancelled — nothing changed.');
+    });
+    clearKeyBtn.addEventListener('click',function(){
+      keyInput.value='';
+      var m=metaLoad(); m.key=''; metaSave(m); xboxMeta=m;
+      setStatus('Key cleared from this browser.');
+    });
+  }
+  /* Guide images that fail to load (moved, or the host blocks
+     loading them here) are swapped for a placeholder that says
+     why, instead of a broken-image icon. Images already broken
+     when this runs are swapped immediately. */
+  document.querySelectorAll('.ach-media img').forEach(function(img){
+    function swap(){
+      var fig = img.closest('figure');
+      var cap = fig ? fig.querySelector('figcaption') : null;
+      var cred = fig ? fig.querySelector('.media-credit') : null;
+      var capText = cap ? cap.textContent : '';
+      var credText = cred ? cred.textContent : '';
+      var extra = capText + (capText && credText ? ' ' : '') + credText;
+      var d = document.createElement('div');
+      d.className = 'ach-media-fallback';
+      d.textContent = 'Guide image unavailable — it may have moved, or the host may block loading it here. The walkthrough linked in the sources below has the original.'
+        + (extra ? ' (' + extra + ')' : '');
+      img.replaceWith(d);
+    }
+    if(img.complete && img.naturalWidth === 0) swap();
+    else img.addEventListener('error', swap);
+  });
+  /* Walkthrough shots open their full-size version in an
+     on-page viewer instead of a new tab. The link's href is
+     kept, so without scripts (or on a browser too old for
+     <dialog>) the click still opens the image in a new tab,
+     per target=_blank. Escape and tapping outside close it;
+     the close event clears the image so it stops loading.
+     The viewer caption carries the image credit, since the
+     card itself now shows it only on hover. For slideshow
+     shots the viewer also gains Previous/Next: they drive
+     the card's own slideshow buttons, so the card and the
+     viewer never disagree about which slide is current, and
+     arrow keys work too. */
+  var modal = document.getElementById('media-modal');
+  var modalImg = document.getElementById('media-modal-img');
+  var modalCap = document.getElementById('media-modal-caption');
+  var modalNav = document.getElementById('media-modal-nav');
+  var modalCount = document.getElementById('media-modal-count');
+  var modalPrev = modal ? modal.querySelector('.media-modal-prev') : null;
+  var modalNext = modal ? modal.querySelector('.media-modal-next') : null;
+  var modalShow = null;
+  function modalCaption(fig){
+    var cap = fig ? fig.querySelector('figcaption') : null;
+    var cred = fig ? fig.querySelector('.media-credit') : null;
+    var capText = cap ? cap.textContent : '';
+    var credText = cred ? cred.textContent : '';
+    return (capText + (capText && credText ? ' ' : '') + credText).trim();
+  }
+  function modalFromLink(a){
+    var img = a.querySelector('img');
+    var fig = a.closest('figure');
+    modalImg.src = a.getAttribute('href');
+    modalImg.alt = img ? img.alt : '';
+    var text = modalCaption(fig);
+    modalCap.textContent = text;
+    modalCap.style.display = text ? '' : 'none';
+  }
+  function modalSync(){
+    if(!modalShow) return;
+    var ss = modalShow.ss;
+    var active = ss.querySelector('.slideshow-slide.active');
+    var link = active ? active.querySelector('a') : null;
+    if(link) modalFromLink(link);
+    var idx = modalShow.links.indexOf(link);
+    modalCount.textContent = (idx + 1) + ' of ' + modalShow.links.length;
+    modalPrev.disabled = ss.querySelector('.slideshow-prev').disabled;
+    modalNext.disabled = ss.querySelector('.slideshow-next').disabled;
+  }
+  function modalStep(dir){
+    if(!modalShow) return;
+    var btn = modalShow.ss.querySelector(dir < 0 ? '.slideshow-prev' : '.slideshow-next');
+    if(btn) btn.click();
+    modalSync();
+  }
+  if(modal){
+    modal.addEventListener('close', function(){
+      modalImg.removeAttribute('src'); modalShow = null;
+      modal.classList.remove('media-modal-slideshow');
+    });
+    modal.addEventListener('click', function(e){ if(e.target === modal) modal.close(); });
+    var modalClose = modal.querySelector('.media-modal-close');
+    if(modalClose) modalClose.addEventListener('click', function(){ modal.close(); });
+    if(modalPrev) modalPrev.addEventListener('click', function(){ modalStep(-1); });
+    if(modalNext) modalNext.addEventListener('click', function(){ modalStep(1); });
+    modal.addEventListener('keydown', function(e){
+      if(!modalShow) return;
+      if(e.key === 'ArrowLeft') modalStep(-1);
+      else if(e.key === 'ArrowRight') modalStep(1);
+    });
+    /* Tapping the left or right side of a slideshow image steps
+       it too: the buttons underneath stay the discoverable
+       control, this is the faster path for repeat viewing. */
+    modalImg.addEventListener('click', function(e){
+      if(!modalShow) return;
+      var r = modalImg.getBoundingClientRect();
+      if(!r.width) return;
+      modalStep(e.clientX - r.left < r.width / 2 ? -1 : 1);
+    });
+    document.querySelectorAll('.ach-media a, .slideshow a').forEach(function(a){
+      a.addEventListener('click', function(e){
+        if(!modal.showModal) return;
+        e.preventDefault();
+        var ss = a.closest('.slideshow');
+        if(ss){
+          modalShow = {ss: ss, links: [].slice.call(ss.querySelectorAll('a'))};
+          modalNav.style.display = '';
+          modal.classList.add('media-modal-slideshow');
+          modalSync();
+        } else {
+          modalShow = null;
+          modalNav.style.display = 'none';
+          modal.classList.remove('media-modal-slideshow');
+          modalFromLink(a);
+        }
+        modal.showModal();
+      });
+    });
+  }
+  /* Notes live behind the note icons: one icon per card, one on
+     the filter card for game-wide notes. The popup saves as you
+     type, so closing it (button, Escape, outside tap) loses
+     nothing; the icon swaps to a check when its note is set. */
+  function refreshNoteIcons(){
+    document.querySelectorAll('.note-btn').forEach(function(b){
+      var key=b.getAttribute('data-note-key');
+      var has=!!(notesData[key]||'').trim();
+      var icon=b.querySelector('i');
+      if(icon){
+        icon.classList.toggle('bi-journal-check', has);
+        icon.classList.toggle('bi-journal-text', !has);
+      }
+      b.classList.toggle('has-note', has);
+    });
+  }
+  function openNotes(key, title){
+    notesKey=key;
+    notesModalTitle.textContent=title;
+    notesModalText.value=notesData[key]||'';
+    if(notesModal.showModal) notesModal.showModal();
+  }
+  if(notesModal){
+    notesModalText.addEventListener('input', function(){
+      if(notesKey===null) return;
+      var v=notesModalText.value;
+      if(v) notesData[notesKey]=v; else delete notesData[notesKey];
+      save(); refreshNoteIcons();
+    });
+    var notesModalClose=notesModal.querySelector('.notes-modal-close');
+    if(notesModalClose) notesModalClose.addEventListener('click', function(){ notesModal.close(); });
+    notesModal.addEventListener('click', function(e){ if(e.target===notesModal) notesModal.close(); });
+    document.querySelectorAll('.note-btn').forEach(function(b){
+      b.addEventListener('click', function(){
+        var art=b.closest('article');
+        var title=art ? 'Notes: '+art.querySelector('.ach-name').textContent : 'Game notes';
+        openNotes(b.getAttribute('data-note-key'), title);
+      });
+    });
+  }
+  /* Slideshow cards: Previous/Next walk through the guide
+     slides; only one slide shows at a time, and the ends
+     disable their button. Hidden slides are also pulled out
+     of tab order, since they are visibility-hidden, not gone. */
+  document.querySelectorAll('.slideshow').forEach(function(ss){
+    var slides = ss.querySelectorAll('.slideshow-slide');
+    var prev = ss.querySelector('.slideshow-prev');
+    var next = ss.querySelector('.slideshow-next');
+    var count = ss.querySelector('.slideshow-count');
+    var cur = 0;
+    function show(i){
+      cur = Math.max(0, Math.min(slides.length - 1, i));
+      slides.forEach(function(s, j){
+        var on = j === cur;
+        s.classList.toggle('active', on);
+        s.setAttribute('aria-hidden', on ? 'false' : 'true');
+        s.querySelectorAll('a').forEach(function(a){
+          if(on){ a.removeAttribute('tabindex'); } else { a.setAttribute('tabindex', '-1'); }
+        });
+      });
+      count.textContent = (cur + 1) + ' of ' + slides.length;
+      prev.disabled = cur === 0;
+      next.disabled = cur === slides.length - 1;
+    }
+    prev.addEventListener('click', function(){ show(cur - 1); });
+    next.addEventListener('click', function(){ show(cur + 1); });
+    show(0);
+  });
+  load(); updateProgress(); applyFilters();
+})();
+</script>
+</body>
+</html>

@@ -366,6 +366,68 @@ class TestXboxValidation(unittest.TestCase):
         self.assertNotIn("counters", achs["ach-impressive"])
         self.assertNotIn("counters", achs["ach-drive-safe"])
 
+    def test_firefighting_simulator_shares_grind_counters(self):
+        """Firefighting Simulator's grind achievements must share
+        one counter group per grind — missions, multiplayer
+        missions, victims, water, distance — with the firsts as
+        the lowest threshold."""
+        game = next(
+            g for g in load_games()
+            if g["slug"] == "firefighting-simulator-the-squad")
+        self.assertEqual(game["total_count"], 30)
+        self.assertEqual(game["total_gs"], 1000)
+        self.assertEqual(len(game["sections"]), 8)
+        achs = {a["id"]: a for s in game["sections"]
+                for a in s["achievements"]}
+
+        def targets(aid):
+            return [(c["group"], c["target"])
+                    for c in achs[aid].get("counters", [])]
+
+        self.assertEqual(targets("ach-rookie"), [("missions", 1)])
+        self.assertEqual(targets("ach-firefighter"), [("missions", 5)])
+        self.assertEqual(targets("ach-lieutenant"), [("missions", 10)])
+        self.assertEqual(targets("ach-captain"), [("missions", 50)])
+        self.assertEqual(targets("ach-work-horse"), [("missions", 100)])
+        self.assertEqual(targets("ach-part-team"), [("mp-missions", 1)])
+        self.assertEqual(targets("ach-team-player"),
+                         [("mp-missions", 10)])
+        self.assertEqual(targets("ach-gang"), [("mp-missions", 30)])
+        self.assertEqual(targets("ach-not-alone"), [("mp-missions", 50)])
+        self.assertEqual(targets("ach-saved-life"), [("victims", 1)])
+        self.assertEqual(targets("ach-semi-pro"), [("victims", 10)])
+        self.assertEqual(targets("ach-cannot-stopped"),
+                         [("victims", 100)])
+        self.assertEqual(targets("ach-guardian"), [("victims", 200)])
+        self.assertEqual(targets("ach-hose"), [("water", 1000)])
+        self.assertEqual(targets("ach-spray"), [("water", 10000)])
+        self.assertEqual(targets("ach-let-flow"), [("water", 100000)])
+        self.assertEqual(targets("ach-road-master"), [("distance", 50)])
+        self.assertEqual(targets("ach-asphalt"), [("distance", 100)])
+        self.assertEqual(targets("ach-forever"), [("distance", 1000)])
+
+    def test_total_chaos_merciful_run_is_missable(self):
+        """Total Chaos's five chapter variants plus the good
+        ending must be flagged missable — one wrong kill locks
+        each out for the run — and the good-ending card must
+        carry the per-chapter mercy checklist. The game has no
+        cumulative counters: every achievement is a one-time
+        feat."""
+        game = next(g for g in load_games() if g["slug"] == "total-chaos")
+        self.assertEqual(game["total_count"], 37)
+        self.assertEqual(game["total_gs"], 1000)
+        self.assertEqual(len(game["sections"]), 6)
+        achs = {a["id"]: a for s in game["sections"]
+                for a in s["achievements"]}
+        for aid in ("ach-love-kid", "ach-keep-touch", "ach-thought",
+                    "ach-keep-growing", "ach-wont-kill", "ach-good-ending"):
+            self.assertTrue(achs[aid].get("missable"), aid)
+        self.assertEqual(len(achs["ach-good-ending"]["steps"]), 8)
+        self.assertEqual(len(achs["ach-love-kid"]["steps"]), 5)
+        self.assertEqual(len(achs["ach-thought"]["steps"]), 4)
+        self.assertFalse(any("counters" in a for a in achs.values()))
+        self.assertIn("45 journals", achs["ach-journal"]["how"])
+
     def test_media_without_full_links_to_itself(self):
         """A media image with no larger version must still open
         in the viewer: the viewer binds .ach-media links, so a
