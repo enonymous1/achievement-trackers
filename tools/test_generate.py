@@ -429,6 +429,14 @@ class TestRender(unittest.TestCase):
         self.assertIn("overallBarNav.style.width", template)
         self.assertNotIn("progress-card{position:sticky", template)
 
+    def test_header_freezes_on_hub_and_how_pages(self):
+        # The Home and How pages have no progress card, but the
+        # top bar freezes the same way, so the sidebar toggle
+        # stays reachable while scrolling.
+        for name in ("hub_template.html", "how_template.html"):
+            template = (Path(__file__).parent / name).read_text()
+            self.assertIn(".app-header{position:sticky;top:0", template)
+
     def test_sidebar_menu_and_how_href(self):
         games = [make_game(), make_game(slug="other", title="Other")]
         html = sidebar_menu(games, "../", "test")

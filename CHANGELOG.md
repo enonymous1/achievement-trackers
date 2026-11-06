@@ -16,7 +16,10 @@ versioned; the git log is the release history.
   edge now mirrors the card's bar. The big progress
   card scrolls away with the rest of the page. A
   unit test pins the sticky header, the navbar bar,
-  and the card no longer being sticky.
+  and the card no longer being sticky. The Home and
+  How pages freeze the same way (same rule, no
+  progress bar there) — otherwise the sidebar
+  toggle scrolled out of reach on those pages too.
 
 ### Added
 
