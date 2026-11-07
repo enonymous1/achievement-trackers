@@ -4,6 +4,26 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-07 — Grove: COBIGAIL steps + slideshow
+
+### Fixed
+
+- COBIGAIL (Great God Grove #16) used to jump
+  straight from the bakery rabbit to the
+  bookshelf — the whole insult chain in between
+  was missing. It now carries an eight-step
+  checklist (Razzmatazz's dumb-burro insult,
+  Goody and the lipstick, Capochin's heroic
+  insult, the Bayker and the pumpkin, Razzmatazz
+  again, Capochin's final insult, the pumpkin
+  vines and the bookshelf, then meeting Cobigail)
+  and an eight-slide slideshow of the walkthrough
+  shots in order, replacing the single BOO image.
+  The seven new shots come from the complete
+  walkthrough Justin sent over; only the BOO shot
+  has a full-size original, the rest link to
+  themselves.
+
 ## 2026-11-06 — Grove: Da God Awards steps + slideshow
 
 ### Fixed

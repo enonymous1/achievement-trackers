@@ -450,6 +450,31 @@ class TestXboxValidation(unittest.TestCase):
                                  "milldread-tv-and-bunny.jpg"])
         self.assertIn("full", awards["slideshow"][-1])
 
+    def test_cobigail_lists_insult_chain(self):
+        """COBIGAIL must carry the eight steps between the
+        bakery rabbit and the school — the Razzmatazz /
+        Capochin insult chain, the pumpkin, and the
+        bookshelf — with an eight-slide slideshow of the
+        walkthrough shots in order. The card used to jump
+        straight from the rabbit to the bookshelf."""
+        game = next(g for g in load_games() if g["slug"] == "great-god-grove")
+        achs = {a["id"]: a for s in game["sections"]
+                for a in s["achievements"]}
+        cobi = achs["ach-cobigail"]
+        self.assertEqual(len(cobi["steps"]), 8)
+        self.assertEqual(len(cobi["slideshow"]), 8)
+        self.assertNotIn("media", cobi)
+        slugs = [s["src"].split("/")[-1] for s in cobi["slideshow"]]
+        self.assertEqual(slugs, ["razzma-insult-dumb-burro.jpg",
+                                 "goody-i-love-it.jpg",
+                                 "capochin-insult-draw-something-heroic.jpg",
+                                 "bayker-swear-it-on-my-life.jpg",
+                                 "razzma-insult-kings-toenails.jpg",
+                                 "capo-insult-evil-tyrant.jpg",
+                                 "bookshelf-inside-school.jpg",
+                                 "cobigail-boo.jpg"])
+        self.assertIn("full", cobi["slideshow"][-1])
+
     def test_media_without_full_links_to_itself(self):
         """A media image with no larger version must still open
         in the viewer: the viewer binds .ach-media links, so a
