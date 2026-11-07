@@ -4,6 +4,28 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-07 — Grove: Bloodletting steps + slideshow
+
+### Fixed
+
+- Bloodletting (Great God Grove #19) used to be a
+  one-liner about the berry and the jam, skipping
+  the whole cata-home route that gets you there.
+  It now carries an eight-step checklist (the 3
+  crows and the scarecrow, Saul's phrase, Budd,
+  the 3 hide-and-seek students, the tree and the
+  4 song lines in order, Cobigail and the Ol'
+  Bloom phrase, the Bayker's jam, then shooting
+  Saul at the sacrifice) and an eight-slide
+  slideshow of the walkthrough shots in order.
+  The crow shots come from the complete
+  walkthrough Justin sent over; the other six
+  were never in the saved file (lazy-loaded past
+  where he'd scrolled), so they were fetched from
+  TA's image server at display size through the
+  local forwarder — all 820px, none with a
+  full-size original, so they link to themselves.
+
 ## 2026-11-07 — Grove: COBIGAIL steps + slideshow
 
 ### Fixed

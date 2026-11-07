@@ -475,6 +475,32 @@ class TestXboxValidation(unittest.TestCase):
                                  "cobigail-boo.jpg"])
         self.assertIn("full", cobi["slideshow"][-1])
 
+    def test_bloodletting_lists_catahome_route(self):
+        """Bloodletting must carry the eight steps from the
+        crows to the sacrifice — the crow hunt, Saul's
+        phrase, Budd, the three students, the tree, the
+        jam — with an eight-slide slideshow of the
+        walkthrough shots in order. The card used to be a
+        one-liner about the berry and the jam, skipping
+        the whole cata-home route."""
+        game = next(g for g in load_games() if g["slug"] == "great-god-grove")
+        achs = {a["id"]: a for s in game["sections"]
+                for a in s["achievements"]}
+        blood = achs["ach-bloodletting"]
+        self.assertEqual(len(blood["steps"]), 8)
+        self.assertEqual(len(blood["slideshow"]), 8)
+        self.assertNotIn("media", blood)
+        slugs = [s["src"].split("/")[-1] for s in blood["slideshow"]]
+        self.assertEqual(slugs, ["crow-bush-by-school.jpg",
+                                 "crow-out-by-school.jpg",
+                                 "saul-hate-shaggy-man.jpg",
+                                 "budd-song-line.jpg",
+                                 "frenke-hiding.jpg",
+                                 "mildreadberry-tree.jpg",
+                                 "cobigail-mildreadberry-jam.jpg",
+                                 "mildreadberry-jam.jpg"])
+        self.assertIn("cata-home", blood["how"])
+
     def test_media_without_full_links_to_itself(self):
         """A media image with no larger version must still open
         in the viewer: the viewer binds .ach-media links, so a
