@@ -476,6 +476,40 @@ class TestXboxValidation(unittest.TestCase):
                                  "cobigail-boo.jpg"])
         self.assertIn("full", cobi["slideshow"][-1])
 
+    def test_generation_zero_base_game_only(self):
+        # Game #16: base game only, 50 / 1,000G — the full TA
+        # list is 72 / 1,390G with 3 DLC packs, which are out
+        # of scope. No TA walkthrough exists; route notes come
+        # from the platinum guide. Nothing is missable. The
+        # collectible sets carry verified totals (23
+        # blueprints, 21 gnomes, 22 mixtapes, 14 Dala horses),
+        # and the streak/peak feats (no-damage 3, 8 on one
+        # flare) deliberately carry no counter, like the
+        # single-shift achievements in Police Simulator.
+        game = next(
+            g for g in load_games() if g["slug"] == "generation-zero"
+        )
+        self.assertEqual(game["_total_count"], 50)
+        self.assertEqual(game["_total_gs"], 1000)
+        achs = {a["id"]: a for s in game["sections"]
+                for a in s["achievements"]}
+        self.assertEqual(len(achs), 50)
+        self.assertEqual(
+            [c["target"] for c in achs["ach-engineer"]["counters"]], [23])
+        self.assertEqual(
+            [c["target"] for c in achs["ach-gardener"]["counters"]], [21])
+        self.assertEqual(
+            [c["target"] for c in achs["ach-dj"]["counters"]], [22])
+        self.assertEqual(
+            [c["target"] for c in achs["ach-tourist"]["counters"]], [14])
+        self.assertEqual(
+            [c["target"] for c in achs["ach-decimation"]["counters"]], [500])
+        self.assertNotIn("counters", achs["ach-offence"])
+        self.assertNotIn("counters", achs["ach-hot-property"])
+        self.assertFalse(any(a.get("missable") for a in achs.values()))
+        self.assertEqual([s["id"] for s in game["sections"]],
+                         ["story", "machines", "weapons", "explore", "gear"])
+
     def test_gabbys_dollhouse_crafts_first(self):
         # Game #15: all 16 / 1,000G, in the walkthrough's
         # roadmap order — Crafts Room first (it gives the

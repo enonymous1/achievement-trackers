@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generation Zero — Achievement Tracker</title>
+<meta name="description" content="Achievement-first tracker for Generation Zero: achievements grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<meta property="og:title" content="Generation Zero — Achievement Tracker">
+<meta property="og:description" content="Achievement-first tracker for Generation Zero: achievements grouped and ordered by how they typically unlock, with Gamerscore progress saved in your browser.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+<script>
+  /* Theme before first paint: saved choice wins, otherwise follow the
+     system. AdminLTE 4 / Bootstrap 5.3 read data-bs-theme. */
+  (function () {
+    try {
+      var theme = localStorage.getItem("at-theme");
+      if (!theme) {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      document.documentElement.setAttribute("data-bs-theme", theme);
+    } catch (e) {}
+  })();
+</script>
+<link rel="stylesheet" href="../../assets/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="../../assets/vendor/bootstrap-icons.min.css">
+<link rel="stylesheet" href="../../assets/vendor/adminlte.min.css">
+<link rel="stylesheet" href="../../assets/css/sidebar.css">
+<link rel="stylesheet" href="../../assets/css/tracker-cards.css">
+<style>
+  /* Page rules only: the card language itself lives in
+     assets/css/tracker-cards.css, shared with the How page demos. */
+  /* v2's contained column, not AdminLTE's full-width fluid layout. */
+  .app-main .container-fluid{max-width:1100px;margin-left:auto;margin-right:auto}
+  /* The top bar is frozen, and it carries the compact progress:
+     the text was already in the navbar, and the thin bar along
+     its bottom edge mirrors the card's bar. The big progress
+     card below is not pinned — it scrolls away with the rest of
+     the page. Search, filters and the Order/Scope text live in
+     the card below it and scroll away too. */
+  .app-header{position:sticky;top:0;z-index:1030}
+  .nav-progress{position:absolute;left:0;right:0;bottom:0;height:3px}
+  #overallBarNav{height:100%;width:0%;background:linear-gradient(90deg,var(--at-green),#a8e07a)}
+  .progress-card{margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  /* AdminLTE's layout-fixed sets .app-main to overflow:auto (via
+     .sidebar-expand-lg.layout-fixed .app-main), which would make
+     it its own scroll container. Keep visible overflow at the
+     same specificity, so the page keeps scrolling on the
+     viewport — the behaviour the frozen header and the rest of
+     the page rely on. (Added for the old sticky progress card;
+     the card is gone, but the scrolling behaviour stays.) */
+  .sidebar-expand-lg.layout-fixed .app-main{overflow:visible}
+  /* Sections read as a group again (v2's card background), not as a
+     bare bordered box on the page background. */
+  details{background:var(--bs-card-bg);border:1px solid var(--bs-border-color);border-radius:12px;margin-bottom:1rem;overflow:hidden}
+  details summary{cursor:pointer;padding:1rem;font-weight:700;font-size:1.1rem}
+  details summary::marker{color:var(--bs-secondary-color)}
+  details summary small{display:block;font-weight:400;color:var(--bs-secondary-color);font-size:.9rem;margin-top:2px}
+  .section-body{padding:0 1rem 1rem}
+  /* Overall progress bar: v2's rounded gradient pill, not the flat
+     Bootstrap bar. The counter bars keep Bootstrap's flat bar. */
+  #overallBar{background:linear-gradient(90deg,var(--at-green),#a8e07a);border-radius:99px}
+  .progress:has(#overallBar){height:14px;border-radius:99px;overflow:hidden}
+  /* Phase filters are separate pills (v2), not a joined button group;
+     the active pill is solid green with dark text, as in v2. */
+  /* Phase pills read as normal text (v2), not Bootstrap's dark-green
+     outline-success text, which is near-illegible on a dark card. */
+  .filter{--bs-btn-color:var(--bs-body-color);--bs-btn-border-color:var(--bs-border-color);--bs-btn-hover-color:var(--bs-body-color);--bs-btn-hover-border-color:var(--at-green);--bs-btn-active-color:var(--bs-body-color)}
+  .filter.active{background:var(--at-green) !important;border-color:var(--at-green) !important;font-weight:700}
+  [data-bs-theme="dark"] .filter.active{color:#12140f !important}
+  .hidden{display:none !important}
+  @media print{.app-header,.controls,#xbox-sync{display:none !important}details{break-inside:avoid}}
+</style>
+</head>
+<body class="layout-fixed sidebar-expand-lg">
+<script>
+  /* Restore the sidebar's collapsed/open state before AdminLTE's
+     own init runs, so the drawer does not flash open on every page.
+     The observer in assets/js/sidebar-state.js saves each change. */
+  (function(){try{var s=localStorage.getItem('at-sidebar');if(s==='collapsed')document.body.classList.add('sidebar-collapse');if(s==='open')document.body.classList.add('sidebar-open');}catch(e){}})();
+</script>
+<div class="app-wrapper">
+  <nav class="app-header navbar navbar-expand bg-body">
+    <div class="container-fluid">
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" aria-label="Toggle sidebar"><i class="bi bi-list"></i></a></li>
+      </ul>
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item"><span class="nav-link" id="overallTextNav">0 / 50 · 0G</span></li>
+        <li class="nav-item ms-2"><button type="button" id="theme-toggle" class="btn btn-sm btn-outline-secondary" aria-label="Toggle dark mode"><i class="bi bi-moon-fill" aria-hidden="true"></i></button></li>
+      </ul>
+    </div>
+    <div class="nav-progress" aria-hidden="true"><div id="overallBarNav"></div></div>
+  </nav>
+  <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+    <div class="sidebar-brand">
+      <a href="../../" class="brand-link"><span class="brand-text fw-light">🏆 Achievement Trackers</span></a>
+    </div>
+    <div class="sidebar-wrapper">
+      <nav class="mt-2">
+        <ul class="nav sidebar-menu flex-column" role="menu">
+              <li class="nav-item"><a href="../../" class="nav-link"><i class="nav-icon bi bi-house"></i><p>Home</p></a></li>
+              <li class="nav-header">Games</li>
+              <li class="nav-header">#</li>
+              <li class="nav-item"><a href="../../games/1000xresist/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>1000xRESIST</p></a></li>
+              <li class="nav-header">B</li>
+              <li class="nav-item"><a href="../../games/barbie-horse-trails/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Barbie Horse Trails</p></a></li>
+              <li class="nav-header">D</li>
+              <li class="nav-item"><a href="../../games/dragon-ball-xenoverse-2/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Dragon Ball Xenoverse 2</p></a></li>
+              <li class="nav-header">F</li>
+              <li class="nav-item"><a href="../../games/firefighting-simulator-the-squad/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Firefighting Simulator: The Squad</p></a></li>
+              <li class="nav-header">G</li>
+              <li class="nav-item"><a href="../../games/gabbys-dollhouse-ready-to-party/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Gabby&#x27;s Dollhouse: Ready to Party</p></a></li>
+              <li class="nav-item"><a href="../../games/generation-zero/" class="nav-link active"><i class="nav-icon bi bi-controller"></i><p>Generation Zero</p></a></li>
+              <li class="nav-item"><a href="../../games/goldeneye-007/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>GoldenEye 007</p></a></li>
+              <li class="nav-item"><a href="../../games/great-god-grove/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Great God Grove</p></a></li>
+              <li class="nav-header">M</li>
+              <li class="nav-item"><a href="../../games/minecraft-dungeons/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Minecraft Dungeons</p></a></li>
+              <li class="nav-item"><a href="../../games/moonlighter/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Moonlighter</p></a></li>
+              <li class="nav-header">P</li>
+              <li class="nav-item"><a href="../../games/pigeon-simulator/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Pigeon Simulator</p></a></li>
+              <li class="nav-item"><a href="../../games/police-simulator-patrol-officers/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Police Simulator: Patrol Officers</p></a></li>
+              <li class="nav-header">R</li>
+              <li class="nav-item"><a href="../../games/relic-hunters-legend/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Relic Hunters Legend</p></a></li>
+              <li class="nav-header">T</li>
+              <li class="nav-item"><a href="../../games/total-chaos/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Total Chaos</p></a></li>
+              <li class="nav-header">W</li>
+              <li class="nav-item"><a href="../../games/winter-burrow/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Winter Burrow</p></a></li>
+              <li class="nav-item"><a href="../../games/wreckfest/" class="nav-link"><i class="nav-icon bi bi-controller"></i><p>Wreckfest</p></a></li>
+        </ul>
+      </nav>
+      <div class="sidebar-bottom">
+        <ul class="nav sidebar-menu flex-column" role="menu">
+          <li class="nav-item"><a href="../../how-it-works/" class="nav-link"><i class="nav-icon bi bi-question-circle"></i><p>How it works</p></a></li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+  <main class="app-main">
+    <div class="app-content-header">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-12">
+            <h3 class="mb-0">Generation Zero <small class="text-secondary">— Achievement Tracker</small></h3>
+            <p class="text-secondary mb-0">1980s Sweden, overrun by machines — clear the story, hunt 80 collectibles, and grind 500 machines.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="app-content">
+      <div class="container-fluid">
+
+        <div class="card progress-card">
+          <div class="card-header d-flex justify-content-between flex-wrap gap-2">
+            <h3 class="card-title">Gamerscore progress</h3>
+            <span id="overallText">0 / 50 achievements · 0 / 1000G</span>
+          </div>
+          <div class="card-body">
+            <div class="progress" role="progressbar" aria-label="Gamerscore progress">
+              <div class="progress-bar bg-success" id="overallBar" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="controls d-flex flex-wrap gap-2 align-items-center">
+              <input type="search" id="search" class="form-control flex-grow-1" style="min-width:220px" placeholder="Search achievements, missions, gear…" aria-label="Search tracker">
+              <label class="form-check-label"><input type="checkbox" id="incompleteOnly" class="form-check-input me-1"> Incomplete only</label>
+              <button type="button" id="exportBtn" class="btn btn-outline-secondary btn-sm">Export progress</button>
+              <label class="btn btn-outline-secondary btn-sm mb-0" for="importFile">Import progress</label>
+              <input type="file" id="importFile" accept=".json,application/json" class="d-none">
+              <button type="button" id="resetBtn" class="btn btn-outline-danger btn-sm">Reset all</button>
+              <button type="button" class="note-btn" data-note-key="game" title="Game notes" aria-label="Game notes"><i class="bi bi-journal-text"></i></button>
+            </div>
+            <div class="controls d-flex flex-wrap gap-2 mt-2" role="group" aria-label="Filter by phase">
+              <button type="button" class="filter btn btn-outline-success active" data-filter="all">All</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="story">Story</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="machines">Machine kills</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="weapons">Weapons &amp; feats</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="explore">Exploration &amp; collectibles</button>
+      <button type="button" class="filter btn btn-outline-success" data-filter="gear">Gear &amp; characters</button>
+            </div>
+            <p class="text-secondary mt-3 mb-0"><strong>Order:</strong> One playthrough, nothing missable, any order — but do the story first for the safehouses and gear, hunt collectibles region by region, and keep the second character for Player Two and Postgraduate only. Answering machines and side missions must be done on one character (your main).</p>
+            <p class="text-secondary mb-0"><strong>Scope:</strong> Base game only: all 50 achievements / 1,000G. The 3 DLC packs (22 achievements / 390G) are out of scope. No TrueAchievements walkthrough exists; route notes paraphrased from the Generation Zero platinum guide (messymoddingstore) and TA achievement solutions. About 40–50 hours.</p>
+          </div>
+        </div>
+
+
+
+<details open data-cat="story">
+<summary>Story <small>7 achievements · <span class="sec-progress" data-section="story"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Grey Dawn Complete all Intro Missions. Play the introductory missions — they teach the basics and open the map."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-grey-dawn" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#1</span><span class="ach-name">Grey Dawn</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-grey-dawn" title="Notes for Grey Dawn" aria-label="Notes for Grey Dawn"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete all Intro Missions.</p><p class="how">Play the introductory missions — they teach the basics and open the map.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="If It Bleeds, We Can Kill It. Complete the Main Mission &quot;A Wrench in the Works&quot;. Complete the main mission &quot;A Wrench in the Works&quot; — the first of the four named main missions."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-bleeds" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#2</span><span class="ach-name">If It Bleeds, We Can Kill It.</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-bleeds" title="Notes for If It Bleeds, We Can Kill It." aria-label="Notes for If It Bleeds, We Can Kill It."><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete the Main Mission &quot;A Wrench in the Works&quot;.</p><p class="how">Complete the main mission &quot;A Wrench in the Works&quot; — the first of the four named main missions.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Elementary Complete the Main Mission &quot;Empty Spaces&quot;. Complete the main mission &quot;Empty Spaces&quot;. A level 5 HP-5 waits in a safe here — grab it for Lock &amp; Load."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-elementary" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#3</span><span class="ach-name">Elementary</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-elementary" title="Notes for Elementary" aria-label="Notes for Elementary"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete the Main Mission &quot;Empty Spaces&quot;.</p><p class="how">Complete the main mission &quot;Empty Spaces&quot;. A level 5 HP-5 waits in a safe here — grab it for Lock &amp; Load.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="My Friend Complete the Main Mission &quot;The Enemy of my Enemy&quot;. Complete the main mission &quot;The Enemy of my Enemy&quot;. A level 5 AI-76 is here — grab it for Lock &amp; Load."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-my-friend" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#4</span><span class="ach-name">My Friend</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-my-friend" title="Notes for My Friend" aria-label="Notes for My Friend"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete the Main Mission &quot;The Enemy of my Enemy&quot;.</p><p class="how">Complete the main mission &quot;The Enemy of my Enemy&quot;. A level 5 AI-76 is here — grab it for Lock &amp; Load.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Rise Of The Phoenix Complete the Main Mission &quot;Behind the Curtain&quot;. Complete the main mission &quot;Behind the Curtain&quot;."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-phoenix" data-gs="60" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#5</span><span class="ach-name">Rise Of The Phoenix</span><span class="gs badge text-bg-warning ms-auto">60G</span></button><button type="button" class="note-btn" data-note-key="ach-phoenix" title="Notes for Rise Of The Phoenix" aria-label="Notes for Rise Of The Phoenix"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete the Main Mission &quot;Behind the Curtain&quot;.</p><p class="how">Complete the main mission &quot;Behind the Curtain&quot;.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="It&#x27;s The Final Countdown Complete all Main Missions. Complete all main missions — the intro missions, the four named ones, and the finale."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-final-countdown" data-gs="20" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#6</span><span class="ach-name">It&#x27;s The Final Countdown</span><span class="gs badge text-bg-warning ms-auto">20G</span></button><button type="button" class="note-btn" data-note-key="ach-final-countdown" title="Notes for It&#x27;s The Final Countdown" aria-label="Notes for It&#x27;s The Final Countdown"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Complete all Main Missions.</p><p class="how">Complete all main missions — the intro missions, the four named ones, and the finale.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Go-Getter Complete 25 Side Missions. Complete 25 side missions. Do them on your main character — side-mission progress doesn&#x27;t count across characters. Take them as they appear while you play."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-go-getter" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#7</span><span class="ach-name">Go-Getter</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-go-getter" title="Notes for Go-Getter" aria-label="Notes for Go-Getter"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="side-missions" data-target="25"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Complete 25 Side Missions.</p><p class="how">Complete 25 side missions. Do them on your main character — side-mission progress doesn&#x27;t count across characters. Take them as they appear while you play.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease side-missions counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="side-missions" data-target="25" min="0" value="0" aria-label="side-missions counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase side-missions counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+</div></div></details>
+<details data-cat="machines">
+<summary>Machine kills <small>9 achievements · <span class="sec-progress" data-section="machines"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="First Blood Destroy your first machine. Destroy your first machine — the intro missions give you plenty of chances."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-first-blood" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#8</span><span class="ach-name">First Blood</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-first-blood" title="Notes for First Blood" aria-label="Notes for First Blood"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Destroy your first machine.</p><p class="how">Destroy your first machine — the intro missions give you plenty of chances.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="You&#x27;re A Disease And I&#x27;m The Cure Destroy 20 Ticks. Destroy 20 Ticks. Ticks fill the bunkers — they come in swarms."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-disease" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#9</span><span class="ach-name">You&#x27;re A Disease And I&#x27;m The Cure</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-disease" title="Notes for You&#x27;re A Disease And I&#x27;m The Cure" aria-label="Notes for You&#x27;re A Disease And I&#x27;m The Cure"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="ticks" data-target="20"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Destroy 20 Ticks.</p><p class="how">Destroy 20 Ticks. Ticks fill the bunkers — they come in swarms.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease ticks counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="ticks" data-target="20" min="0" value="0" aria-label="ticks counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase ticks counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Hasta La Vista Baby Destroy 30 Seekers. Destroy 30 Seekers. Seekers and Hunters gather around relay beacons."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-hasta" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#10</span><span class="ach-name">Hasta La Vista Baby</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-hasta" title="Notes for Hasta La Vista Baby" aria-label="Notes for Hasta La Vista Baby"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="seekers" data-target="30"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Destroy 30 Seekers.</p><p class="how">Destroy 30 Seekers. Seekers and Hunters gather around relay beacons.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease seekers counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="seekers" data-target="30" min="0" value="0" aria-label="seekers counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase seekers counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="All Out Of Bubblegum Destroy 80 Runners. Destroy 80 Runners. Runners are everywhere — this finishes on its own."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-bubblegum" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#11</span><span class="ach-name">All Out Of Bubblegum</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-bubblegum" title="Notes for All Out Of Bubblegum" aria-label="Notes for All Out Of Bubblegum"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="runners" data-target="80"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Destroy 80 Runners.</p><p class="how">Destroy 80 Runners. Runners are everywhere — this finishes on its own.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease runners counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="runners" data-target="80" min="0" value="0" aria-label="runners counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase runners counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Go Ahead, Make My Day Destroy 30 Hunters. Destroy 30 Hunters. Hunters gather around relay beacons; Saltholmen church is a good hunting spot."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-make-my-day" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#12</span><span class="ach-name">Go Ahead, Make My Day</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-make-my-day" title="Notes for Go Ahead, Make My Day" aria-label="Notes for Go Ahead, Make My Day"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="hunters" data-target="30"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Destroy 30 Hunters.</p><p class="how">Destroy 30 Hunters. Hunters gather around relay beacons; Saltholmen church is a good hunting spot.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease hunters counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="hunters" data-target="30" min="0" value="0" aria-label="hunters counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase hunters counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Yippee-Ki-Yay Destroy 15 Harvesters. Destroy 15 Harvesters. The slow one — Harvesters appear in open fields and near churches."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-yippee" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#13</span><span class="ach-name">Yippee-Ki-Yay</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-yippee" title="Notes for Yippee-Ki-Yay" aria-label="Notes for Yippee-Ki-Yay"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="harvesters" data-target="15"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Destroy 15 Harvesters.</p><p class="how">Destroy 15 Harvesters. The slow one — Harvesters appear in open fields and near churches.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease harvesters counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="harvesters" data-target="15" min="0" value="0" aria-label="harvesters counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase harvesters counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Say Hello To My Little Friend Destroy 15 Tanks. Destroy 15 Tanks. Like Harvesters, Tanks are slow to find — open fields and near churches."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-little-friend" data-gs="50" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#14</span><span class="ach-name">Say Hello To My Little Friend</span><span class="gs badge text-bg-warning ms-auto">50G</span></button><button type="button" class="note-btn" data-note-key="ach-little-friend" title="Notes for Say Hello To My Little Friend" aria-label="Notes for Say Hello To My Little Friend"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="tanks" data-target="15"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Destroy 15 Tanks.</p><p class="how">Destroy 15 Tanks. Like Harvesters, Tanks are slow to find — open fields and near churches.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease tanks counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="tanks" data-target="15" min="0" value="0" aria-label="tanks counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase tanks counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Decimation Destroy 500 machines. Destroy 500 machines in total. Track it in the journal stats tab; it climbs across the whole run."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-decimation" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#15</span><span class="ach-name">Decimation</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-decimation" title="Notes for Decimation" aria-label="Notes for Decimation"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="machines" data-target="500"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Destroy 500 machines.</p><p class="how">Destroy 500 machines in total. Track it in the journal stats tab; it climbs across the whole run.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease machines counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="machines" data-target="500" min="0" value="0" aria-label="machines counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase machines counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Kill Switch Destroy 10 relay beacons. Destroy 10 relay beacons. Beacons appear on the map as you approach them — destroy them as you go."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-kill-switch" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#16</span><span class="ach-name">Kill Switch</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-kill-switch" title="Notes for Kill Switch" aria-label="Notes for Kill Switch"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="relay-beacons" data-target="10"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Destroy 10 relay beacons.</p><p class="how">Destroy 10 relay beacons. Beacons appear on the map as you approach them — destroy them as you go.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease relay-beacons counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="relay-beacons" data-target="10" min="0" value="0" aria-label="relay-beacons counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase relay-beacons counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+</div></div></details>
+<details data-cat="weapons">
+<summary>Weapons &amp; feats <small>14 achievements · <span class="sec-progress" data-section="weapons"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Commando Use assault rifles to destroy 80 machines. Destroy 80 machines with assault rifles."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-commando" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#17</span><span class="ach-name">Commando</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-commando" title="Notes for Commando" aria-label="Notes for Commando"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="ar-kills" data-target="80"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Use assault rifles to destroy 80 machines.</p><p class="how">Destroy 80 machines with assault rifles.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease ar-kills counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="ar-kills" data-target="80" min="0" value="0" aria-label="ar-kills counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase ar-kills counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Hunter Use hunting rifles to destroy 20 machines. Destroy 20 machines with hunting rifles. The PvG 90 from the top of Stenudden lighthouse counts here."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-hunter" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#18</span><span class="ach-name">Hunter</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-hunter" title="Notes for Hunter" aria-label="Notes for Hunter"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="hr-kills" data-target="20"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Use hunting rifles to destroy 20 machines.</p><p class="how">Destroy 20 machines with hunting rifles. The PvG 90 from the top of Stenudden lighthouse counts here.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease hr-kills counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="hr-kills" data-target="20" min="0" value="0" aria-label="hr-kills counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase hr-kills counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Sapper Use explosives to destroy 15 machines. Destroy 15 machines with explosives — the m/49 Granatgevär, grenades, landmines, and explosive shells. Exploding gas tanks don&#x27;t count."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-sapper" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#19</span><span class="ach-name">Sapper</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-sapper" title="Notes for Sapper" aria-label="Notes for Sapper"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="explosive-kills" data-target="15"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Use explosives to destroy 15 machines.</p><p class="how">Destroy 15 machines with explosives — the m/49 Granatgevär, grenades, landmines, and explosive shells. Exploding gas tanks don&#x27;t count.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease explosive-kills counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="explosive-kills" data-target="15" min="0" value="0" aria-label="explosive-kills counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase explosive-kills counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Gangster Use submachine guns to destroy 60 machines. Destroy 60 machines with submachine guns."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-gangster" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#20</span><span class="ach-name">Gangster</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-gangster" title="Notes for Gangster" aria-label="Notes for Gangster"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="smg-kills" data-target="60"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Use submachine guns to destroy 60 machines.</p><p class="how">Destroy 60 machines with submachine guns.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease smg-kills counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="smg-kills" data-target="60" min="0" value="0" aria-label="smg-kills counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase smg-kills counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Gunslinger Use handgun to destroy 20 machines. Destroy 20 machines with handguns."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-gunslinger" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#21</span><span class="ach-name">Gunslinger</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-gunslinger" title="Notes for Gunslinger" aria-label="Notes for Gunslinger"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="handgun-kills" data-target="20"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Use handgun to destroy 20 machines.</p><p class="how">Destroy 20 machines with handguns.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease handgun-kills counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="handgun-kills" data-target="20" min="0" value="0" aria-label="handgun-kills counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase handgun-kills counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Operator Use shotguns to destroy 40 machines. Destroy 40 machines with shotguns."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-operator" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#22</span><span class="ach-name">Operator</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-operator" title="Notes for Operator" aria-label="Notes for Operator"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="shotgun-kills" data-target="40"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Use shotguns to destroy 40 machines.</p><p class="how">Destroy 40 machines with shotguns.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease shotgun-kills counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="shotgun-kills" data-target="40" min="0" value="0" aria-label="shotgun-kills counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase shotgun-kills counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Real Sneaky Like Use suppressed weapons to destroy 20 enemies. Destroy 20 enemies with suppressed weapons — it counts even if the machines have spotted you."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-sneaky" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#23</span><span class="ach-name">Real Sneaky Like</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-sneaky" title="Notes for Real Sneaky Like" aria-label="Notes for Real Sneaky Like"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="suppressed-kills" data-target="20"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Use suppressed weapons to destroy 20 enemies.</p><p class="how">Destroy 20 enemies with suppressed weapons — it counts even if the machines have spotted you.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease suppressed-kills counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="suppressed-kills" data-target="20" min="0" value="0" aria-label="suppressed-kills counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase suppressed-kills counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Overkill Shoot a Seeker with the m/49 Granatgevär. Shoot a Seeker with the m/49 Granatgevär (found in bunkers and military zones) — a direct hit."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-overkill" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#24</span><span class="ach-name">Overkill</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-overkill" title="Notes for Overkill" aria-label="Notes for Overkill"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Shoot a Seeker with the m/49 Granatgevär.</p><p class="how">Shoot a Seeker with the m/49 Granatgevär (found in bunkers and military zones) — a direct hit.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="One Shot Destroy a Hunter with a single shot. Destroy a Hunter with a single bullet — grenades and rockets don&#x27;t count. Lay at least six gas or explosive canisters along a path, lure Hunters onto them, and shoot a canister to set off the chain; a single follow-up bullet finishes a weakened Hunter. Saltholmen church is a good spot."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-one-shot" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#25</span><span class="ach-name">One Shot</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-one-shot" title="Notes for One Shot" aria-label="Notes for One Shot"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Destroy a Hunter with a single shot.</p><p class="how">Destroy a Hunter with a single bullet — grenades and rockets don&#x27;t count. Lay at least six gas or explosive canisters along a path, lure Hunters onto them, and shoot a canister to set off the chain; a single follow-up bullet finishes a weakened Hunter. Saltholmen church is a good spot.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Marksman Destroy an enemy with a shot fired from 300 meters away. Destroy an enemy with a shot from over 300 meters — easiest with the PvG 90 from Stenudden lighthouse. The long straight airstrip in the farmlands works well: aim at a Runner&#x27;s gas tank. Level 2 binoculars show the exact distance."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-marksman" data-gs="60" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#26</span><span class="ach-name">Marksman</span><span class="gs badge text-bg-warning ms-auto">60G</span></button><button type="button" class="note-btn" data-note-key="ach-marksman" title="Notes for Marksman" aria-label="Notes for Marksman"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Destroy an enemy with a shot fired from 300 meters away.</p><p class="how">Destroy an enemy with a shot from over 300 meters — easiest with the PvG 90 from Stenudden lighthouse. The long straight airstrip in the farmlands works well: aim at a Runner&#x27;s gas tank. Level 2 binoculars show the exact distance.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Hot Property Have 8 machines simultaneously lured to the same flare. Have 8 machines simultaneously lured to the same flare — easiest near a relay beacon or in a busy town. A running total can&#x27;t track a simultaneous peak, so no counter here."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-hot-property" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#27</span><span class="ach-name">Hot Property</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-hot-property" title="Notes for Hot Property" aria-label="Notes for Hot Property"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Have 8 machines simultaneously lured to the same flare.</p><p class="how">Have 8 machines simultaneously lured to the same flare — easiest near a relay beacon or in a busy town. A running total can&#x27;t track a simultaneous peak, so no counter here.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Siren Call Use a boombox to lure an enemy. Put a boombox in your quick wheel, place it near an unaware machine, and turn it on."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-siren-call" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#28</span><span class="ach-name">Siren Call</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-siren-call" title="Notes for Siren Call" aria-label="Notes for Siren Call"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Use a boombox to lure an enemy.</p><p class="how">Put a boombox in your quick wheel, place it near an unaware machine, and turn it on.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Splash Damage Destroy more than one machine at the same time using the m/49 Granatgevär or a hand grenade. Destroy more than one machine at the same time with the m/49 or a hand grenade — bunker corridors full of Runners are ideal."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-splash" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#29</span><span class="ach-name">Splash Damage</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-splash" title="Notes for Splash Damage" aria-label="Notes for Splash Damage"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Destroy more than one machine at the same time using the m/49 Granatgevär or a hand grenade.</p><p class="how">Destroy more than one machine at the same time with the m/49 or a hand grenade — bunker corridors full of Runners are ideal.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Offence Is The Best Defence Destroy 3 machines without taking damage. Destroy 3 machines without taking damage — snipe the gas tanks on three lethargic Runners in a bunker without taking a hit. A running total can&#x27;t track a no-damage streak, so no counter here."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-offence" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#30</span><span class="ach-name">Offence Is The Best Defence</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-offence" title="Notes for Offence Is The Best Defence" aria-label="Notes for Offence Is The Best Defence"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Destroy 3 machines without taking damage.</p><p class="how">Destroy 3 machines without taking damage — snipe the gas tanks on three lethargic Runners in a bunker without taking a hit. A running total can&#x27;t track a no-damage streak, so no counter here.</p></div></article></div>
+</div></div></details>
+<details data-cat="explore">
+<summary>Exploration &amp; collectibles <small>13 achievements · <span class="sec-progress" data-section="explore"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Fika Club Unlock 5 safehouses. Unlock 5 safehouses. They come with the story — a full run can unlock 79."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-fika" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#31</span><span class="ach-name">Fika Club</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-fika" title="Notes for Fika Club" aria-label="Notes for Fika Club"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="safehouses" data-target="5"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Unlock 5 safehouses.</p><p class="how">Unlock 5 safehouses. They come with the story — a full run can unlock 79.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease safehouses counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="safehouses" data-target="5" min="0" value="0" aria-label="safehouses counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase safehouses counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Gustafsloppet Travel 90 km on foot. Travel 90 km on foot. A full run ends around 360 km — it climbs as the main missions send you across the map."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-gustafsloppet" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#32</span><span class="ach-name">Gustafsloppet</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-gustafsloppet" title="Notes for Gustafsloppet" aria-label="Notes for Gustafsloppet"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="km" data-target="90"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Travel 90 km on foot.</p><p class="how">Travel 90 km on foot. A full run ends around 360 km — it climbs as the main missions send you across the map.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease km counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="km" data-target="90" min="0" value="0" aria-label="km counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase km counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Light My Fire Climb to the top of 3 different lighthouses. Climb to the top of 3 lighthouses in 3 different regions. There are four: Stenudden (Archipelago), Sillavik (South Coast), Arkelstorp (North Coast), KarlErik (Marshlands). Stenudden comes first naturally — the PvG 90 waits at the top."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-light-my-fire" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#33</span><span class="ach-name">Light My Fire</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-light-my-fire" title="Notes for Light My Fire" aria-label="Notes for Light My Fire"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="lighthouses" data-target="3"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Climb to the top of 3 different lighthouses.</p><p class="how">Climb to the top of 3 lighthouses in 3 different regions. There are four: Stenudden (Archipelago), Sillavik (South Coast), Arkelstorp (North Coast), KarlErik (Marshlands). Stenudden comes first naturally — the PvG 90 waits at the top.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease lighthouses counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="lighthouses" data-target="3" min="0" value="0" aria-label="lighthouses counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase lighthouses counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Folk Wisdom Read 10 different sayings in homes. Read 10 different framed sayings in homes — on kitchen walls, above beds and sofas. Just aim at them."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-folk-wisdom" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#34</span><span class="ach-name">Folk Wisdom</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-folk-wisdom" title="Notes for Folk Wisdom" aria-label="Notes for Folk Wisdom"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="sayings" data-target="10"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Read 10 different sayings in homes.</p><p class="how">Read 10 different framed sayings in homes — on kitchen walls, above beds and sofas. Just aim at them.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease sayings counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="sayings" data-target="10" min="0" value="0" aria-label="sayings counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase sayings counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Scavenger Find and take 80 items from the world. Find and take 80 items from the world. Loot every backpack, body, crate, and car you pass; containers refill after a few hours."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-scavenger" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#35</span><span class="ach-name">Scavenger</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-scavenger" title="Notes for Scavenger" aria-label="Notes for Scavenger"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="items" data-target="80"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Find and take 80 items from the world.</p><p class="how">Find and take 80 items from the world. Loot every backpack, body, crate, and car you pass; containers refill after a few hours.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease items counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="items" data-target="80" min="0" value="0" aria-label="items counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase items counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Engineer Collect all machine blueprints. Collect all 23 machine blueprints — one prototype, armed, Apocalypse, or FNIX variant per machine type, usually in containers or on military tables in bunkers and camps. Found items show in the journal&#x27;s collectibles tab."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-engineer" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#36</span><span class="ach-name">Engineer</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-engineer" title="Notes for Engineer" aria-label="Notes for Engineer"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="blueprints" data-target="23"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Collect all machine blueprints.</p><p class="how">Collect all 23 machine blueprints — one prototype, armed, Apocalypse, or FNIX variant per machine type, usually in containers or on military tables in bunkers and camps. Found items show in the journal&#x27;s collectibles tab.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease blueprints counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="blueprints" data-target="23" min="0" value="0" aria-label="blueprints counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase blueprints counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Gardener Collect all garden gnomes. Collect all 21 garden gnomes — outdoors in gardens, wheelbarrows, and on pallets. Shooting a gnome counts as collecting it, which helps with ones on awkward ledges."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-gardener" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#37</span><span class="ach-name">Gardener</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-gardener" title="Notes for Gardener" aria-label="Notes for Gardener"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="gnomes" data-target="21"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Collect all garden gnomes.</p><p class="how">Collect all 21 garden gnomes — outdoors in gardens, wheelbarrows, and on pallets. Shooting a gnome counts as collecting it, which helps with ones on awkward ledges.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease gnomes counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="gnomes" data-target="21" min="0" value="0" aria-label="gnomes counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase gnomes counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="DJ Collect all mixtapes. Collect all 22 mixtapes — mostly on furniture and tables indoors."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-dj" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#38</span><span class="ach-name">DJ</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-dj" title="Notes for DJ" aria-label="Notes for DJ"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="mixtapes" data-target="22"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Collect all mixtapes.</p><p class="how">Collect all 22 mixtapes — mostly on furniture and tables indoors.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease mixtapes counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="mixtapes" data-target="22" min="0" value="0" aria-label="mixtapes counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase mixtapes counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Tourist Collect all souvenirs. Collect all 14 souvenirs — the small painted Dala horses, spread across every region."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-tourist" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#39</span><span class="ach-name">Tourist</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-tourist" title="Notes for Tourist" aria-label="Notes for Tourist"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="dala-horses" data-target="14"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Collect all souvenirs.</p><p class="how">Collect all 14 souvenirs — the small painted Dala horses, spread across every region.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease dala-horses counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="dala-horses" data-target="14" min="0" value="0" aria-label="dala-horses counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase dala-horses counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Explorer Discover 50 locations. Discover 50 locations — explore as you play; locations pop as you reach them."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-explorer" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#40</span><span class="ach-name">Explorer</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-explorer" title="Notes for Explorer" aria-label="Notes for Explorer"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="locations" data-target="50"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Discover 50 locations.</p><p class="how">Discover 50 locations — explore as you play; locations pop as you reach them.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease locations counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="locations" data-target="50" min="0" value="0" aria-label="locations counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase locations counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Tunnel Rat Discover 5 bunkers. Discover 5 bunkers. One main mission sends you to seven control bunkers, so this comes with the story."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-tunnel-rat" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#41</span><span class="ach-name">Tunnel Rat</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-tunnel-rat" title="Notes for Tunnel Rat" aria-label="Notes for Tunnel Rat"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="bunkers" data-target="5"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Discover 5 bunkers.</p><p class="how">Discover 5 bunkers. One main mission sends you to seven control bunkers, so this comes with the story.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease bunkers counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="bunkers" data-target="5" min="0" value="0" aria-label="bunkers counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase bunkers counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Fashionista Collect 200 items of apparel. Collect 200 items of apparel. The game shows no total — check what you own in your profile by category. Color variants count separately; DLC clothing doesn&#x27;t count. Best farming: churches, large towns (search the cars), and military outposts."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-fashionista" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#42</span><span class="ach-name">Fashionista</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-fashionista" title="Notes for Fashionista" aria-label="Notes for Fashionista"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="apparel" data-target="200"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Collect 200 items of apparel.</p><p class="how">Collect 200 items of apparel. The game shows no total — check what you own in your profile by category. Color variants count separately; DLC clothing doesn&#x27;t count. Best farming: churches, large towns (search the cars), and military outposts.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease apparel counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="apparel" data-target="200" min="0" value="0" aria-label="apparel counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase apparel counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="I Just Called To Say I Love You Listen to the messages left on 5 different answering machines. Listen to the messages on 5 different answering machines — found in houses and churches as blue diamond side missions. Do them on your main character; they don&#x27;t count across characters."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-answering" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#43</span><span class="ach-name">I Just Called To Say I Love You</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-answering" title="Notes for I Just Called To Say I Love You" aria-label="Notes for I Just Called To Say I Love You"><i class="bi bi-journal-text"></i></button></div><div class="progress counter-bar mx-3 mt-2" style="height:10px" data-counter="answering-machines" data-target="5"><div class="progress-bar bg-success" style="width:0%"></div></div><div class="card-body"><p class="req text-secondary">Listen to the messages left on 5 different answering machines.</p><p class="how">Listen to the messages on 5 different answering machines — found in houses and churches as blue diamond side missions. Do them on your main character; they don&#x27;t count across characters.</p><div class="counter mt-2"><div class="counter-row d-flex flex-wrap align-items-center gap-2"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="-1" aria-label="Decrease answering-machines counter">−</button><input type="number" class="count form-control d-inline-block" style="width:110px" data-counter="answering-machines" data-target="5" min="0" value="0" aria-label="answering-machines counter"><button type="button" class="counter-btn btn btn-outline-secondary btn-sm" data-step="1" aria-label="Increase answering-machines counter">+</button><span class="count-text text-secondary"></span></div></div></div></article></div>
+</div></div></details>
+<details data-cat="gear">
+<summary>Gear &amp; characters <small>7 achievements · <span class="sec-progress" data-section="gear"></span></small></summary>
+<div class="section-body">
+<div class="row g-3">
+<div class="item col-12 col-md-6 col-xl-4" data-name="Spare Parts Scavenge a vision module from a machine. Scavenge a vision module from a machine. Vision modules are a common drop — loot every machine you destroy."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-spare-parts" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#44</span><span class="ach-name">Spare Parts</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-spare-parts" title="Notes for Spare Parts" aria-label="Notes for Spare Parts"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Scavenge a vision module from a machine.</p><p class="how">Scavenge a vision module from a machine. Vision modules are a common drop — loot every machine you destroy.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Modder Attach a mod to a weapon. Attach a mod to a weapon."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-modder" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#45</span><span class="ach-name">Modder</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-modder" title="Notes for Modder" aria-label="Notes for Modder"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Attach a mod to a weapon.</p><p class="how">Attach a mod to a weapon.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Lock &amp; Load Fully equip a level 5 weapon with level 5 mods. Fully equip a level 5 weapon with level 5 mods — the mods don&#x27;t need to be level 5, only the weapon, and the PvG and rocket launcher don&#x27;t qualify. The level 5 HP-5 from a safe in Empty Spaces and the level 5 AI-76 in The Enemy of my Enemy are the easy picks."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-lock-load" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#46</span><span class="ach-name">Lock &amp; Load</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-lock-load" title="Notes for Lock &amp; Load" aria-label="Notes for Lock &amp; Load"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Fully equip a level 5 weapon with level 5 mods.</p><p class="how">Fully equip a level 5 weapon with level 5 mods — the mods don&#x27;t need to be level 5, only the weapon, and the PvG and rocket launcher don&#x27;t qualify. The level 5 HP-5 from a safe in Empty Spaces and the level 5 AI-76 in The Enemy of my Enemy are the easy picks.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="I Want To Be A Mighty Pirate! Loot something while wearing an eyepatch. Loot something while wearing an eyepatch. The eyepatch is a random drop that usually turns up about halfway through — equip it the moment it appears and loot anything."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-pirate" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#47</span><span class="ach-name">I Want To Be A Mighty Pirate!</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-pirate" title="Notes for I Want To Be A Mighty Pirate!" aria-label="Notes for I Want To Be A Mighty Pirate!"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Loot something while wearing an eyepatch.</p><p class="how">Loot something while wearing an eyepatch. The eyepatch is a random drop that usually turns up about halfway through — equip it the moment it appears and loot anything.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Player Two Create a second character. Create a second character."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-player-two" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#48</span><span class="ach-name">Player Two</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-player-two" title="Notes for Player Two" aria-label="Notes for Player Two"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Create a second character.</p><p class="how">Create a second character.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Postgraduate Have two separate characters with different active specializations. Have two separate characters with different active specializations. Level the second character to 6 and pick a different specialization from your main."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-postgraduate" data-gs="30" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#49</span><span class="ach-name">Postgraduate</span><span class="gs badge text-bg-warning ms-auto">30G</span></button><button type="button" class="note-btn" data-note-key="ach-postgraduate" title="Notes for Postgraduate" aria-label="Notes for Postgraduate"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Have two separate characters with different active specializations.</p><p class="how">Have two separate characters with different active specializations. Level the second character to 6 and pick a different specialization from your main.</p></div></article></div>
+<div class="item col-12 col-md-6 col-xl-4" data-name="Assist Deal more than 50% of the damage to an enemy killed by another player. Deal more than 50% of the damage to an enemy killed by another player. Needs an online session — local co-op doesn&#x27;t count. Join a game, damage a machine heavily without finishing it, and let your partner take the kill."><article class="ach card h-100"><div class="card-header ach-head"><button type="button" class="task" id="ach-assist" data-gs="15" aria-pressed="false"><span class="task-state" aria-hidden="true"></span><span class="num text-secondary small fw-semibold">#50</span><span class="ach-name">Assist</span><span class="gs badge text-bg-warning ms-auto">15G</span></button><button type="button" class="note-btn" data-note-key="ach-assist" title="Notes for Assist" aria-label="Notes for Assist"><i class="bi bi-journal-text"></i></button></div><div class="card-body"><p class="req text-secondary">Deal more than 50% of the damage to an enemy killed by another player.</p><p class="how">Deal more than 50% of the damage to an enemy killed by another player. Needs an online session — local co-op doesn&#x27;t count. Join a game, damage a machine heavily without finishing it, and let your partner take the kill.</p></div></article></div>
+</div></div></details>
+
+        <div class="card">
+          <div class="card-body text-secondary">
+            <p class="mb-1"><strong>Sources:</strong> achievement names, requirements and Gamerscore from the achievement list linked below; route notes are short paraphrases of the linked walkthrough — the full guide text is not reproduced here. <a href="https://www.trueachievements.com/game/Generation-Zero/achievements">TrueAchievements — Achievements</a> · <a href="https://www.messymoddingstore.com/blog/generation-zero-platinum-trophy-blog-guide">Generation Zero Platinum Trophy Guide</a></p>
+            <p class="mb-0">Unofficial fan tracker, not affiliated with the achievement site, the walkthrough author, or the game's publisher. Shell: AdminLTE 4.10.0 + Bootstrap 5.3.8 + Bootstrap Icons 1.11.3, vendored under <code>assets/vendor/</code> (see <code>THIRD_PARTY_NOTICES.md</code>).</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+  <footer class="app-footer">
+    <strong>Achievement Trackers</strong> — <a href="../../">back to all games</a>
+  </footer>
+</div>
+<script src="../../assets/vendor/bootstrap.bundle.min.js"></script>
+<script src="../../assets/vendor/adminlte.min.js"></script>
+<script src="../../assets/js/theme-toggle.js"></script>
+<script src="../../assets/js/sidebar-state.js"></script>
+<dialog id="media-modal" aria-label="Image viewer">
+  <div class="media-modal-inner">
+    <button type="button" class="media-modal-close" aria-label="Close image viewer">×</button>
+    <img id="media-modal-img" alt="">
+    <p id="media-modal-caption" class="media-modal-caption"></p>
+    <div id="media-modal-nav" class="media-modal-nav" style="display:none">
+      <button type="button" class="media-modal-prev btn btn-outline-light btn-sm">← Previous</button>
+      <span id="media-modal-count" class="media-modal-count"></span>
+      <button type="button" class="media-modal-next btn btn-outline-light btn-sm">Next →</button>
+    </div>
+  </div>
+</dialog>
+<dialog id="notes-modal" aria-label="Notes">
+  <div class="notes-modal-inner">
+    <div class="d-flex justify-content-between align-items-center gap-3">
+      <h3 id="notes-modal-title" class="mb-0 fs-5">Notes</h3>
+      <button type="button" class="notes-modal-close" aria-label="Close notes">×</button>
+    </div>
+    <textarea id="notes-modal-text" class="form-control mt-2" rows="5" placeholder="Anything you want to remember for this one…"></textarea>
+    <p class="text-secondary mt-2 mb-0">Saved in this browser only, alongside your progress.</p>
+  </div>
+</dialog>
+<script>
+/* Tracker progress. The hub never writes progress, only reads it;
+   this script is the single writer for a game page. */
+(function(){
+  var KEY='gz-tracker-v1';
+  var OLD='';
+  var MIGRATION={};
+  var TOTAL_GS=1000;
+  /* Tasks are now header toggle buttons, not checkboxes: the pressed
+     state lives in aria-pressed, and the id / data-gs contract with
+     save, export and the step auto-tick code is unchanged. */
+  var tasks=[].slice.call(document.querySelectorAll('button.task'));
+  var steps=[].slice.call(document.querySelectorAll('input.step'));
+  var counts=[].slice.call(document.querySelectorAll('input.count'));
+  var notesModal=document.getElementById('notes-modal');
+  var notesModalTitle=document.getElementById('notes-modal-title');
+  var notesModalText=document.getElementById('notes-modal-text');
+  /* Notes are one object, not one string: the game-wide note
+     lives under 'game', each achievement's under its card id.
+     Old saves and exports stored a single string — that was
+     the game-wide note, so it migrates to the 'game' key. */
+  var notesData={};
+  var notesKey=null;
+  var search=document.getElementById('search');
+  var incompleteOnly=document.getElementById('incompleteOnly');
+  var overallText=document.getElementById('overallText');
+  var overallTextNav=document.getElementById('overallTextNav');
+  var overallBar=document.getElementById('overallBar');
+  var overallBarNav=document.getElementById('overallBarNav');
+
+  /* Save dedupes shared counters: several achievements render an input
+     for the same group, but localStorage stores one value per group. */
+  function save(){
+    var data={checked:{},steps:{},counters:{},notes:notesData};
+    tasks.forEach(function(t){ if(t.getAttribute('aria-pressed')==='true') data.checked[t.id]=true; });
+    steps.forEach(function(s){ if(s.checked) data.steps[s.id]=true; });
+    var seen={};
+    counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(!seen[g]){ data.counters[g]=c.value; seen[g]=true; } });
+    try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(e){}
+  }
+  function applyData(data){
+    tasks.forEach(function(t){ t.setAttribute('aria-pressed', (data.checked&&data.checked[t.id]) ? 'true' : 'false'); });
+    steps.forEach(function(s){ s.checked=!!(data.steps&&data.steps[s.id]); });
+    counts.forEach(function(c){ var g=c.getAttribute('data-counter'); if(data.counters&&data.counters[g]!==undefined) c.value=data.counters[g]; });
+    var n=data.notes;
+    if(typeof n==='string'){ notesData=n?{game:n}:{}; }
+    else if(n&&typeof n==='object'){ notesData=n; }
+    else { notesData={}; }
+    refreshNoteIcons();
+  }
+  /* Migration runs ONLY when no new-format progress exists. If a player
+     already has new progress, legacy data must not overwrite it; the
+     old key is left alone rather than deleted. */
+  function migrateLegacy(){
+    var raw; try{ raw=localStorage.getItem(OLD); }catch(e){ return; }
+    if(!raw||!MIGRATION) return;
+    try{
+      var d=JSON.parse(raw), checked=d.checked||{}, cnts=d.counts||{};
+      var out={checked:{},steps:{},counters:{},notes:{}};
+      Object.keys(MIGRATION.checked_map||{}).forEach(function(k){ if(checked[k]) MIGRATION.checked_map[k].forEach(function(a){ out.checked[a]=true; }); });
+      Object.keys(MIGRATION.step_map||{}).forEach(function(k){ if(checked[k]) out.steps[MIGRATION.step_map[k]]=true; });
+      Object.keys(MIGRATION.counter_map||{}).forEach(function(k){ if(cnts[k]) out.counters[MIGRATION.counter_map[k]]=cnts[k]; });
+      if(Object.keys(out.checked).length||Object.keys(out.steps).length||Object.keys(out.counters).length){
+        try{ localStorage.setItem(KEY,JSON.stringify(out)); }catch(e){}
+        applyData(out);
+      }
+    }catch(e){}
+  }
+  function load(){
+    var raw; try{ raw=localStorage.getItem(KEY); }catch(e){ return; }
+    if(!raw){ migrateLegacy(); return; }
+    try{ applyData(JSON.parse(raw)); }catch(e){}
+  }
+  function syncCounters(source){
+    if(!source) return;
+    var g=source.getAttribute('data-counter');
+    counts.forEach(function(c){ if(c.getAttribute('data-counter')===g) c.value=source.value; });
+  }
+  function updateProgress(){
+    var done=tasks.filter(function(t){return t.getAttribute('aria-pressed')==='true';});
+    var gs=done.reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+    var text=done.length+' / '+tasks.length+' achievements · '+gs.toLocaleString('en-US')+' / '+TOTAL_GS.toLocaleString('en-US')+'G';
+    overallText.textContent=text;
+    if(overallTextNav) overallTextNav.textContent=done.length+' / '+tasks.length+' · '+gs.toLocaleString('en-US')+'G';
+    overallBar.style.width=Math.round(gs/TOTAL_GS*100)+'%';
+    if(overallBarNav) overallBarNav.style.width=Math.round(gs/TOTAL_GS*100)+'%';
+    document.querySelectorAll('details[data-cat]').forEach(function(sec){
+      var box=sec.querySelectorAll('button.task');
+      if(!box.length) return;
+      var pressed=function(t){return t.getAttribute('aria-pressed')==='true';};
+      var d=[].slice.call(box).filter(pressed).length;
+      var g=[].slice.call(box).filter(pressed).reduce(function(s,t){ return s+(parseInt(t.getAttribute('data-gs'),10)||0); },0);
+      var el=sec.querySelector('.sec-progress');
+      if(el) el.textContent=d+' / '+box.length+' · '+g+'G';
+    });
+    counts.forEach(function(c){
+      var target=parseInt(c.getAttribute('data-target'),10)||0;
+      var val=parseInt(c.value,10)||0;
+      var pct=target?Math.min(100,Math.round(val/target*100)):0;
+      var wrap=c.closest('.counter');
+      var txt=wrap?wrap.querySelector('.count-text'):null;
+      if(txt) txt.textContent=' '+val.toLocaleString('en-US')+' / '+target.toLocaleString('en-US')+' ('+pct+'%)';
+      /* Bars live under the card header, not next to the input, and
+         are matched by group AND target: a shared group can feed
+         several thresholds, and each bar must show its own target. */
+      var g=c.getAttribute('data-counter');
+      document.querySelectorAll('.counter-bar[data-counter="'+g+'"][data-target="'+target+'"]').forEach(function(barEl){
+        var bar=barEl.querySelector('.progress-bar');
+        if(bar) bar.style.width=pct+'%';
+      });
+    });
+    /* Step progress bars under the headers of multi-step
+       achievements: the bar shows how many of that achievement's
+       sub-steps are ticked. Step cards have no parent, so they
+       carry no bar — this is only for achievement cards. */
+    document.querySelectorAll('.step-bar').forEach(function(barEl){
+      var parent=barEl.getAttribute('data-step-parent');
+      var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+parent+'"]'));
+      var done=sibs.filter(function(s){return s.checked;}).length;
+      var pct=sibs.length?Math.round(done/sibs.length*100):0;
+      var bar=barEl.querySelector('.progress-bar');
+      if(bar) bar.style.width=pct+'%';
+    });
+  }
+  /* applyFilters hides whole sections, not just cards: a section with
+     no visible cards after filtering must not leave an empty heading
+     and an empty bordered box behind. */
+  function applyFilters(){
+    var q=(search.value||'').toLowerCase().trim();
+    var active=document.querySelector('.filter.active');
+    var cat=active?active.getAttribute('data-filter'):'all';
+    var inc=incompleteOnly.checked;
+    document.querySelectorAll('details[data-cat]').forEach(function(sec){
+      var secCat=sec.getAttribute('data-cat');
+      var catMatch=(cat==='all'||cat===secCat);
+      var visibleItems=0;
+      sec.querySelectorAll('.item').forEach(function(item){
+        var name=(item.getAttribute('data-name')||'')+' '+item.textContent.toLowerCase();
+        var qMatch=!q||name.indexOf(q)>-1;
+        var task=item.querySelector('button.task');
+        var incMatch=!inc||!task||task.getAttribute('aria-pressed')!=='true';
+        var show=catMatch&&qMatch&&incMatch;
+        item.classList.toggle('hidden',!show);
+        if(show) visibleItems++;
+      });
+      var hasItems=sec.querySelectorAll('.item').length>0;
+      sec.classList.toggle('hidden',!catMatch||(hasItems&&visibleItems===0));
+    });
+    fitHeaders();
+  }
+  /* Header normalisation: long names shrink toward a floor
+     (1.05rem to 0.85rem) before they are allowed to wrap, and
+     headers in the same visible row are then equalised to the
+     row's tallest, so card bodies start on one line instead of
+     staggering. Runs after every filter pass (which is also
+     every search, reset and import path), on resize, when a
+     section opens or closes, and once fonts arrive. */
+  function fitHeaders(){
+    document.querySelectorAll('.ach-head').forEach(function(h){ h.style.minHeight = ''; });
+    document.querySelectorAll('.ach-name').forEach(function(n){ n.style.fontSize = ''; });
+    document.querySelectorAll('.ach-name').forEach(function(n){
+      var floors = ['0.95rem', '0.85rem'];
+      for(var i = 0; i < floors.length; i++){
+        var line = parseFloat(getComputedStyle(n).lineHeight);
+        if(n.offsetHeight <= line + 1) break;
+        n.style.fontSize = floors[i];
+      }
+    });
+    var rows = {};
+    document.querySelectorAll('.item').forEach(function(item){
+      if(item.classList.contains('hidden') || !item.offsetParent) return;
+      var head = item.querySelector('.ach-head');
+      if(!head) return;
+      var sec = item.closest('details');
+      var key = (sec ? sec.getAttribute('data-cat') : '') + ':' + item.offsetTop;
+      (rows[key] = rows[key] || []).push(head);
+    });
+    Object.keys(rows).forEach(function(key){
+      var max = 0;
+      rows[key].forEach(function(h){ max = Math.max(max, h.offsetHeight); });
+      rows[key].forEach(function(h){ h.style.minHeight = max + 'px'; });
+    });
+  }
+  var fitTimer = null;
+  window.addEventListener('resize', function(){
+    if(fitTimer) clearTimeout(fitTimer);
+    fitTimer = setTimeout(fitHeaders, 150);
+  });
+  document.querySelectorAll('details[data-cat]').forEach(function(d){
+    d.addEventListener('toggle', fitHeaders);
+  });
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeaders);
+  document.querySelectorAll('.filter').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.filter').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active'); applyFilters();
+    });
+  });
+  /* Header toggle: clicking anywhere in the header flips aria-pressed.
+     Steps still use the change handler below; a button does not fire
+     change, so this click handler is the task toggle. */
+  /* Ticking an achievement fills its sub-requirements, unticking
+     clears them: every step is checked/unchecked, and each
+     counter is raised to at least its target on tick, or dropped
+     on untick to the highest target still needed by a ticked
+     sibling sharing the counter group (or 0). Ticking never
+     lowers a counter that already sits above the target, and
+     unticking never raises one — the shared value only ever
+     reflects what ticked achievements still need, or the higher
+     count already entered by hand. Programmatic fills never
+     fire the max gate: the target is allowed by definition. */
+  function syncSubRequirements(task, pressed){
+    var id=task.getAttribute('id');
+    document.querySelectorAll('.step[data-parent="'+id+'"]').forEach(function(s){ s.checked=pressed; });
+    var card=task.closest('article');
+    if(!card) return;
+    card.querySelectorAll('input.count').forEach(function(input){
+      var g=input.getAttribute('data-counter');
+      var target=parseInt(input.getAttribute('data-target'),10)||0;
+      var val=parseInt(input.value,10)||0;
+      if(pressed){
+        if(val<target){ input.value=target; syncCounters(input); }
+      }else{
+        var keep=0;
+        document.querySelectorAll('input.count[data-counter="'+g+'"]').forEach(function(other){
+          if(other===input) return;
+          var otherCard=other.closest('article');
+          var otherTask=otherCard?otherCard.querySelector('button.task'):null;
+          if(otherTask&&otherTask.getAttribute('aria-pressed')==='true'){
+            keep=Math.max(keep,parseInt(other.getAttribute('data-target'),10)||0);
+          }
+        });
+        if(val>keep){ input.value=keep; syncCounters(input); }
+      }
+    });
+  }
+  tasks.forEach(function(t){
+    t.addEventListener('click',function(){
+      var pressed=t.getAttribute('aria-pressed')!=='true';
+      t.setAttribute('aria-pressed', pressed?'true':'false');
+      syncSubRequirements(t, pressed);
+      save(); updateProgress(); applyFilters();
+    });
+  });
+  /* Counter maximum: a counter stops at its own card's target.
+     Pushing past it pops a yes/no gate ("Max reached — no need
+     to add more. Add anyway?"). Yes lets that card keep counting
+     for this visit — the shared value feeds sibling achievements
+     with higher targets — and No leaves the value where it was.
+     The override lives in memory only; it never reaches the
+     saved progress, so the gate asks again after a reload. */
+  var overMax={};
+  function counterTarget(input){
+    return parseInt(input.getAttribute('data-target'),10)||0;
+  }
+  function counterKey(input){
+    return (input.getAttribute('data-counter')||'')+':'+counterTarget(input);
+  }
+  function counterName(input){
+    var card=input.closest('article');
+    var n=card?card.querySelector('.ach-name'):null;
+    return n?n.textContent.trim():'this achievement';
+  }
+  function allowOverMax(input,next){
+    var target=counterTarget(input);
+    if(next<=target) return true;
+    if(overMax[counterKey(input)]) return true;
+    if(confirm('Max reached — '+counterName(input)+' needs '+target+'. No need to add more. Add anyway?')){
+      overMax[counterKey(input)]=true;
+      return true;
+    }
+    return false;
+  }
+  /* Counter steppers: -/+ buttons beside the input, clamped at 0
+     below and at the card's target above (via the gate above).
+     A programmatic value change fires no input event, so sync, save
+     and progress are called explicitly here. */
+  document.addEventListener('click',function(e){
+    var btn=e.target.closest ? e.target.closest('.counter-btn') : null;
+    if(!btn) return;
+    var wrap=btn.closest('.counter');
+    var input=wrap?wrap.querySelector('input.count'):null;
+    if(!input) return;
+    var val=parseInt(input.value,10)||0;
+    var next=Math.max(0, val + (parseInt(btn.getAttribute('data-step'),10)||0));
+    if(next>val && !allowOverMax(input,next)) return;
+    input.value=next;
+    syncCounters(input); save(); updateProgress();
+  });
+  /* Typed values are gated on change (blur/Enter), not on input:
+     prompting mid-keystroke would fire while the number is still
+     being typed. Declining reverts to the value the field had
+     when it was focused, not to the target — the count may
+     already sit above it from a sibling card. */
+  document.addEventListener('focusin',function(e){
+    var t=e.target;
+    if(t.classList && t.classList.contains('count')) t._prev=t.value;
+  });
+  document.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.classList.contains('step')&&t.getAttribute('data-parent')){
+      var parent=document.getElementById(t.getAttribute('data-parent'));
+      if(parent){
+        var sibs=[].slice.call(document.querySelectorAll('.step[data-parent="'+t.getAttribute('data-parent')+'"]'));
+        if(sibs.length&&sibs.every(function(s){return s.checked;})) parent.setAttribute('aria-pressed','true');
+      }
+    }
+    if(t.classList.contains('count')){
+      var v=parseInt(t.value,10)||0;
+      var prev=parseInt(t._prev,10);
+      if(isNaN(prev)) prev=counterTarget(t);
+      if(v>counterTarget(t) && v>prev && !allowOverMax(t,v)){ t.value=prev; syncCounters(t); }
+    }
+    save(); updateProgress(); applyFilters();
+  });
+  document.addEventListener('input',function(e){
+    if(e.target===search){ applyFilters(); return; }
+    if(e.target===incompleteOnly){ applyFilters(); return; }
+    if(e.target.classList.contains('count')) syncCounters(e.target);
+    save(); updateProgress();
+  });
+  document.getElementById('resetBtn').addEventListener('click',function(){
+    if(!confirm('Reset all achievements, steps, counters and notes?')) return;
+    tasks.forEach(function(t){t.setAttribute('aria-pressed','false');});
+    steps.forEach(function(s){s.checked=false;});
+    counts.forEach(function(c){c.value=0;});
+    notesData={}; refreshNoteIcons();
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    updateProgress(); applyFilters();
+  });
+  document.getElementById('exportBtn').addEventListener('click',function(){
+    save();
+    var raw; try{ raw=localStorage.getItem(KEY)||'{}'; }catch(e){ raw='{}'; }
+    var blob=new Blob([raw],{type:'application/json'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='generation-zero-progress.json'; a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); },1000);
+  });
+  document.getElementById('importFile').addEventListener('change',function(e){
+    var f=e.target.files&&e.target.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{
+        var data=JSON.parse(r.result);
+        try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(err){}
+        applyData(data); updateProgress(); applyFilters();
+      }catch(err){ alert('That file did not look like a tracker export.'); }
+    };
+    r.readAsText(f);
+  });
+  /* Shared import preview/apply machinery, used by the Xbox sync
+     card. Only one import preview is live at a time, and Confirm
+     applies whichever is pending. Sync is additive only — it ticks
+     newly unlocked achievements and their sub-steps, and never
+     unticks, never touches notes or counters. */
+  function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function achName(achId){ var b=document.getElementById(achId); var n=b?b.querySelector('.ach-name'):null; return n?n.textContent.trim():achId; }
+  function achHasCounter(achId){ var b=document.getElementById(achId); var it=b?b.closest('.item'):null; return !!(it&&it.querySelector('input.count')); }
+  /* planFor splits a candidate set into what is new, what is
+     already ticked, and the sub-steps/counters that go with the new
+     ones. matchedIds is the wider matched set (for the "left as
+     they are" count); appliedIds is the subset the preview will
+     actually tick. */
+  function planFor(appliedIds, matchedIds){
+    var isPressed=function(achId){ var b=document.getElementById(achId); return b&&b.getAttribute('aria-pressed')==='true'; };
+    var newAch=[], already=0;
+    appliedIds.forEach(function(achId){ if(isPressed(achId)) already++; else newAch.push(achId); });
+    var stepIds=[], stepNames=[];
+    newAch.forEach(function(achId){
+      [].slice.call(document.querySelectorAll('.step[data-parent="'+achId+'"]')).forEach(function(s){
+        if(!s.checked){ stepIds.push(s.id); stepNames.push((s.parentNode?s.parentNode.textContent:'').trim()); }
+      });
+    });
+    var counterNames=[];
+    newAch.forEach(function(achId){ if(achHasCounter(achId)) counterNames.push(achName(achId)); });
+    var matchedSet={};
+    matchedIds.forEach(function(id){ matchedSet[id]=true; });
+    var lockedCount=tasks.filter(function(t){ return !matchedSet[t.id]; }).length;
+    return {newAch:newAch, already:already, stepIds:stepIds, stepNames:stepNames, counterNames:counterNames, lockedCount:lockedCount};
+  }
+  var importPending=null;
+  function hideImportPreviews(){
+    document.querySelectorAll('.import-preview').forEach(function(el){ el.classList.add('hidden'); });
+    importPending=null;
+  }
+  /* opts: bodyEl, previewEl, confirmBtn, plan (from planFor),
+     warnings (strings), dates (achId -> date string), statsHtml
+     (an already rendered stats paragraph, or ''). */
+  function showImportPreview(opts){
+    hideImportPreviews();
+    var plan=opts.plan, html='';
+    (opts.warnings||[]).forEach(function(w){ html+='<p class="text-warning mb-2">'+escHtml(w)+'</p>'; });
+    if(plan.newAch.length){
+      html+='<p><strong>'+plan.newAch.length+' new achievement'+(plan.newAch.length===1?'':'s')+' will be ticked:</strong></p><ul>';
+      plan.newAch.forEach(function(achId){
+        html+='<li>'+escHtml(achName(achId));
+        if(opts.dates&&opts.dates[achId]) html+=' <span class="text-secondary">— unlocked '+escHtml(opts.dates[achId])+'</span>';
+        html+='</li>';
+      });
+      html+='</ul>';
+    } else {
+      html+='<p>Nothing new — every matched achievement is already ticked here.</p>';
+    }
+    if(plan.stepNames.length){
+      html+='<p><strong>'+plan.stepNames.length+' sub-step'+(plan.stepNames.length===1?'':'s')+' will also be ticked</strong> (they are the route to the achievements above):</p><ul>';
+      plan.stepNames.forEach(function(n){ html+='<li>'+escHtml(n)+'</li>'; });
+      html+='</ul>';
+    }
+    if(plan.counterNames.length){
+      html+='<p class="text-secondary">Counters stay manual: the source does not report raw counts, so the counters for '+plan.counterNames.map(escHtml).join(', ')+' are left as they are.</p>';
+    }
+    if(opts.statsHtml) html+=opts.statsHtml;
+    opts.bodyEl.innerHTML=html;
+    opts.previewEl.classList.remove('hidden');
+    opts.confirmBtn.style.display=plan.newAch.length?'':'none';
+    importPending={achIds:plan.newAch, stepIds:plan.stepIds};
+  }
+  /* Applies the pending import through the normal save path and
+     returns how many achievements were ticked (0 if none pending). */
+  function applyImportPending(){
+    if(!importPending) return 0;
+    var n=importPending.achIds.length;
+    importPending.achIds.forEach(function(achId){
+      var b=document.getElementById(achId);
+      if(b) b.setAttribute('aria-pressed','true');
+    });
+    importPending.stepIds.forEach(function(stepId){
+      var s=document.getElementById(stepId);
+      if(s) s.checked=true;
+    });
+    importPending=null;
+    save(); updateProgress(); applyFilters();
+    return n;
+  }
+  /* Xbox sync via OpenXBL (user-supplied key). The sync card is only
+     rendered for games whose JSON carries xbox_title_id and an
+     xbox_id per achievement; without the card this block is a no-op.
+     Sync is additive and previewed: it ticks newly unlocked
+     achievements (and their sub-steps) and never unticks, never
+     touches notes or counters. The key and gamertag live under the
+     separate 'at-xbox' localStorage key, so Export/Import — which
+     only read and write the progress key above — can never leak
+     them. Response shapes are handled tolerantly (see the extract
+     helpers): OpenXBL's published spec documents endpoints but no
+     response schema, so the first live response may still refine
+     these, and anything unrecognised fails loudly instead of
+     guessing a tick. */
+  var syncCard=document.getElementById('xbox-sync');
+  if(syncCard){
+    var XBOX_API='https://api.xbl.io/api/v2';
+    var XBOX_META_KEY='at-xbox';
+    var syncMap={};
+    try{ syncMap=JSON.parse(syncCard.getAttribute('data-xbox-map')||'{}'); }catch(e){ syncMap={}; }
+    var syncTitleId=syncCard.getAttribute('data-xbox-title-id')||'';
+    var gtInput=document.getElementById('xbox-gamertag');
+    var keyInput=document.getElementById('xbox-key');
+    var syncBtn=document.getElementById('xbox-sync-btn');
+    var clearKeyBtn=document.getElementById('xbox-clear-key');
+    var statusEl=document.getElementById('xbox-status');
+    var previewEl=document.getElementById('xbox-preview');
+    var previewBody=document.getElementById('xbox-preview-body');
+    var confirmBtn=document.getElementById('xbox-confirm');
+    var cancelBtn=document.getElementById('xbox-cancel');
+    var pasteInput=document.getElementById('xbox-paste');
+    var pasteBtn=document.getElementById('xbox-paste-btn');
+    function metaLoad(){ try{ return JSON.parse(localStorage.getItem(XBOX_META_KEY)||'{}'); }catch(e){ return {}; } }
+    function metaSave(m){ try{ localStorage.setItem(XBOX_META_KEY,JSON.stringify(m)); }catch(e){} }
+    var xboxMeta=metaLoad();
+    if(xboxMeta.gamertag) gtInput.value=xboxMeta.gamertag;
+    if(xboxMeta.key) keyInput.value=xboxMeta.key;
+    function setStatus(msg){ statusEl.textContent=msg; }
+    function persistInputs(){
+      var m=metaLoad();
+      var gt=gtInput.value.trim();
+      if(m.gamertag!==gt) m.xuid='';
+      m.gamertag=gt; m.key=keyInput.value.trim(); metaSave(m); xboxMeta=m;
+    }
+    gtInput.addEventListener('change',persistInputs);
+    keyInput.addEventListener('change',persistInputs);
+    function xboxFetch(path,key){
+      return fetch(XBOX_API+path,{headers:{'X-Authorization':key,'Accept':'application/json'}}).then(function(r){
+        if(!r.ok){ var err=new Error('HTTP '+r.status); err.status=r.status; throw err; }
+        return r.json();
+      });
+    }
+    /* Shape tolerance: the gamertag endpoint documents a flat
+       {xuid, gamertag, gamerscore} body, while profile endpoints
+       return profileUsers[0].id. Accept both, plus a bare array. */
+    function extractXuid(data){
+      if(!data) return null;
+      if(typeof data==='string') return data;
+      if(data.xuid) return String(data.xuid);
+      if(data.profileUsers&&data.profileUsers[0]&&data.profileUsers[0].id) return String(data.profileUsers[0].id);
+      if(Array.isArray(data)&&data[0]) return extractXuid(data[0]);
+      return null;
+    }
+    function extractAchievements(data){
+      if(!data) return null;
+      if(Array.isArray(data)) return data;
+      if(Array.isArray(data.achievements)) return data.achievements;
+      return null;
+    }
+    function isUnlocked(a){
+      return a.progressState==='Achieved'||!!(a.progression&&a.progression.timeUnlocked);
+    }
+    function fetchTitlePages(xuid,key){
+      var entries=[], token='', prevToken=null, pages=0;
+      function next(){
+        if(pages>=5) return Promise.reject(new Error('too many pages'));
+        pages++;
+        var url='/achievements/player/'+encodeURIComponent(xuid)+'/title/'+encodeURIComponent(syncTitleId);
+        if(token) url+='?continuationToken='+encodeURIComponent(token);
+        return xboxFetch(url,key).then(function(data){
+          var list=extractAchievements(data);
+          if(!list) throw new Error('unexpected response shape');
+          entries=entries.concat(list);
+          var t=(data.pagingInfo&&data.pagingInfo.continuationToken)||data.continuationToken||'';
+          if(!t) return entries;
+          if(t===prevToken) throw new Error('pagination loop');
+          prevToken=token; token=t; return next();
+        });
+      }
+      return next();
+    }
+    function buildPreview(entries,warnings){
+      var unlocked=[], skipped=0, seenIds={};
+      entries.forEach(function(a){
+        var id=(a&&a.id!==undefined)?String(a.id):null;
+        if(id===null){ skipped++; return; }
+        if(seenIds[id]) return; seenIds[id]=true;
+        if(isUnlocked(a)) unlocked.push(id);
+      });
+      var mapped=[], unmapped=0;
+      unlocked.forEach(function(id){
+        if(syncMap[id]) mapped.push(syncMap[id]); else unmapped++;
+      });
+      var plan=planFor(mapped,mapped);
+      showImportPreview({
+        bodyEl:previewBody, previewEl:previewEl, confirmBtn:confirmBtn,
+        warnings:warnings, plan:plan,
+        statsHtml:'<p class="text-secondary mb-0">Already ticked: '+plan.already+' · Xbox achievements not in this tracker: '+unmapped+' · Tracker achievements Xbox does not report unlocked (left exactly as they are, including manual ticks from other platforms): '+plan.lockedCount+(skipped?' · Entries without an id, ignored: '+skipped:'')+'.</p>'
+      });
+      setStatus('Preview ready — nothing has changed yet. Confirm to apply, or Cancel.');
+    }
+    function syncError(e){
+      hideImportPreviews();
+      if(e&&e.status===401) setStatus('That key was rejected — check it at xbl.io, or create a new one.');
+      else if(e&&e.status===429) setStatus('OpenXBL rate limit — wait a while and try again.');
+      else if(e&&e.status===403) setStatus('Xbox returned no data for this title — check your Xbox privacy settings (achievement history) or that you have played this game on Xbox.');
+      else if(e&&e.status===404) setStatus('No Xbox profile or title data found — check the gamertag spelling and that you have played this game on Xbox.');
+      else if(e&&e.message==='gamertag not found') setStatus('No Xbox profile found for that gamertag — check the spelling.');
+      else if(e&&e.message==='too many pages') setStatus('OpenXBL paginated this title beyond what this page follows — sync stopped rather than applying a partial result.');
+      else if(e&&e.message==='pagination loop') setStatus('OpenXBL returned the same page twice — sync stopped rather than applying a partial result.');
+      else if(e&&e.message==='unexpected response shape') setStatus('OpenXBL returned a response this page does not recognise — sync stopped, nothing changed.');
+      else if(e instanceof TypeError) setStatus('The browser could not reach OpenXBL — check your connection, or use the paste-JSON option below.');
+      else setStatus('Sync failed — nothing changed. ('+(e&&e.message?e.message:'unknown error')+')');
+    }
+    syncBtn.addEventListener('click',function(){
+      var key=keyInput.value.trim(), gt=gtInput.value.trim();
+      if(!gt){ setStatus('Enter a gamertag first.'); return; }
+      if(!key){ setStatus('Paste your OpenXBL API key first.'); return; }
+      persistInputs();
+      hideImportPreviews();
+      setStatus('Fetching…');
+      syncBtn.disabled=true;
+      var warnings=[];
+      var xuidPromise;
+      if(xboxMeta.xuid&&xboxMeta.gamertag===gt){
+        xuidPromise=Promise.resolve(xboxMeta.xuid);
+      } else {
+        xuidPromise=xboxFetch('/player/gamertag/'+encodeURIComponent(gt),key).then(function(prof){
+          var xuid=extractXuid(prof);
+          if(!xuid) throw new Error('gamertag not found');
+          return xboxFetch('/account',key).then(function(acct){
+            var acctXuid=extractXuid(acct);
+            if(acctXuid&&acctXuid!==xuid) warnings.push('This key belongs to a different gamertag — sync may return public-only data.');
+            xboxMeta.xuid=xuid; metaSave(xboxMeta);
+            return xuid;
+          });
+        });
+      }
+      xuidPromise.then(function(xuid){
+        return fetchTitlePages(xuid,key);
+      }).then(function(entries){
+        buildPreview(entries,warnings);
+      }).catch(syncError).then(function(){ syncBtn.disabled=false; });
+    });
+    pasteBtn.addEventListener('click',function(){
+      var text=pasteInput.value.trim();
+      if(!text){ setStatus('Paste an OpenXBL JSON response first.'); return; }
+      hideImportPreviews();
+      try{
+        var entries=extractAchievements(JSON.parse(text));
+        if(!entries) throw new Error('shape');
+        buildPreview(entries,['Pasted JSON — no gamertag or key was used.']);
+      }catch(e){
+        hideImportPreviews();
+        setStatus('That text did not look like an OpenXBL achievements response.');
+      }
+    });
+    confirmBtn.addEventListener('click',function(){
+      var n=applyImportPending();
+      hideImportPreviews();
+      var m=metaLoad(); m.lastSyncAt=new Date().toISOString(); metaSave(m); xboxMeta=m;
+      setStatus('Synced '+n+' new achievement'+(n===1?'':'s')+' from Xbox at '+new Date().toLocaleString()+'.');
+    });
+    cancelBtn.addEventListener('click',function(){
+      hideImportPreviews();
+      setStatus('Sync cancelled — nothing changed.');
+    });
+    clearKeyBtn.addEventListener('click',function(){
+      keyInput.value='';
+      var m=metaLoad(); m.key=''; metaSave(m); xboxMeta=m;
+      setStatus('Key cleared from this browser.');
+    });
+  }
+  /* Guide images that fail to load (moved, or the host blocks
+     loading them here) are swapped for a placeholder that says
+     why, instead of a broken-image icon. Images already broken
+     when this runs are swapped immediately. */
+  document.querySelectorAll('.ach-media img').forEach(function(img){
+    function swap(){
+      var fig = img.closest('figure');
+      var cap = fig ? fig.querySelector('figcaption') : null;
+      var cred = fig ? fig.querySelector('.media-credit') : null;
+      var capText = cap ? cap.textContent : '';
+      var credText = cred ? cred.textContent : '';
+      var extra = capText + (capText && credText ? ' ' : '') + credText;
+      var d = document.createElement('div');
+      d.className = 'ach-media-fallback';
+      d.textContent = 'Guide image unavailable — it may have moved, or the host may block loading it here. The walkthrough linked in the sources below has the original.'
+        + (extra ? ' (' + extra + ')' : '');
+      img.replaceWith(d);
+    }
+    if(img.complete && img.naturalWidth === 0) swap();
+    else img.addEventListener('error', swap);
+  });
+  /* Walkthrough shots open their full-size version in an
+     on-page viewer instead of a new tab. The link's href is
+     kept, so without scripts (or on a browser too old for
+     <dialog>) the click still opens the image in a new tab,
+     per target=_blank. Escape and tapping outside close it;
+     the close event clears the image so it stops loading.
+     The viewer caption carries the image credit, since the
+     card itself now shows it only on hover. For slideshow
+     shots the viewer also gains Previous/Next: they drive
+     the card's own slideshow buttons, so the card and the
+     viewer never disagree about which slide is current, and
+     arrow keys work too. */
+  var modal = document.getElementById('media-modal');
+  var modalImg = document.getElementById('media-modal-img');
+  var modalCap = document.getElementById('media-modal-caption');
+  var modalNav = document.getElementById('media-modal-nav');
+  var modalCount = document.getElementById('media-modal-count');
+  var modalPrev = modal ? modal.querySelector('.media-modal-prev') : null;
+  var modalNext = modal ? modal.querySelector('.media-modal-next') : null;
+  var modalShow = null;
+  function modalCaption(fig){
+    var cap = fig ? fig.querySelector('figcaption') : null;
+    var cred = fig ? fig.querySelector('.media-credit') : null;
+    var capText = cap ? cap.textContent : '';
+    var credText = cred ? cred.textContent : '';
+    return (capText + (capText && credText ? ' ' : '') + credText).trim();
+  }
+  function modalFromLink(a){
+    var img = a.querySelector('img');
+    var fig = a.closest('figure');
+    modalImg.src = a.getAttribute('href');
+    modalImg.alt = img ? img.alt : '';
+    var text = modalCaption(fig);
+    modalCap.textContent = text;
+    modalCap.style.display = text ? '' : 'none';
+  }
+  function modalSync(){
+    if(!modalShow) return;
+    var ss = modalShow.ss;
+    var active = ss.querySelector('.slideshow-slide.active');
+    var link = active ? active.querySelector('a') : null;
+    if(link) modalFromLink(link);
+    var idx = modalShow.links.indexOf(link);
+    modalCount.textContent = (idx + 1) + ' of ' + modalShow.links.length;
+    modalPrev.disabled = ss.querySelector('.slideshow-prev').disabled;
+    modalNext.disabled = ss.querySelector('.slideshow-next').disabled;
+  }
+  function modalStep(dir){
+    if(!modalShow) return;
+    var btn = modalShow.ss.querySelector(dir < 0 ? '.slideshow-prev' : '.slideshow-next');
+    if(btn) btn.click();
+    modalSync();
+  }
+  if(modal){
+    modal.addEventListener('close', function(){
+      modalImg.removeAttribute('src'); modalShow = null;
+      modal.classList.remove('media-modal-slideshow');
+    });
+    modal.addEventListener('click', function(e){ if(e.target === modal) modal.close(); });
+    var modalClose = modal.querySelector('.media-modal-close');
+    if(modalClose) modalClose.addEventListener('click', function(){ modal.close(); });
+    if(modalPrev) modalPrev.addEventListener('click', function(){ modalStep(-1); });
+    if(modalNext) modalNext.addEventListener('click', function(){ modalStep(1); });
+    modal.addEventListener('keydown', function(e){
+      if(!modalShow) return;
+      if(e.key === 'ArrowLeft') modalStep(-1);
+      else if(e.key === 'ArrowRight') modalStep(1);
+    });
+    /* Tapping the left or right side of a slideshow image steps
+       it too: the buttons underneath stay the discoverable
+       control, this is the faster path for repeat viewing. */
+    modalImg.addEventListener('click', function(e){
+      if(!modalShow) return;
+      var r = modalImg.getBoundingClientRect();
+      if(!r.width) return;
+      modalStep(e.clientX - r.left < r.width / 2 ? -1 : 1);
+    });
+    document.querySelectorAll('.ach-media a, .slideshow a').forEach(function(a){
+      a.addEventListener('click', function(e){
+        if(!modal.showModal) return;
+        e.preventDefault();
+        var ss = a.closest('.slideshow');
+        if(ss){
+          modalShow = {ss: ss, links: [].slice.call(ss.querySelectorAll('a'))};
+          modalNav.style.display = '';
+          modal.classList.add('media-modal-slideshow');
+          modalSync();
+        } else {
+          modalShow = null;
+          modalNav.style.display = 'none';
+          modal.classList.remove('media-modal-slideshow');
+          modalFromLink(a);
+        }
+        modal.showModal();
+      });
+    });
+  }
+  /* Notes live behind the note icons: one icon per card, one on
+     the filter card for game-wide notes. The popup saves as you
+     type, so closing it (button, Escape, outside tap) loses
+     nothing; the icon swaps to a check when its note is set. */
+  function refreshNoteIcons(){
+    document.querySelectorAll('.note-btn').forEach(function(b){
+      var key=b.getAttribute('data-note-key');
+      var has=!!(notesData[key]||'').trim();
+      var icon=b.querySelector('i');
+      if(icon){
+        icon.classList.toggle('bi-journal-check', has);
+        icon.classList.toggle('bi-journal-text', !has);
+      }
+      b.classList.toggle('has-note', has);
+    });
+  }
+  function openNotes(key, title){
+    notesKey=key;
+    notesModalTitle.textContent=title;
+    notesModalText.value=notesData[key]||'';
+    if(notesModal.showModal) notesModal.showModal();
+  }
+  if(notesModal){
+    notesModalText.addEventListener('input', function(){
+      if(notesKey===null) return;
+      var v=notesModalText.value;
+      if(v) notesData[notesKey]=v; else delete notesData[notesKey];
+      save(); refreshNoteIcons();
+    });
+    var notesModalClose=notesModal.querySelector('.notes-modal-close');
+    if(notesModalClose) notesModalClose.addEventListener('click', function(){ notesModal.close(); });
+    notesModal.addEventListener('click', function(e){ if(e.target===notesModal) notesModal.close(); });
+    document.querySelectorAll('.note-btn').forEach(function(b){
+      b.addEventListener('click', function(){
+        var art=b.closest('article');
+        var title=art ? 'Notes: '+art.querySelector('.ach-name').textContent : 'Game notes';
+        openNotes(b.getAttribute('data-note-key'), title);
+      });
+    });
+  }
+  /* Slideshow cards: Previous/Next walk through the guide
+     slides; only one slide shows at a time, and the ends
+     disable their button. Hidden slides are also pulled out
+     of tab order, since they are visibility-hidden, not gone. */
+  document.querySelectorAll('.slideshow').forEach(function(ss){
+    var slides = ss.querySelectorAll('.slideshow-slide');
+    var prev = ss.querySelector('.slideshow-prev');
+    var next = ss.querySelector('.slideshow-next');
+    var count = ss.querySelector('.slideshow-count');
+    var cur = 0;
+    function show(i){
+      cur = Math.max(0, Math.min(slides.length - 1, i));
+      slides.forEach(function(s, j){
+        var on = j === cur;
+        s.classList.toggle('active', on);
+        s.setAttribute('aria-hidden', on ? 'false' : 'true');
+        s.querySelectorAll('a').forEach(function(a){
+          if(on){ a.removeAttribute('tabindex'); } else { a.setAttribute('tabindex', '-1'); }
+        });
+      });
+      count.textContent = (cur + 1) + ' of ' + slides.length;
+      prev.disabled = cur === 0;
+      next.disabled = cur === slides.length - 1;
+    }
+    prev.addEventListener('click', function(){ show(cur - 1); });
+    next.addEventListener('click', function(){ show(cur + 1); });
+    show(0);
+  });
+  load(); updateProgress(); applyFilters();
+})();
+</script>
+</body>
+</html>

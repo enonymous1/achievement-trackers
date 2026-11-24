@@ -4,6 +4,23 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-24 — Game #16: Generation Zero
+
+### Added
+
+- **Generation Zero** — base game only: all 50
+  achievements / 1,000G, in five sections: Story (the
+  intro missions and the four named main missions),
+  Machine kills, Weapons & feats, Exploration &
+  collectibles, and Gear & characters. No
+  TrueAchievements walkthrough exists; route notes
+  paraphrase the Generation Zero platinum guide
+  (messymoddingstore). Nothing is missable; the
+  collectible sets carry verified totals (23
+  blueprints, 21 gnomes, 22 mixtapes, 14 Dala
+  horses). The 3 DLC packs (22 achievements /
+  390G) are out of scope. About 40–50 hours.
+
 ## 2026-11-24 — Redirect stubs dropped
 
 ### Changed

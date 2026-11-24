@@ -1,0 +1,103 @@
+{
+  "slug": "generation-zero",
+  "title": "Generation Zero",
+  "tagline": "1980s Sweden, overrun by machines — clear the story, hunt 80 collectibles, and grind 500 machines.",
+  "order_note": "One playthrough, nothing missable, any order — but do the story first for the safehouses and gear, hunt collectibles region by region, and keep the second character for Player Two and Postgraduate only. Answering machines and side missions must be done on one character (your main).",
+  "scope_note": "Base game only: all 50 achievements / 1,000G. The 3 DLC packs (22 achievements / 390G) are out of scope. No TrueAchievements walkthrough exists; route notes paraphrased from the Generation Zero platinum guide (messymoddingstore) and TA achievement solutions. About 40–50 hours.",
+  "total_gs": 1000,
+  "total_count": 50,
+  "storage_key": "gz-tracker-v1",
+  "sources": [{"label": "TrueAchievements — Achievements", "url": "https://www.trueachievements.com/game/Generation-Zero/achievements"}, {"label": "Generation Zero Platinum Trophy Guide", "url": "https://www.messymoddingstore.com/blog/generation-zero-platinum-trophy-blog-guide"}],
+  "sections": [
+    {
+      "id": "story",
+      "filter_label": "Story",
+      "title": "Story",
+      "subtitle": "7 achievements",
+      "achievements": [
+        {"id": "ach-grey-dawn", "name": "Grey Dawn", "gs": 15, "req": "Complete all Intro Missions.", "how": "Play the introductory missions — they teach the basics and open the map."},
+        {"id": "ach-bleeds", "name": "If It Bleeds, We Can Kill It.", "gs": 30, "req": "Complete the Main Mission \"A Wrench in the Works\".", "how": "Complete the main mission \"A Wrench in the Works\" — the first of the four named main missions."},
+        {"id": "ach-elementary", "name": "Elementary", "gs": 30, "req": "Complete the Main Mission \"Empty Spaces\".", "how": "Complete the main mission \"Empty Spaces\". A level 5 HP-5 waits in a safe here — grab it for Lock & Load."},
+        {"id": "ach-my-friend", "name": "My Friend", "gs": 30, "req": "Complete the Main Mission \"The Enemy of my Enemy\".", "how": "Complete the main mission \"The Enemy of my Enemy\". A level 5 AI-76 is here — grab it for Lock & Load."},
+        {"id": "ach-phoenix", "name": "Rise Of The Phoenix", "gs": 60, "req": "Complete the Main Mission \"Behind the Curtain\".", "how": "Complete the main mission \"Behind the Curtain\"."},
+        {"id": "ach-final-countdown", "name": "It's The Final Countdown", "gs": 20, "req": "Complete all Main Missions.", "how": "Complete all main missions — the intro missions, the four named ones, and the finale."},
+        {"id": "ach-go-getter", "name": "Go-Getter", "gs": 15, "req": "Complete 25 Side Missions.", "how": "Complete 25 side missions. Do them on your main character — side-mission progress doesn't count across characters. Take them as they appear while you play.", "counters": [{"group": "side-missions", "target": 25}]}
+      ]
+    },
+    {
+      "id": "machines",
+      "filter_label": "Machine kills",
+      "title": "Machine kills",
+      "subtitle": "9 achievements",
+      "achievements": [
+        {"id": "ach-first-blood", "name": "First Blood", "gs": 15, "req": "Destroy your first machine.", "how": "Destroy your first machine — the intro missions give you plenty of chances."},
+        {"id": "ach-disease", "name": "You're A Disease And I'm The Cure", "gs": 15, "req": "Destroy 20 Ticks.", "how": "Destroy 20 Ticks. Ticks fill the bunkers — they come in swarms.", "counters": [{"group": "ticks", "target": 20}]},
+        {"id": "ach-hasta", "name": "Hasta La Vista Baby", "gs": 15, "req": "Destroy 30 Seekers.", "how": "Destroy 30 Seekers. Seekers and Hunters gather around relay beacons.", "counters": [{"group": "seekers", "target": 30}]},
+        {"id": "ach-bubblegum", "name": "All Out Of Bubblegum", "gs": 15, "req": "Destroy 80 Runners.", "how": "Destroy 80 Runners. Runners are everywhere — this finishes on its own.", "counters": [{"group": "runners", "target": 80}]},
+        {"id": "ach-make-my-day", "name": "Go Ahead, Make My Day", "gs": 15, "req": "Destroy 30 Hunters.", "how": "Destroy 30 Hunters. Hunters gather around relay beacons; Saltholmen church is a good hunting spot.", "counters": [{"group": "hunters", "target": 30}]},
+        {"id": "ach-yippee", "name": "Yippee-Ki-Yay", "gs": 15, "req": "Destroy 15 Harvesters.", "how": "Destroy 15 Harvesters. The slow one — Harvesters appear in open fields and near churches.", "counters": [{"group": "harvesters", "target": 15}]},
+        {"id": "ach-little-friend", "name": "Say Hello To My Little Friend", "gs": 50, "req": "Destroy 15 Tanks.", "how": "Destroy 15 Tanks. Like Harvesters, Tanks are slow to find — open fields and near churches.", "counters": [{"group": "tanks", "target": 15}]},
+        {"id": "ach-decimation", "name": "Decimation", "gs": 30, "req": "Destroy 500 machines.", "how": "Destroy 500 machines in total. Track it in the journal stats tab; it climbs across the whole run.", "counters": [{"group": "machines", "target": 500}]},
+        {"id": "ach-kill-switch", "name": "Kill Switch", "gs": 15, "req": "Destroy 10 relay beacons.", "how": "Destroy 10 relay beacons. Beacons appear on the map as you approach them — destroy them as you go.", "counters": [{"group": "relay-beacons", "target": 10}]}
+      ]
+    },
+    {
+      "id": "weapons",
+      "filter_label": "Weapons & feats",
+      "title": "Weapons & feats",
+      "subtitle": "14 achievements",
+      "achievements": [
+        {"id": "ach-commando", "name": "Commando", "gs": 15, "req": "Use assault rifles to destroy 80 machines.", "how": "Destroy 80 machines with assault rifles.", "counters": [{"group": "ar-kills", "target": 80}]},
+        {"id": "ach-hunter", "name": "Hunter", "gs": 15, "req": "Use hunting rifles to destroy 20 machines.", "how": "Destroy 20 machines with hunting rifles. The PvG 90 from the top of Stenudden lighthouse counts here.", "counters": [{"group": "hr-kills", "target": 20}]},
+        {"id": "ach-sapper", "name": "Sapper", "gs": 15, "req": "Use explosives to destroy 15 machines.", "how": "Destroy 15 machines with explosives — the m/49 Granatgevär, grenades, landmines, and explosive shells. Exploding gas tanks don't count.", "counters": [{"group": "explosive-kills", "target": 15}]},
+        {"id": "ach-gangster", "name": "Gangster", "gs": 15, "req": "Use submachine guns to destroy 60 machines.", "how": "Destroy 60 machines with submachine guns.", "counters": [{"group": "smg-kills", "target": 60}]},
+        {"id": "ach-gunslinger", "name": "Gunslinger", "gs": 15, "req": "Use handgun to destroy 20 machines.", "how": "Destroy 20 machines with handguns.", "counters": [{"group": "handgun-kills", "target": 20}]},
+        {"id": "ach-operator", "name": "Operator", "gs": 15, "req": "Use shotguns to destroy 40 machines.", "how": "Destroy 40 machines with shotguns.", "counters": [{"group": "shotgun-kills", "target": 40}]},
+        {"id": "ach-sneaky", "name": "Real Sneaky Like", "gs": 15, "req": "Use suppressed weapons to destroy 20 enemies.", "how": "Destroy 20 enemies with suppressed weapons — it counts even if the machines have spotted you.", "counters": [{"group": "suppressed-kills", "target": 20}]},
+        {"id": "ach-overkill", "name": "Overkill", "gs": 15, "req": "Shoot a Seeker with the m/49 Granatgevär.", "how": "Shoot a Seeker with the m/49 Granatgevär (found in bunkers and military zones) — a direct hit."},
+        {"id": "ach-one-shot", "name": "One Shot", "gs": 30, "req": "Destroy a Hunter with a single shot.", "how": "Destroy a Hunter with a single bullet — grenades and rockets don't count. Lay at least six gas or explosive canisters along a path, lure Hunters onto them, and shoot a canister to set off the chain; a single follow-up bullet finishes a weakened Hunter. Saltholmen church is a good spot."},
+        {"id": "ach-marksman", "name": "Marksman", "gs": 60, "req": "Destroy an enemy with a shot fired from 300 meters away.", "how": "Destroy an enemy with a shot from over 300 meters — easiest with the PvG 90 from Stenudden lighthouse. The long straight airstrip in the farmlands works well: aim at a Runner's gas tank. Level 2 binoculars show the exact distance."},
+        {"id": "ach-hot-property", "name": "Hot Property", "gs": 15, "req": "Have 8 machines simultaneously lured to the same flare.", "how": "Have 8 machines simultaneously lured to the same flare — easiest near a relay beacon or in a busy town. A running total can't track a simultaneous peak, so no counter here."},
+        {"id": "ach-siren-call", "name": "Siren Call", "gs": 15, "req": "Use a boombox to lure an enemy.", "how": "Put a boombox in your quick wheel, place it near an unaware machine, and turn it on."},
+        {"id": "ach-splash", "name": "Splash Damage", "gs": 15, "req": "Destroy more than one machine at the same time using the m/49 Granatgevär or a hand grenade.", "how": "Destroy more than one machine at the same time with the m/49 or a hand grenade — bunker corridors full of Runners are ideal."},
+        {"id": "ach-offence", "name": "Offence Is The Best Defence", "gs": 30, "req": "Destroy 3 machines without taking damage.", "how": "Destroy 3 machines without taking damage — snipe the gas tanks on three lethargic Runners in a bunker without taking a hit. A running total can't track a no-damage streak, so no counter here."}
+      ]
+    },
+    {
+      "id": "explore",
+      "filter_label": "Exploration & collectibles",
+      "title": "Exploration & collectibles",
+      "subtitle": "13 achievements",
+      "achievements": [
+        {"id": "ach-fika", "name": "Fika Club", "gs": 15, "req": "Unlock 5 safehouses.", "how": "Unlock 5 safehouses. They come with the story — a full run can unlock 79.", "counters": [{"group": "safehouses", "target": 5}]},
+        {"id": "ach-gustafsloppet", "name": "Gustafsloppet", "gs": 15, "req": "Travel 90 km on foot.", "how": "Travel 90 km on foot. A full run ends around 360 km — it climbs as the main missions send you across the map.", "counters": [{"group": "km", "target": 90}]},
+        {"id": "ach-light-my-fire", "name": "Light My Fire", "gs": 15, "req": "Climb to the top of 3 different lighthouses.", "how": "Climb to the top of 3 lighthouses in 3 different regions. There are four: Stenudden (Archipelago), Sillavik (South Coast), Arkelstorp (North Coast), KarlErik (Marshlands). Stenudden comes first naturally — the PvG 90 waits at the top.", "counters": [{"group": "lighthouses", "target": 3}]},
+        {"id": "ach-folk-wisdom", "name": "Folk Wisdom", "gs": 15, "req": "Read 10 different sayings in homes.", "how": "Read 10 different framed sayings in homes — on kitchen walls, above beds and sofas. Just aim at them.", "counters": [{"group": "sayings", "target": 10}]},
+        {"id": "ach-scavenger", "name": "Scavenger", "gs": 15, "req": "Find and take 80 items from the world.", "how": "Find and take 80 items from the world. Loot every backpack, body, crate, and car you pass; containers refill after a few hours.", "counters": [{"group": "items", "target": 80}]},
+        {"id": "ach-engineer", "name": "Engineer", "gs": 15, "req": "Collect all machine blueprints.", "how": "Collect all 23 machine blueprints — one prototype, armed, Apocalypse, or FNIX variant per machine type, usually in containers or on military tables in bunkers and camps. Found items show in the journal's collectibles tab.", "counters": [{"group": "blueprints", "target": 23}]},
+        {"id": "ach-gardener", "name": "Gardener", "gs": 15, "req": "Collect all garden gnomes.", "how": "Collect all 21 garden gnomes — outdoors in gardens, wheelbarrows, and on pallets. Shooting a gnome counts as collecting it, which helps with ones on awkward ledges.", "counters": [{"group": "gnomes", "target": 21}]},
+        {"id": "ach-dj", "name": "DJ", "gs": 15, "req": "Collect all mixtapes.", "how": "Collect all 22 mixtapes — mostly on furniture and tables indoors.", "counters": [{"group": "mixtapes", "target": 22}]},
+        {"id": "ach-tourist", "name": "Tourist", "gs": 15, "req": "Collect all souvenirs.", "how": "Collect all 14 souvenirs — the small painted Dala horses, spread across every region.", "counters": [{"group": "dala-horses", "target": 14}]},
+        {"id": "ach-explorer", "name": "Explorer", "gs": 15, "req": "Discover 50 locations.", "how": "Discover 50 locations — explore as you play; locations pop as you reach them.", "counters": [{"group": "locations", "target": 50}]},
+        {"id": "ach-tunnel-rat", "name": "Tunnel Rat", "gs": 15, "req": "Discover 5 bunkers.", "how": "Discover 5 bunkers. One main mission sends you to seven control bunkers, so this comes with the story.", "counters": [{"group": "bunkers", "target": 5}]},
+        {"id": "ach-fashionista", "name": "Fashionista", "gs": 15, "req": "Collect 200 items of apparel.", "how": "Collect 200 items of apparel. The game shows no total — check what you own in your profile by category. Color variants count separately; DLC clothing doesn't count. Best farming: churches, large towns (search the cars), and military outposts.", "counters": [{"group": "apparel", "target": 200}]},
+        {"id": "ach-answering", "name": "I Just Called To Say I Love You", "gs": 15, "req": "Listen to the messages left on 5 different answering machines.", "how": "Listen to the messages on 5 different answering machines — found in houses and churches as blue diamond side missions. Do them on your main character; they don't count across characters.", "counters": [{"group": "answering-machines", "target": 5}]}
+      ]
+    },
+    {
+      "id": "gear",
+      "filter_label": "Gear & characters",
+      "title": "Gear & characters",
+      "subtitle": "7 achievements",
+      "achievements": [
+        {"id": "ach-spare-parts", "name": "Spare Parts", "gs": 15, "req": "Scavenge a vision module from a machine.", "how": "Scavenge a vision module from a machine. Vision modules are a common drop — loot every machine you destroy."},
+        {"id": "ach-modder", "name": "Modder", "gs": 15, "req": "Attach a mod to a weapon.", "how": "Attach a mod to a weapon."},
+        {"id": "ach-lock-load", "name": "Lock & Load", "gs": 30, "req": "Fully equip a level 5 weapon with level 5 mods.", "how": "Fully equip a level 5 weapon with level 5 mods — the mods don't need to be level 5, only the weapon, and the PvG and rocket launcher don't qualify. The level 5 HP-5 from a safe in Empty Spaces and the level 5 AI-76 in The Enemy of my Enemy are the easy picks."},
+        {"id": "ach-pirate", "name": "I Want To Be A Mighty Pirate!", "gs": 15, "req": "Loot something while wearing an eyepatch.", "how": "Loot something while wearing an eyepatch. The eyepatch is a random drop that usually turns up about halfway through — equip it the moment it appears and loot anything."},
+        {"id": "ach-player-two", "name": "Player Two", "gs": 15, "req": "Create a second character.", "how": "Create a second character."},
+        {"id": "ach-postgraduate", "name": "Postgraduate", "gs": 30, "req": "Have two separate characters with different active specializations.", "how": "Have two separate characters with different active specializations. Level the second character to 6 and pick a different specialization from your main."},
+        {"id": "ach-assist", "name": "Assist", "gs": 15, "req": "Deal more than 50% of the damage to an enemy killed by another player.", "how": "Deal more than 50% of the damage to an enemy killed by another player. Needs an online session — local co-op doesn't count. Join a game, damage a machine heavily without finishing it, and let your partner take the kill."}
+      ]
+    }
+  ]
+}
