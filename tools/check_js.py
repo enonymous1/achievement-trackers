@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Syntax-check JavaScript in generated pages and shared JS files.
 
-Checks every inline <script> block in index.html and each
-<slug>/index.html (scripts with a src are skipped there, because they
-are checked as files below), plus every file under assets/js/.
+Checks every inline <script> block in index.html, how-it-works/,
+each games/<slug>/ page, and each <slug>/ redirect stub (scripts
+with a src are skipped there, because they are checked as files
+below), plus every file under assets/js/.
 Each block/file is written to a temp file only when it comes from an
 inline block, and temp files are always removed. A page with no inline
 scripts is a failure, not a warning: a template edit that accidentally
@@ -58,7 +59,11 @@ def main() -> int:
     if node is None:
         print("check_js.py: node not found in PATH", file=sys.stderr)
         return 1
-    pages = [ROOT / "index.html", *sorted(ROOT.glob("*/index.html"))]
+    pages = [
+        ROOT / "index.html",
+        *sorted(ROOT.glob("*/index.html")),
+        *sorted((ROOT / "games").glob("*/index.html")),
+    ]
     if not pages:
         print("check_js.py: no generated pages found", file=sys.stderr)
         return 1

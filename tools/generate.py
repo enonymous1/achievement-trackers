@@ -41,6 +41,12 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 TOOLS_DIR = ROOT / "tools"
 
+# Game pages live under games/<slug>/, one directory per game.
+# The published URL for a game is /games/<slug>/; the old
+# /<slug>/ URL stays as a generated redirect stub (see
+# render_redirect), so existing links keep working.
+GAMES_DIR = "games"
+
 # Short filter labels for section ids. These are a fallback only: a
 # section may carry its own "filter_label" in the JSON, and that wins.
 # New section types should get a filter_label in data, not a new entry
@@ -350,16 +356,18 @@ def _youtube_id(src):
     return None
 
 
-def _media_src(src):
+def _media_src(src, prefix="../"):
     """Page-relative URL for a media src: repo files live under
-    assets/ (one level up from a game page); remote URLs pass
-    through unchanged."""
+    assets/; remote URLs pass through unchanged. ``prefix`` is
+    the relative path back to the site root from the page using
+    it — "../" from a one-level page (How), "../../" from a
+    game page under games/<slug>/."""
     if src.startswith("assets/"):
-        return "../" + src
+        return prefix + src
     return src
 
 
-def render_media(ach):
+def render_media(ach, prefix="../"):
     """Media block for one achievement card, under the route note.
 
     Images render as <img> (lazy); clips render as <video> when the
@@ -376,13 +384,13 @@ def render_media(ach):
         src = entry["src"]
         if entry["type"] == "image":
             alt = esc(entry.get("alt") or ach["name"])
-            img = (f'<img src="{esc(_media_src(src))}" alt="{alt}"'
+            img = (f'<img src="{esc(_media_src(src, prefix))}" alt="{alt}"'
                    f' loading="lazy" class="img-fluid rounded">')
             if entry.get("full"):
-                img = (f'<a href="{esc(_media_src(entry["full"]))}" target="_blank" '
+                img = (f'<a href="{esc(_media_src(entry["full"], prefix))}" target="_blank" '
                        f'rel="noopener" title="Open larger version">{img}</a>')
             else:
-                img = (f'<a href="{esc(_media_src(src))}" target="_blank" '
+                img = (f'<a href="{esc(_media_src(src, prefix))}" target="_blank" '
                        f'rel="noopener" title="Open image">{img}</a>')
             credit = (f'<span class="media-credit">Image: {esc(entry["credit"])}</span>'
                       if entry.get("credit") else "")
@@ -394,7 +402,7 @@ def render_media(ach):
             if src.lower().endswith((".mp4", ".webm", ".ogg")):
                 parts.append(
                     f'<video controls preload="none" class="ach-media w-100 rounded mt-2">'
-                    f'<source src="{esc(_media_src(src))}"></video>'
+                    f'<source src="{esc(_media_src(src, prefix))}"></video>'
                 )
             else:
                 vid = _youtube_id(src)
@@ -406,7 +414,7 @@ def render_media(ach):
     return "".join(parts)
 
 
-def render_slideshow(ach):
+def render_slideshow(ach, prefix="../"):
     """Step-by-step guide block for one achievement card: one
     slide at a time, walked with Previous/Next. Slides reuse
     the media entry shape (src, optional full, caption, credit,
@@ -417,14 +425,14 @@ def render_slideshow(ach):
         return ""
     parts = []
     for i, entry in enumerate(slides):
-        img = (f'<img src="{esc(_media_src(entry["src"]))}" '
+        img = (f'<img src="{esc(_media_src(entry["src"], prefix))}" '
                f'alt="{esc(entry.get("alt") or ach["name"])}" '
                f'loading="lazy" class="img-fluid rounded">')
         if entry.get("full"):
-            img = (f'<a href="{esc(_media_src(entry["full"]))}" target="_blank" '
+            img = (f'<a href="{esc(_media_src(entry["full"], prefix))}" target="_blank" '
                    f'rel="noopener" title="Open larger version">{img}</a>')
         else:
-            img = (f'<a href="{esc(_media_src(entry["src"]))}" target="_blank" '
+            img = (f'<a href="{esc(_media_src(entry["src"], prefix))}" target="_blank" '
                    f'rel="noopener" title="Open image">{img}</a>')
         credit = (f'<span class="media-credit">Image: {esc(entry["credit"])}</span>'
                   if entry.get("credit") else "")
@@ -446,7 +454,7 @@ def render_slideshow(ach):
             f'{"".join(parts)}</div>{controls}</div>')
 
 
-def render_achievement(ach, number, wrap=True):
+def render_achievement(ach, number, prefix="../", wrap=True):
     """Render one achievement card.
 
     ``number`` is the running 1-based position in typical unlock order
@@ -457,7 +465,10 @@ def render_achievement(ach, number, wrap=True):
     share a ``data-counter`` group to one value. The fragment itself
     is just the article; the grid-column wrapper lives here, and
     ``wrap=False`` returns the bare article for the How page demos,
-    which supply their own caption + column wrapper.
+    which supply their own caption + column wrapper. ``prefix`` is
+    the relative path back to the site root, for media URLs —
+    "../../" from a game page under games/<slug>/, "../" from
+    the How page demos.
     """
     counters = "".join(render_counter(c) for c in ach.get("counters", []))
     counter_bars = "".join(render_counter_bar(c) for c in ach.get("counters", []))
@@ -476,8 +487,8 @@ def render_achievement(ach, number, wrap=True):
         "REQ": esc(ach["req"]),
         "HOW": esc(ach["how"]),
         "MISSABLE": missable,
-        "MEDIA": render_media(ach),
-        "SLIDESHOW": render_slideshow(ach),
+        "MEDIA": render_media(ach, prefix),
+        "SLIDESHOW": render_slideshow(ach, prefix),
         "STEPS": render_steps(ach.get("steps", []), parent_id=ach["id"]),
         "COUNTERS": counters,
         "COUNTER_BARS": counter_bars,
@@ -508,7 +519,7 @@ def render_step_card(card, wrap=True):
             f'data-name="{data_name}">{article}</div>')
 
 
-def render_sections(game):
+def render_sections(game, prefix="../"):
     """Render all sections, in JSON order.
 
     Only the first section is open by default. That is a UX choice,
@@ -516,7 +527,8 @@ def render_sections(game):
     collapsed later sections keep the page scannable. Section titles
     are escaped like every other data value — titles come from data,
     not code, so a title containing ``&`` or ``<`` must not break the
-    page or inject markup.
+    page or inject markup. ``prefix`` is the relative path back to
+    the site root, for media URLs.
     """
     number = 0
     out = []
@@ -545,7 +557,7 @@ def render_sections(game):
         out.append('<div class="row g-3">')
         for ach in achievements:
             number += 1
-            out.append(render_achievement(ach, number))
+            out.append(render_achievement(ach, number, prefix))
         for card in cards:
             out.append(render_step_card(card))
         out.append("</div></div></details>")
@@ -577,7 +589,8 @@ def sidebar_menu(all_games, prefix, current):
     grouped under A–Z letter headers (titles starting with a digit
     go under '#'), sorted by title. ``current`` is 'home', 'how',
     or a game slug. ``prefix`` is the relative path back to the
-    site root from the page using it."""
+    site root from the page using it; game pages live under
+    games/<slug>/, so a game link is ``{prefix}games/<slug>/``."""
     items = []
     home_active = ' active' if current == 'home' else ''
     items.append(
@@ -594,8 +607,9 @@ def sidebar_menu(all_games, prefix, current):
         items.append(f'              <li class="nav-header">{letter}</li>')
         for game in grouped[letter]:
             active = ' active' if game["slug"] == current else ""
+            href = f"{prefix}{GAMES_DIR}/{esc(game['slug'])}/"
             items.append(
-                f'              <li class="nav-item"><a href="{prefix}{esc(game["slug"])}/" '
+                f'              <li class="nav-item"><a href="{href}" '
                 f'class="nav-link{active}"><i class="nav-icon bi bi-controller"></i>'
                 f'<p>{esc(game["title"])}</p></a></li>'
             )
@@ -626,10 +640,10 @@ def render_game(game, all_games):
         f'<a href="{esc(s["url"])}">{esc(s["label"])}</a>' for s in game["sources"]
     )
     replacements = {
-        "ASSET_PREFIX": "../assets/",
-        "SIDEBAR_MENU": sidebar_menu(all_games, "../", game["slug"]),
-        "SIDEBAR_PREFIX": "../",
-        "HOW_HREF": sidebar_how_href("../", game["slug"]),
+        "ASSET_PREFIX": "../../assets/",
+        "SIDEBAR_MENU": sidebar_menu(all_games, "../../", game["slug"]),
+        "SIDEBAR_PREFIX": "../../",
+        "HOW_HREF": sidebar_how_href("../../", game["slug"]),
         "HOW_ACTIVE": "",
         "TITLE": esc(game["title"]),
         "TAGLINE": esc(game["tagline"]),
@@ -643,7 +657,7 @@ def render_game(game, all_games):
         "TOTAL_COUNT": str(game["_total_count"]),
         "FILTER_BUTTONS": "\n".join(filters),
         "XBOX_SYNC_CARD": render_xbox_sync_card(game),
-        "SECTIONS_HTML": render_sections(game),
+        "SECTIONS_HTML": render_sections(game, "../../"),
         "SOURCES_HTML": sources,
         "SHELL_TEXT": SHELL_TEXT,
     }
@@ -677,14 +691,14 @@ def render_hub(games):
             f'data-count="{total_count}" data-gs="{total_gs}">'
             f'<div class="card h-100">'
             f'<div class="card-header"><h3 class="fs-5 mb-0">'
-            f'<a href="{slug}/">{esc(game["title"])}</a></h3></div>'
+            f'<a href="{GAMES_DIR}/{slug}/">{esc(game["title"])}</a></h3></div>'
             f'<div class="card-body">'
             f'<p class="text-secondary">{esc(game["scope_note"])}</p>'
             f'<p><strong>{total_count} achievements · {total_gs:,}G</strong> · '
             f'<span class="game-progress" data-slug="{slug}">'
             f'Not started yet</span></p>'
             f'<p class="mb-0"><a class="btn btn-success" '
-            f'href="{slug}/">Open tracker →</a></p>'
+            f'href="{GAMES_DIR}/{slug}/">Open tracker →</a></p>'
             f'</div></div></div>'
         )
     total_games = len(games)
@@ -866,6 +880,39 @@ def render_how(all_games):
     return _fill(template, replacements)
 
 
+def render_redirect(game):
+    """Redirect stub for the game's old root URL.
+
+    Game pages moved under games/<slug>/, but the old
+    /<slug>/ URL is published and linked from elsewhere,
+    so it stays as a generated redirect rather than a 404.
+    Meta refresh plus an instant JS replace plus a plain
+    link cover no-JS, no-meta, and no-redirect clients; the
+    canonical points search engines at the new URL. The stub
+    is generated, not hand-written, so --check keeps it in
+    sync and a new game gets one automatically.
+    """
+    slug = esc(game["slug"])
+    title = esc(game["title"])
+    target = f"../{GAMES_DIR}/{slug}/"
+    return (
+        "<!doctype html>\n"
+        '<html lang="en">\n'
+        "<head>\n"
+        '<meta charset="utf-8">\n'
+        f"<title>{title} — moved</title>\n"
+        f'<link rel="canonical" href="{target}">\n'
+        f'<meta http-equiv="refresh" content="0; url={target}">\n'
+        "</head>\n"
+        "<body>\n"
+        f"<p>The {title} tracker has moved to "
+        f'<a href="{target}">games/{slug}/</a>.</p>\n'
+        f"<script>location.replace({json.dumps(target)});</script>\n"
+        "</body>\n"
+        "</html>\n"
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description="Generate achievement-tracker pages.")
     parser.add_argument("--check", action="store_true",
@@ -892,8 +939,12 @@ def main():
 
     outputs = {}
     for game in games:
-        out_dir = ROOT / game["slug"]
+        out_dir = ROOT / GAMES_DIR / game["slug"]
         outputs[out_dir / "index.html"] = render_game(game, all_games)
+        # Redirect stub at the game's old root URL (see
+        # render_redirect): the old URL is published and linked
+        # from elsewhere, so it keeps working.
+        outputs[ROOT / game["slug"] / "index.html"] = render_redirect(game)
     outputs[ROOT / "index.html"] = render_hub(all_games)
     outputs[ROOT / "how-it-works" / "index.html"] = render_how(all_games)
 

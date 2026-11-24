@@ -4,6 +4,23 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-24 — Game pages moved under games/
+
+### Changed
+
+- Game pages now live at `games/<slug>/` instead of
+  `<slug>/`, so the repo root holds one `games/`
+  directory instead of a directory per game. The
+  generator, hub, sidebar, and Pages workflow all
+  point at the new URLs. The old `/<slug>/` URL stays
+  as a generated redirect stub (canonical + meta
+  refresh + instant JS replace) to `games/<slug>/`,
+  so existing links keep working — the root still
+  lists one tiny stub directory per game, each holding
+  only that redirect. Dropping the stubs (and breaking
+  the old URLs) is a one-line generator change if
+  that is ever wanted.
+
 ## 2026-11-07 — Grove: Bloodletting steps + slideshow
 
 ### Fixed

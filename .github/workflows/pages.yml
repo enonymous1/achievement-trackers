@@ -33,10 +33,12 @@ jobs:
       # deploy .github/, tools/ and data/ — nothing secret, but no
       # visitor needs them, and a future accidental file would ship
       # too. Game directories are derived from data slugs, so adding
-      # a game needs no workflow change.
+      # a game needs no workflow change. Games live under games/
+      # in the repo and publish at /games/<slug>/; the redirect
+      # stub at the old /<slug>/ URL is staged too.
       - name: Stage site files
         run: |
-          mkdir -p _site
+          mkdir -p _site/games
           cp index.html _site/
           cp -r assets _site/
           cp -r how-it-works _site/
@@ -45,6 +47,7 @@ jobs:
               *schema.json) continue ;;
             esac
             slug=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['slug'])" "$d")
+            cp -r "games/$slug" _site/games/
             cp -r "$slug" _site/
           done
       - uses: actions/upload-pages-artifact@v3

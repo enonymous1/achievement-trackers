@@ -11,6 +11,7 @@ import unittest
 from pathlib import Path
 
 from generate import (
+    GAMES_DIR,
     load_games,
     render_achievement,
     render_demos,
@@ -19,6 +20,7 @@ from generate import (
     render_hub,
     render_json_example,
     render_media,
+    render_redirect,
     render_sections,
     render_slideshow,
     render_xbox_sync_card,
@@ -725,13 +727,69 @@ class TestRender(unittest.TestCase):
         games = [make_game(), make_game(slug="other", title="Other")]
         html = sidebar_menu(games, "../", "test")
         self.assertIn('href="../"', html)
-        self.assertIn('href="../other/"', html)
+        self.assertIn('href="../games/other/"', html)
         self.assertIn("Games</li>", html)
         # The old Notes section and its sidebar link are gone:
         # notes live behind per-card icons now.
         self.assertNotIn('#notes-section', html)
         self.assertEqual(sidebar_how_href("../", "test"), "../how-it-works/")
         self.assertEqual(sidebar_how_href("../", "how"), "./")
+
+    def test_game_pages_live_under_games(self):
+        # Game pages live at games/<slug>/, two levels deep, so
+        # their asset/media prefixes climb twice (../../assets/)
+        # and their sidebar climbs twice to Home (../../), with
+        # sibling games at ../../games/<slug>/. The How page
+        # demos stay one level deep (../assets/) — the prefix
+        # is threaded per page, not global.
+        self.assertEqual(GAMES_DIR, "games")
+        game = make_game()
+        game["sections"][0]["achievements"][0]["media"] = [
+            {"type": "image", "src": "assets/media/x.png", "alt": "Alt"}
+        ]
+        html = render_game(validate_game("test.json", game), [])
+        self.assertIn('src="../../assets/media/x.png"', html)
+        self.assertIn('href="../../assets/vendor/', html)
+        self.assertIn('href="../../"', html)
+        self.assertIn('href="../../how-it-works/"', html)
+        self.assertNotIn('href="../assets/', html)
+        self.assertNotIn('href="../how-it-works/"', html)
+        other = make_game(slug="other", title="Other")
+        html = render_game(
+            validate_game("test.json", game),
+            [validate_game("other.json", other)],
+        )
+        self.assertIn('href="../../games/other/"', html)
+
+    def test_hub_cards_link_into_games(self):
+        html = render_hub([validate_game("test.json", make_game())])
+        self.assertIn('href="games/test/"', html)
+        self.assertNotIn('href="test/"', html)
+
+    def test_redirect_stub_points_at_games(self):
+        # The old /<slug>/ URL stays as a generated redirect to
+        # games/<slug>/ — canonical, meta refresh, and JS agree,
+        # and the stub carries no absolute path.
+        stub = render_redirect(make_game())
+        self.assertIn(
+            '<link rel="canonical" href="../games/test/">', stub)
+        self.assertIn(
+            '<meta http-equiv="refresh" content="0; url=../games/test/">',
+            stub)
+        self.assertIn('location.replace("../games/test/");', stub)
+        self.assertIn('href="../games/test/"', stub)
+        self.assertNotIn('href="/', stub)
+        self.assertNotIn('src="/', stub)
+
+    def test_media_prefix_is_depth_aware(self):
+        # Default prefix is one level (the How page demos);
+        # game pages pass two.
+        ach = {"name": "N", "media": [
+            {"type": "image", "src": "assets/media/x.png", "alt": "Alt"}]}
+        self.assertIn('src="../assets/media/x.png"',
+                      render_media(ach))
+        self.assertIn('src="../../assets/media/x.png"',
+                      render_media(ach, "../../"))
 
     def test_step_bar_and_step_card_centering(self):
         # Multi-step achievements get a step bar under the header,
