@@ -2,9 +2,9 @@
 """Syntax-check JavaScript in generated pages and shared JS files.
 
 Checks every inline <script> block in index.html, how-it-works/,
-each games/<slug>/ page, and each <slug>/ redirect stub (scripts
-with a src are skipped there, because they are checked as files
-below), plus every file under assets/js/.
+and each games/<slug>/ page (scripts with a src are skipped there,
+because they are checked as files below), plus every file under
+assets/js/.
 Each block/file is written to a temp file only when it comes from an
 inline block, and temp files are always removed. A page with no inline
 scripts is a failure, not a warning: a template edit that accidentally

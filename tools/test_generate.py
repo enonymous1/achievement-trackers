@@ -20,7 +20,6 @@ from generate import (
     render_hub,
     render_json_example,
     render_media,
-    render_redirect,
     render_sections,
     render_slideshow,
     render_xbox_sync_card,
@@ -793,21 +792,6 @@ class TestRender(unittest.TestCase):
         html = render_hub([validate_game("test.json", make_game())])
         self.assertIn('href="games/test/"', html)
         self.assertNotIn('href="test/"', html)
-
-    def test_redirect_stub_points_at_games(self):
-        # The old /<slug>/ URL stays as a generated redirect to
-        # games/<slug>/ — canonical, meta refresh, and JS agree,
-        # and the stub carries no absolute path.
-        stub = render_redirect(make_game())
-        self.assertIn(
-            '<link rel="canonical" href="../games/test/">', stub)
-        self.assertIn(
-            '<meta http-equiv="refresh" content="0; url=../games/test/">',
-            stub)
-        self.assertIn('location.replace("../games/test/");', stub)
-        self.assertIn('href="../games/test/"', stub)
-        self.assertNotIn('href="/', stub)
-        self.assertNotIn('src="/', stub)
 
     def test_media_prefix_is_depth_aware(self):
         # Default prefix is one level (the How page demos);

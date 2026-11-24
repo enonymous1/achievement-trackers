@@ -42,9 +42,7 @@ DATA_DIR = ROOT / "data"
 TOOLS_DIR = ROOT / "tools"
 
 # Game pages live under games/<slug>/, one directory per game.
-# The published URL for a game is /games/<slug>/; the old
-# /<slug>/ URL stays as a generated redirect stub (see
-# render_redirect), so existing links keep working.
+# The published URL for a game is /games/<slug>/.
 GAMES_DIR = "games"
 
 # Short filter labels for section ids. These are a fallback only: a
@@ -880,39 +878,6 @@ def render_how(all_games):
     return _fill(template, replacements)
 
 
-def render_redirect(game):
-    """Redirect stub for the game's old root URL.
-
-    Game pages moved under games/<slug>/, but the old
-    /<slug>/ URL is published and linked from elsewhere,
-    so it stays as a generated redirect rather than a 404.
-    Meta refresh plus an instant JS replace plus a plain
-    link cover no-JS, no-meta, and no-redirect clients; the
-    canonical points search engines at the new URL. The stub
-    is generated, not hand-written, so --check keeps it in
-    sync and a new game gets one automatically.
-    """
-    slug = esc(game["slug"])
-    title = esc(game["title"])
-    target = f"../{GAMES_DIR}/{slug}/"
-    return (
-        "<!doctype html>\n"
-        '<html lang="en">\n'
-        "<head>\n"
-        '<meta charset="utf-8">\n'
-        f"<title>{title} — moved</title>\n"
-        f'<link rel="canonical" href="{target}">\n'
-        f'<meta http-equiv="refresh" content="0; url={target}">\n'
-        "</head>\n"
-        "<body>\n"
-        f"<p>The {title} tracker has moved to "
-        f'<a href="{target}">games/{slug}/</a>.</p>\n'
-        f"<script>location.replace({json.dumps(target)});</script>\n"
-        "</body>\n"
-        "</html>\n"
-    )
-
-
 def main():
     parser = argparse.ArgumentParser(description="Generate achievement-tracker pages.")
     parser.add_argument("--check", action="store_true",
@@ -941,10 +906,6 @@ def main():
     for game in games:
         out_dir = ROOT / GAMES_DIR / game["slug"]
         outputs[out_dir / "index.html"] = render_game(game, all_games)
-        # Redirect stub at the game's old root URL (see
-        # render_redirect): the old URL is published and linked
-        # from elsewhere, so it keeps working.
-        outputs[ROOT / game["slug"] / "index.html"] = render_redirect(game)
     outputs[ROOT / "index.html"] = render_hub(all_games)
     outputs[ROOT / "how-it-works" / "index.html"] = render_how(all_games)
 

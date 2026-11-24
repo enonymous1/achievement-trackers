@@ -34,8 +34,7 @@ jobs:
       # visitor needs them, and a future accidental file would ship
       # too. Game directories are derived from data slugs, so adding
       # a game needs no workflow change. Games live under games/
-      # in the repo and publish at /games/<slug>/; the redirect
-      # stub at the old /<slug>/ URL is staged too.
+      # in the repo and publish at /games/<slug>/.
       - name: Stage site files
         run: |
           mkdir -p _site/games
@@ -48,7 +47,6 @@ jobs:
             esac
             slug=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['slug'])" "$d")
             cp -r "games/$slug" _site/games/
-            cp -r "$slug" _site/
           done
       - uses: actions/upload-pages-artifact@v3
         with:

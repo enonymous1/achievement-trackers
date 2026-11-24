@@ -4,6 +4,16 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-24 — Redirect stubs dropped
+
+### Changed
+
+- The redirect stubs at the old `/<slug>/` URLs are gone
+  (Justin's call) — game pages live only at
+  `games/<slug>/` now, and the old URLs 404. The root
+  directory is clean: one `games/` directory, no
+  per-game stub directories.
+
 ## 2026-11-24 — Game #15: Gabby's Dollhouse: Ready to Party
 
 ### Added

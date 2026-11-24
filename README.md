@@ -334,7 +334,6 @@ Schema, per game file:
 achievement-trackers/
   index.html                  # hub / landing page (generated)
   games/<slug>/index.html     # one tracker per game (generated)
-  <slug>/index.html           # redirect stub to games/<slug>/ (generated)
   how-it-works/index.html     # How it works page (generated)
   assets/vendor/              # AdminLTE shell, vendored — no CDN
   assets/css/sidebar.css      # shared left-sidebar layout
@@ -415,13 +414,13 @@ Deployment is GitHub Actions, not branch publishing:
 2. The `Pages` workflow first calls the shared `check.yml` workflow
    (unit tests, ruff, `generate.py --check`, `check_js.py`), then —
    on `main` only — stages only site files (`index.html`, `assets/`,
-   `how-it-works/`, each game directory under `games/`, and each
-   redirect stub at the old `/<slug>/` URL, all derived from the data
-   slugs) into `_site/` and deploys with `configure-pages` →
-   `upload-pages-artifact` (`_site/`) → `deploy-pages`, under the
-   `github-pages` environment with `contents: read`, `pages: write`,
-   `id-token: write` permissions and a `pages` concurrency group that
-   never cancels an in-flight deploy.
+   `how-it-works/`, and each game directory under `games/`, all
+   derived from the data slugs) into `_site/` and deploys with
+   `configure-pages` → `upload-pages-artifact` (`_site/`) →
+   `deploy-pages`, under the `github-pages` environment with
+   `contents: read`, `pages: write`, `id-token: write` permissions
+   and a `pages` concurrency group that never cancels an in-flight
+   deploy.
 3. The `CI` workflow calls the same shared checks on every push and
    pull request to `main`, so the two workflows cannot drift apart.
 
