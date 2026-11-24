@@ -477,6 +477,34 @@ class TestXboxValidation(unittest.TestCase):
                                  "cobigail-boo.jpg"])
         self.assertIn("full", cobi["slideshow"][-1])
 
+    def test_gabbys_dollhouse_crafts_first(self):
+        # Game #15: all 16 / 1,000G, in the walkthrough's
+        # roadmap order — Crafts Room first (it gives the
+        # crown, the dance, a hat, and an outfit), then the
+        # other rooms, Marty on the top floor last. No
+        # missables, no counters, no steps, no media: every
+        # achievement pops from finishing a level or a single
+        # activity. The [VERIFY] items from the draft (dance
+        # 3-star, hat-chest spot, Garden Guardian sequence)
+        # are not asserted here.
+        game = next(
+            g for g in load_games()
+            if g["slug"] == "gabbys-dollhouse-ready-to-party"
+        )
+        self.assertEqual(game["_total_count"], 16)
+        self.assertEqual(game["_total_gs"], 1000)
+        ids = [a["id"] for s in game["sections"]
+               for a in s["achievements"]]
+        self.assertEqual(ids[:4], ["ach-thinking-box", "ach-kitten-steps",
+                                   "ach-dance-pawty", "ach-royal-delivery"])
+        self.assertEqual(ids[-1], "ach-ultimate-catventure")
+        self.assertEqual([s["id"] for s in game["sections"]],
+                         ["crafts", "kitchen", "music", "bathroom",
+                          "bedroom", "fairy-garden", "playroom", "party"])
+        self.assertFalse(any(a.get("missable") for a in
+                             (a for s in game["sections"]
+                              for a in s["achievements"])))
+
     def test_bloodletting_lists_catahome_route(self):
         """Bloodletting must carry the eight steps from the
         crows to the sacrifice — the crow hunt, Saul's

@@ -1,0 +1,93 @@
+{
+  "slug": "gabbys-dollhouse-ready-to-party",
+  "title": "Gabby's Dollhouse: Ready to Party",
+  "tagline": "Six party items, six little worlds — help Gabby get the dollhouse ready for Marty's party.",
+  "order_note": "Do the Crafts Room first — it gives you the crown, the dance, a hat, and an outfit — then work through the other rooms in any order, doing the side quests as you go. Talk to Marty on the top floor last.",
+  "scope_note": "All 16 achievements / 1,000G — the full game, no DLC. No missables; about 1–2 hours in a single playthrough. Route notes paraphrased from the TrueAchievements walkthrough draft (Enonymous1, 2026), cross-checked against TrueTrophies, Knoef, and ScorpioOfShadows.",
+  "total_gs": 1000,
+  "total_count": 16,
+  "storage_key": "gd-tracker-v1",
+  "sources": [{"label": "TrueAchievements — Achievements", "url": "https://www.trueachievements.com/game/DreamWorks-Gabbys-Dollhouse-Ready-to-Party/achievements"}, {"label": "TrueTrophies — Walkthrough", "url": "https://www.truetrophies.com/game/DreamWorks-Gabbys-Dollhouse-Ready-to-Party/walkthrough"}],
+  "sections": [
+    {
+      "id": "crafts",
+      "filter_label": "Crafts Room",
+      "title": "Crafts Room",
+      "subtitle": "4 achievements",
+      "achievements": [
+        {"id": "ach-thinking-box", "name": "Thinking Outside the Box", "gs": 80, "req": "Finished Mama Box and Baby Box's level", "how": "Finish the Crafts Room level — work through the papercraft world to Mama Box, ride the rainbow back to Baby Box, collect the three hot-air-balloon pieces, and ride the balloon to get the big crown."},
+        {"id": "ach-kitten-steps", "name": "Kitten Steps", "gs": 25, "req": "First minigame unlocked", "how": "In the Crafts world, find Cakey under the big green cardboard dragon and pay 15 coins to unlock the dance area — your first minigame."},
+        {"id": "ach-dance-pawty", "name": "Dance Paw-ty", "gs": 25, "req": "Dance mini game completed", "how": "Play the dance minigame in the Crafts world through to the end."},
+        {"id": "ach-royal-delivery", "name": "Royal Delivery", "gs": 80, "req": "The new king / deliver the crown to Marty", "how": "Bring the crown home after the Crafts Room level — it should pop on the return to the dollhouse."}
+      ]
+    },
+    {
+      "id": "kitchen",
+      "filter_label": "Kitchen",
+      "title": "Kitchen",
+      "subtitle": "2 achievements",
+      "achievements": [
+        {"id": "ach-batter-up", "name": "Batter Up!", "gs": 80, "req": "Finished Cakey's level", "how": "In the Kitchen, follow the exclamation mark into the cupboard to Cakey's world, knock the decorations off three cupcakes to reveal the chocolate bars, and play the cake-making minigame."},
+        {"id": "ach-meowster-chef", "name": "Meowster Chef", "gs": 25, "req": "First meal prepared", "how": "Still in the Kitchen, interact with the table in the middle of the room and bake cupcakes."}
+      ]
+    },
+    {
+      "id": "music",
+      "filter_label": "Music Room",
+      "title": "Music Room",
+      "subtitle": "3 achievements",
+      "achievements": [
+        {"id": "ach-paws-applause", "name": "Paws for Applause", "gs": 25, "req": "My first piano song", "how": "In the Music Room, play the piano on the left side of the room and follow the short musical piece. Do this before DJ Catnip's level, while you're here."},
+        {"id": "ach-groovy-beats", "name": "Groovy Beats on Caturn", "gs": 80, "req": "Finished DJ Catnip's level", "how": "Bounce on the cushion in the middle of the Music Room to reach DJ Catnip's world, Caturn, and finish the level — use the switch at the base of the Catellite to solve his problem."},
+        {"id": "ach-cosmic-kitties", "name": "Cosmic Kitties", "gs": 80, "req": "Hamster Kitties returned to space!", "how": "Side quest inside DJ Catnip's world — do it before you leave: from the stage, go south, then left to the billboard with Mama Box and Baby Box, find the three rocket parts in the platforming course, and use the crane to stack them."}
+      ]
+    },
+    {
+      "id": "bathroom",
+      "filter_label": "Bathroom",
+      "title": "Bathroom",
+      "subtitle": "1 achievements",
+      "achievements": [
+        {"id": "ach-shell-ebration", "name": "Shell-ebration", "gs": 80, "req": "Finished MerCat's level", "how": "In the Bathroom, enter MerCat's world, talk to MerCat in the pool, put the map together, and point out the island with the giant treasure chest."}
+      ]
+    },
+    {
+      "id": "bedroom",
+      "filter_label": "Bedroom",
+      "title": "Bedroom",
+      "subtitle": "2 achievements",
+      "achievements": [
+        {"id": "ach-top-cat", "name": "Top Cat", "gs": 25, "req": "Wore a hat", "how": "In the Bedroom wardrobe (far right of the room, teal-and-purple), equip a hat. The hat comes from a chest in the Crafts world — if the slot is empty, play another minigame or open another chest first."},
+        {"id": "ach-fashion-forward", "name": "Fashion Forward", "gs": 75, "req": "Outfit changed for the first time", "how": "In the Bedroom wardrobe, change Gabby's outfit. The outfit comes from the Crafts Room dance — if the slot is empty, play another minigame or open another chest first."}
+      ]
+    },
+    {
+      "id": "fairy-garden",
+      "filter_label": "Fairy Garden",
+      "title": "Fairy Garden",
+      "subtitle": "2 achievements",
+      "achievements": [
+        {"id": "ach-garden-guardian", "name": "Garden Guardian", "gs": 80, "req": "Carlita's secondary quest completed", "how": "In the Fairy Garden (basement), walk left to Carlita and solve her pattern puzzle — the star is the answer. Then ride with her, platform right past the jumping chinchillas, and throw balls at the log blocking the Hamster Kitties."},
+        {"id": "ach-purrfect-fairytale", "name": "A Purrfect Fairy-Tale", "gs": 80, "req": "Finished Fairy Cat's level", "how": "Continue left and up to Fairy Cat, open the big chest by the sleeping cat in the blue tent with the matching puzzle, ride the cloud cart, and climb to the top of the big tree."}
+      ]
+    },
+    {
+      "id": "playroom",
+      "filter_label": "Playroom",
+      "title": "Playroom",
+      "subtitle": "1 achievements",
+      "achievements": [
+        {"id": "ach-vroom-meow", "name": "Vroom and Meow", "gs": 80, "req": "Finished Carlita's level", "how": "In the Playroom, travel away from the camera to reach Carlita and help her through the platforming obstacle course — for the timed sections, waiting the timer out works."}
+      ]
+    },
+    {
+      "id": "party",
+      "filter_label": "Party",
+      "title": "Party",
+      "subtitle": "1 achievements",
+      "achievements": [
+        {"id": "ach-ultimate-catventure", "name": "The Ultimate Catventure", "gs": 80, "req": "Game Completed", "how": "With all six worlds done and all the party items collected, go to the top floor and talk to Marty to start the party — it pops as the credits roll."}
+      ]
+    }
+  ]
+}

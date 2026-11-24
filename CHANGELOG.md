@@ -4,6 +4,23 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-24 — Game #15: Gabby's Dollhouse: Ready to Party
+
+### Added
+
+- **Gabby's Dollhouse: Ready to Party** — all 16
+  achievements / 1,000G, in the walkthrough's roadmap
+  order: Crafts Room first (crown, dance, hat, outfit),
+  then Kitchen, Music Room, Bathroom, Bedroom, Fairy
+  Garden, Playroom, and the party with Marty on the top
+  floor. No missables, no counters, no steps, no media.
+  Route notes paraphrase the TrueAchievements
+  walkthrough draft (Enonymous1, 2026), cross-checked
+  against TrueTrophies, Knoef, and ScorpioOfShadows.
+  The draft's open checks (dance 3-star, hat-chest spot,
+  Garden Guardian sequence, floor labels) are not
+  asserted in the tracker.
+
 ## 2026-11-24 — Game pages moved under games/
 
 ### Changed
