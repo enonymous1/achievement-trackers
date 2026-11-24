@@ -38,57 +38,12 @@ and carries the compact progress. Cards can carry notes, a Missable
 pill, and screenshots or step-by-step slideshows. Progress saves in your browser only (localStorage, one
 key per game); nothing is uploaded, and the hub can show progress
 across games because they share the same Pages origin. Each page also
-has an Xbox sync card (when a game is mapped) that ticks from your
+has an [Xbox sync card](docs/xbox-sync.md) (when a game is mapped) that ticks from your
 Xbox data with your own key. A Privacy Dashboard import was tried
 and dropped: the archive holds app usage, not achievement records —
 see "We tried the Microsoft export" on the How it works page.
 
-## Xbox sync setup (OpenXBL)
-
-The sync card is built but dormant: it renders only for games whose
-JSON carries an `xbox_title_id` and an `xbox_id` on every
-achievement, and no game is mapped yet. No public source lists those
-IDs, so they come from a live OpenXBL response — never guessed. To
-map a game:
-
-1. **Get an OpenXBL key:** sign in at xbl.io with the Microsoft
-   account that owns the Xbox profile and create an API key.
-2. **Find your XUID:** `GET https://api.xbl.io/api/v2/player/gamertag/<gamertag>`
-   with header `X-Authorization: <key>` (or `GET /api/v2/account`
-   for the key owner).
-3. **Find the title ID:** `GET https://api.xbl.io/api/v2/player/titleHistory/<xuid>`
-   and take the `titleId` from the entry for the game.
-4. **Fetch the per-title achievements:** `GET https://api.xbl.io/api/v2/achievements/player/<xuid>/title/<titleId>`
-   and save the full response. If it is paginated, fetch the
-   following pages and merge the achievement entries into one file
-   (an array, or an object with an `achievements` array).
-5. **Map it:** `python tools/map_xbox.py --title-id <titleId> response.json`
-   — it matches by name and refuses to write on any unmatched or
-   ambiguous achievement. Review the diff (names, Gamerscore
-   warnings) before continuing.
-6. **Regenerate and commit:** `python tools/generate.py`, then
-   `--check` and the tests, and commit the JSON and the generated
-   HTML together. The sync card then appears on that game's page.
-7. **Use it:** the card takes a gamertag and key (stored in that
-   browser only, never in Export), shows a preview, and applies on
-   Confirm — newly unlocked achievements and their sub-steps only,
-   never unticks, never touches notes or counters. If the browser
-   blocks the direct fetch, the card's paste-JSON fallback takes the
-   same per-title response from step 4.
-
-**Key safety, stated plainly:** a key committed to a public repo is
-public, permanently — git history keeps it even after deletion, and
-anyone holding it can burn the account's rate limit and query data
-through it. OpenXBL keys carry no "only this gamertag" scope, and a
-gamertag check in page JavaScript is cosmetic: anyone can edit the
-script or call the API directly. So the key stays out of the repo.
-Two safe shapes: (a) per-visitor keys — each visitor enters their
-own key, which is the model the card uses; (b) if the published
-site should show one person's progress with no key asked of
-visitors, fetch it at build time in GitHub Actions with the key
-stored in the repo's Settings → Secrets (never in a file) and
-publish only the resulting achievement states — the key never
-reaches the site.
+Xbox sync (OpenXBL) is built but dormant — no game is mapped yet. Setup lives in [docs/xbox-sync.md](docs/xbox-sync.md).
 
 ## Description
 
@@ -110,113 +65,27 @@ so the repo — not a lone file — is the distribution unit. That is the
 right shape for a Pages hub, and it is why generated pages are
 committed rather than built on deploy.
 
-**Current games:** Minecraft Dungeons — 34 achievements, 1,250G
-(base game 24 / 1,000G + Jungle Awakens 5 / 130G + Creeping Winter 5 /
-120G). The full game now has 104 achievements / 3,000G; later DLC is
-deliberately out of scope for this tracker, and the page says so.
-Great God Grove — 42 achievements, 1,000G, the full game in
-walkthrough order (Grove Cove through the finale).
-Barbie Horse Trails — 15 achievements, 1,000G, the full game in
-story/roadmap order.
-Pigeon Simulator — 10 achievements, 1,000G, the full game in
-walkthrough order: tutorial gadget cheese, first missions, then
-the upgrade grind.
-Winter Burrow — 32 achievements, 1,000G, the full game in
-walkthrough order across five sections (beginning, owl, recovery,
-rebuilding, furnishings), with counters for the cumulative
-crafting and gathering totals.
-1000xRESIST — 32 achievements, 1,000G, the full game in story
-order: chapters, the Orchard landmarks, the seven talk-to-
-everyone sections (flagged missable), and all seven epilogue
-endings with their light combinations. No TA walkthrough
-exists, so route notes are paraphrased from the Steam 100%
-guide.
-GoldenEye 007 — 55 achievements, 1,000G, the full game in
-walkthrough order: 20 story missions, 3 difficulty
-completions, 21 cheat time trials, and 11 split-screen
-multiplayer achievements (with step checklists for the
-maps, weapon sets, and scenarios).
-Relic Hunters Legend — 18 achievements, 1,000G, the full
-game in story order: 13 chapters and adventures plus 5
-progression achievements (new Hunter, levels 6 and 30
-on a shared counter, first Relic, first Treasure Map).
-No TA walkthrough exists, so chapter order follows a
-completed playthrough's unlock sequence.
-Wreckfest (Windows) — 20 achievements, 1,000G, the full
-game: 5 career championships plus all career
-challenges, ranks 10/25/50 on a shared counter,
-vehicle collecting, the wrecking totals, the lawn
-mower hour, and 20 multiplayer wins (private-lobby
-boostable; AI wins don't count). No TA walkthrough
-exists, so route notes are paraphrased from the Knoef
-and Fuzionbyte trophy guides.
-Dragon Ball Xenoverse 2 — 50 achievements, 1,000G, the
-base game only (the 11 DLC achievements are out of
-scope): 12 story sagas, 3 class tests, Parallel
-Quests and Expert Missions, online wins, and the
-Conton City cleanup, ending with the 0G completion
-achievement. No TA walkthrough exists, so route
-notes are paraphrased from the GameFAQs trophy
-guide.
-Moonlighter — 57 achievements, 1,000G, the full base
-game in walkthrough order: Golem, Forest, Desert,
-Tech and the finale, plus a New Game+ speedrun — two
-playthroughs, seven missables (the four no-hit boss
-kills, the janitor and careful-merchant runs, and the
-speedrun). The Between Dimensions DLC has its own
-achievements and is out of scope.
-Police Simulator: Patrol Officers — 25 achievements,
-1,000G, the full game in Steam-guide order: the five
-first shifts, the Duty Star unlocks, then arrests,
-first aid, towing, photography, and the radar — with
-shared counters per system and no missables. No TA
-walkthrough exists, so route notes are paraphrased
-from the Steam 100% Achievement Guide. Names and
-Gamerscore come from a saved copy of the TA
-achievements page.
-Firefighting Simulator: The Squad — 30 achievements,
-1,000G, the full game in walkthrough order:
-tutorials, the mission grind, multiplayer and
-victims alongside, the five trucks and the ladder
-tools, then the water and driving grinds last.
-Shared counters per grind (missions 1/5/10/50/100,
-multiplayer 1/10/30/50, victims 1/10/100/200,
-water 1,000/10,000/100,000 litres, distance
-50/100/1,000 km) and no missables. Names,
-Gamerscore, and route notes come from saved
-copies of the TA achievements page and the
-single-page TA walkthrough.
-Total Chaos — 37 achievements, 1,000G, the full
-game in chapter order (Arrival through Resolve),
-then the merciful run, the endings, combat,
-crafting, and the collectibles. Six missables —
-the five chapter variants and the good ending —
-with step checklists on each; the good ending
-and the full 45-journal set can't be done in one
-playthrough. No counters: every achievement is a
-one-time feat. No TA walkthrough exists, so route
-notes are paraphrased from the Twinfinite
-good-ending walkthrough and TA achievement
-solutions. Names and Gamerscore come from a saved
-copy of the TA achievements page.
-Gabby's Dollhouse: Ready to Party — 16 achievements,
-1,000G, the full game in walkthrough order: Crafts
-Room first (crown, dance, hat, outfit), then
-Kitchen, Music Room, Bathroom, Bedroom, Fairy
-Garden, Playroom, and the party with Marty on the
-top floor. No missables, no counters, no steps, no
-media. Route notes paraphrase the TrueAchievements
-walkthrough draft (Enonymous1, 2026), cross-checked
-against TrueTrophies, Knoef, and ScorpioOfShadows.
-Generation Zero — 50 achievements, 1,000G, the base
-game only (the 3 DLC packs are out of scope): the
-story missions, the machine and weapon kill
-counters, the 80 collectibles, and the gear and
-second-character achievements. Nothing is
-missable. No TA walkthrough exists, so route notes
-are paraphrased from the Generation Zero platinum
-guide (messymoddingstore). Names and Gamerscore
-come from a saved copy of the TA achievements page.
+**Current games:**
+
+| Game | Achievements | Gamerscore | Notes |
+| --- | --- | --- | --- |
+| Minecraft Dungeons | 34 | 1,250G | Partial: base + Jungle Awakens + Creeping Winter; full game is 104 / 3,000G |
+| Great God Grove | 42 | 1,000G | Full game, walkthrough order |
+| Barbie Horse Trails | 15 | 1,000G | Full game, story order |
+| Pigeon Simulator | 10 | 1,000G | Full game, walkthrough order |
+| Winter Burrow | 32 | 1,000G | Full game, walkthrough order |
+| 1000xRESIST | 32 | 1,000G | Full game, story order; 7 missables |
+| GoldenEye 007 | 55 | 1,000G | Full game, walkthrough order |
+| Relic Hunters Legend | 18 | 1,000G | Full game, story order |
+| Wreckfest (Windows) | 20 | 1,000G | Full game |
+| Dragon Ball Xenoverse 2 | 50 | 1,000G | Base game only; 11 DLC out of scope |
+| Moonlighter | 57 | 1,000G | Full base game; 7 missables; Between Dimensions DLC out of scope |
+| Police Simulator: Patrol Officers | 25 | 1,000G | Full game |
+| Firefighting Simulator: The Squad | 30 | 1,000G | Full game |
+| Total Chaos | 37 | 1,000G | Full game; 6 missables |
+| Gabby's Dollhouse: Ready to Party | 16 | 1,000G | Full game, walkthrough order |
+| Generation Zero | 50 | 1,000G | Base game only; 3 DLC packs out of scope |
+| **Total** | **523** | **16,250G** | |
 
 ## Prerequisites
 

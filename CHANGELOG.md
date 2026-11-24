@@ -4,6 +4,21 @@ All notable changes to this project are documented here. Dates are
 when the change landed, not version numbers — this repo is not
 versioned; the git log is the release history.
 
+## 2026-11-24 — README: sync setup moved aside, games list is a table
+
+### Changed
+
+- The Xbox sync setup section left the README: the full
+  OpenXBL mapping guide now lives in `docs/xbox-sync.md`,
+  and the README carries a one-line pointer to it. The
+  guide itself is unchanged — the sync card is still
+  built but dormant, with no game mapped yet.
+- The "Current games" wall of text is now a table (game,
+  achievements, Gamerscore, one-line scope note) with a
+  totals row. The per-game route-note sources moved out
+  of the README; they are declared in each game's JSON
+  and shown on its page.
+
 ## 2026-11-24 — Game #16: Generation Zero
 
 ### Added
