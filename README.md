@@ -26,8 +26,8 @@ The hub is the landing page: a welcome line, a how-it-works card, a
 search box with a sort control beside it (name, completion,
 achievements, started), and one card per game showing its achievement count,
 Gamerscore total, and your saved progress on this browser. The footer
-totals the whole library (currently: 14 games · 457 achievements ·
-14,250G) and links to this repo.
+totals the whole library (currently: 16 games · 523 achievements ·
+16,250G) and links to this repo.
 
 Each game page has a Gamerscore progress bar, search, an
 incomplete-only toggle, phase filters, and export / import / reset for
@@ -199,6 +199,24 @@ notes are paraphrased from the Twinfinite
 good-ending walkthrough and TA achievement
 solutions. Names and Gamerscore come from a saved
 copy of the TA achievements page.
+Gabby's Dollhouse: Ready to Party — 16 achievements,
+1,000G, the full game in walkthrough order: Crafts
+Room first (crown, dance, hat, outfit), then
+Kitchen, Music Room, Bathroom, Bedroom, Fairy
+Garden, Playroom, and the party with Marty on the
+top floor. No missables, no counters, no steps, no
+media. Route notes paraphrase the TrueAchievements
+walkthrough draft (Enonymous1, 2026), cross-checked
+against TrueTrophies, Knoef, and ScorpioOfShadows.
+Generation Zero — 50 achievements, 1,000G, the base
+game only (the 3 DLC packs are out of scope): the
+story missions, the machine and weapon kill
+counters, the 80 collectibles, and the gear and
+second-character achievements. Nothing is
+missable. No TA walkthrough exists, so route notes
+are paraphrased from the Generation Zero platinum
+guide (messymoddingstore). Names and Gamerscore
+come from a saved copy of the TA achievements page.
 
 ## Prerequisites
 
